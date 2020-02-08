@@ -134,11 +134,11 @@ class SQLManipulator():
             return "0"
         return str
 
-sm = SQLManipulator()
-sm.convert_csv_to_db("../test.csv")
-sm.convert_csv_to_db("../test2.csv")
-sm.convert_csv_to_db("../test3.csv")
-sm.convert_csv_to_db("../test4.csv")
-sm.convert_csv_to_db("../test5.csv")
-sm.convert_csv_to_db("../test6.csv")
-sm.convert_csv_to_db("../test7.csv")
+#sm = SQLManipulator()
+#sm.convert_csv_to_db("../test.csv")
+#sm.convert_csv_to_db("../test2.csv")
+#sm.convert_csv_to_db("../test3.csv")
+#sm.convert_csv_to_db("../test4.csv")
+#sm.convert_csv_to_db("../test5.csv")
+#sm.convert_csv_to_db("../test6.csv")
+#sm.convert_csv_to_db("../test7.csv")
