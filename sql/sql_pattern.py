@@ -21,7 +21,6 @@ class SQLPattern():
             i = 0
             writer = csv.writer(f)
             for sds in subdata_sum:
-                print(maindata_sum[i])
                 writer.writerow([maindata_sum[i]])
                 i = i + 1
                 count = 0
