@@ -1,8 +1,11 @@
-# coding: utf_8
+# coding: utf-8
 import MySQLdb
 import os
 import csv
-
+import sys
+#reload(sys)
+#sys.setdefaultencoding('utf-8')
+print(sys.getdefaultencoding())
 class SQLManipulator():
     def __init__(self, ):
         i=0

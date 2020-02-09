@@ -1,4 +1,4 @@
-# coding: utf_8
+# coding: utf-8
 import sql_manipulator
 import csv
 
@@ -6,21 +6,44 @@ class SQLPattern():
     def __init__(self):
         entry, target = self.get_entry_target_data("../today.csv")
         print(target)
+        maindata_sum = []
+        subdata_sum = []
         for ent in entry:
-            self.get_targetrace_statistics(ent,target)
+            maindata, subdata = self.get_targetrace_statistics(ent,target)
+            maindata_sum.append(maindata)
+            subdata_sum.append(subdata)
+        with open('../main.csv','w') as f:
+            writer = csv.writer(f)            
+            for mds in maindata_sum:
+                for md in mds:
+                    writer.writerow([md])
+        with open('../sub.csv','w') as f:
+            i = 0
+            writer = csv.writer(f)
+            for sds in subdata_sum:
+                print(maindata_sum[i])
+                writer.writerow([maindata_sum[i]])
+                i = i + 1
+                count = 0
+                for sd in sds:
+                    writer.writerow(sd)
+                    count = count + 1
+                    if count == 15:
+                        break
+
 
     def get_targetrace_statistics(self, entry, target):
+        maindata = []
         result = [[0 for i in range(4)] for j in range(4)]
         print(entry)
-        msg = "race_time>"+str(entry[0]-0.3)+" and race_time<"+str(entry[0]+0.3)+" and horse_table.place='"+entry[1]+"' and turf_dirt='"+entry[2]+"' and course_condition='"+entry[3]+"' and distance="+str(entry[4])
+        cond = self.convert_condition(entry[3])
+        msg = "race_time>"+str(entry[0]-0.4)+" and race_time<"+str(entry[0]+0.4)+" and horse_table.place='"+entry[1]+"' and turf_dirt='"+entry[2]+"' and (course_condition='"+cond+"') and distance="+str(entry[4])
         msg2 = "horsename='"+entry[5]+"' and "+msg
         self_data = self.get_sql_data(msg2,1)
         if len(self_data) == 0:
-            return 0
-        print(self_data)
-        msg3 = msg+" and rap5f>"+str(self_data[0][2]-0.3)+" and rap5f<"+str(self_data[0][2]+0.3)+" and finish='"+self_data[0][5]+"'"
+            return [], []
+        msg3 = msg+" and rap5f>"+str(self_data[0][2]-0.4)+" and rap5f<"+str(self_data[0][2]+0.4)+" and finish='"+self_data[0][5]+"'"
         similar_power_name = self.get_sql_data(msg3,1)
-        count = 0
         msg = "race_table.place='"+target[0]+"' and turf_dirt='"+target[1]+"' and distance="+str(target[2])+" and (class='"+target[3]+"') and ("
         for i in range(len(similar_power_name)):
             msg_or = " or "
@@ -28,6 +51,12 @@ class SQLPattern():
                 msg_or = ")"
             msg = msg + " horsename='"+similar_power_name[i][0]+"'"+msg_or
         record = self.get_sql_data(msg,2)
+        comment = ""
+        if len(record) <= 2:
+            comment = "情報少、要注意"
+        print_msg = str(self_data)+" "+str(len(similar_power_name))+" > "+str(len(record))+" "+comment
+        print(print_msg)
+        maindata.append(print_msg)
         total_num = 0
         goodrace_num = 0
         nice_num = 0
@@ -55,8 +84,10 @@ class SQLPattern():
                 time_diff = 3
             result[strategy][time_diff] = result[strategy][time_diff] + 1
         if total_num > 0:
-            print(str(result)+" 0.3s内："+str(round(goodrace_num/total_num*100,1))+"％ 0.8s内: "+str(round((goodrace_num+nice_num)/total_num*100,1))+"％")
-        return result
+            print_msg = str(result)+" 0.3s内："+str(round(goodrace_num/total_num*100,1))+"％ 0.8s内: "+str(round((goodrace_num+nice_num)/total_num*100,1))+"％"
+            print(print_msg)
+            maindata.append(print_msg)
+        return maindata, record
 
     def get_sql_data(self, condition_msg, select_pattern=0):
         manipulator = sql_manipulator.SQLManipulator()
@@ -84,22 +115,22 @@ class SQLPattern():
                     cls = self.analyse_class(row[5])
                     target=[row[3],row[7],row[8],cls]
                 else:
-                    if len(row[14]) > 0 and row[21] != "----": # 1走前
+                    if len(row) > 14 and len(row[14]) > 0 and row[21] != "----": # 1走前
                         entry.append([self.convert_race_time(row[21]),row[14],self.convert_turf_dirt(row[16]),row[19],row[17],row[7]])
-                    if len(row[30]) > 0 and row[37] != "----": # 2走前
+                    if len(row) > 30 and len(row[30]) > 0 and row[37] != "----": # 2走前
                         entry.append([self.convert_race_time(row[37]),row[30],self.convert_turf_dirt(row[32]),row[35],row[33],row[7]])
                 row_count = row_count+1
         return entry,target
 
     def analyse_class(self, cls):
         if cls=="500万" or cls=="1勝":
-            return "500万' or class='1勝"
+            return "500万' or class='1勝' or class='1000万"        
         elif cls=="未勝利" or cls=="新馬":
             return "未勝利' or class='500万"
         elif cls=="1000万" or cls=="2勝":
             return "1000万' or class='2勝' or class='500万"
         else:
-            return "1600万' or class='3勝' or class='オープン"
+            return "500万' or class='1000万' or class='2勝' or class='1600万' or class='3勝' or class='オープン' or class='Ｇ３' or class='Ｇ１' or class='Ｇ２"
 
     def convert_turf_dirt(self, s):
         if s=="T":
@@ -108,6 +139,12 @@ class SQLPattern():
             return "ダート"
         else:
             return "その他"
+
+    def convert_condition(self, s):
+        if s=="良" or s=="稍":
+            return "良' or course_condition='稍"
+        else:
+            return "重' or course_condition='不"
 
     def convert_race_time(self, s):
         if (len(s) == 3 or len(s) == 4) and s != "----":
