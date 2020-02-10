@@ -3,32 +3,35 @@ import sql_manipulator
 import csv
 
 class SQLPattern():
-    def __init__(self):
-        entry, target = self.get_entry_target_data("../today.csv")
-        print(target)
-        maindata_sum = []
-        subdata_sum = []
-        for ent in entry:
-            maindata, subdata = self.get_targetrace_statistics(ent,target)
-            maindata_sum.append(maindata)
-            subdata_sum.append(subdata)
-        with open('../main.csv','w') as f:
-            writer = csv.writer(f)            
-            for mds in maindata_sum:
-                for md in mds:
-                    writer.writerow([md])
-        with open('../sub.csv','w') as f:
-            i = 0
-            writer = csv.writer(f)
-            for sds in subdata_sum:
-                writer.writerow([maindata_sum[i]])
-                i = i + 1
-                count = 0
-                for sd in sds:
-                    writer.writerow(sd)
-                    count = count + 1
-                    if count == 15:
-                        break
+    def __init__(self, option=""):
+        if option == "set_level":
+            self.set_race_level()
+        else:
+            entry, target = self.get_entry_target_data("../today.csv")
+            print(target)
+            maindata_sum = []
+            subdata_sum = []
+            for ent in entry:
+                maindata, subdata = self.get_targetrace_statistics(ent,target)
+                maindata_sum.append(maindata)
+                subdata_sum.append(subdata)
+            with open('../main.csv','w') as f:
+                writer = csv.writer(f)            
+                for mds in maindata_sum:
+                    for md in mds:
+                        writer.writerow([md])
+            with open('../sub.csv','w') as f:
+                i = 0
+                writer = csv.writer(f)
+                for sds in subdata_sum:
+                    writer.writerow([maindata_sum[i]])
+                    i = i + 1
+                    count = 0
+                    for sd in sds:
+                        writer.writerow(sd)
+                        count = count + 1
+                        if count == 15:
+                            break
 
 
     def get_targetrace_statistics(self, entry, target):
@@ -43,7 +46,8 @@ class SQLPattern():
             return [], []
         msg3 = msg+" and rap5f>"+str(self_data[0][2]-0.4)+" and rap5f<"+str(self_data[0][2]+0.4)+" and finish='"+self_data[0][5]+"'"
         similar_power_name = self.get_sql_data(msg3,1)
-        msg = "race_table.place='"+target[0]+"' and turf_dirt='"+target[1]+"' and distance="+str(target[2])+" and (class='"+target[3]+"') and ("
+        #msg = "race_table.place='"+target[0]+"' and turf_dirt='"+target[1]+"' and distance="+str(target[2])+" and (class='"+target[3]+"') and ("
+        msg = "race_table.place='"+target[0]+"' and turf_dirt='"+target[1]+"' and distance="+str(target[2])+" and ("
         for i in range(len(similar_power_name)):
             msg_or = " or "
             if i == len(similar_power_name)-1:
@@ -92,11 +96,11 @@ class SQLPattern():
         manipulator = sql_manipulator.SQLManipulator()
         msg_select = "select "
         if select_pattern == 0:
-            msg_select = msg_select + "race_table.rdate,race_table.place,race_table.race,race_table.turf_dirt,race_table.distance,horse_table.horsename,horse_table.race_time,horse_table.goal_order,horse_table.time_diff "
+            msg_select = msg_select + "race_table.rdate,race_table.place,race_table.race,race_table.turf_dirt,race_table.distance,horse_table.horsename,horse_table.race_time,horse_table.goal_order,horse_table.time_diff,race_table.level "
         elif select_pattern == 1:
-            msg_select = msg_select + "horse_table.horsename, race_table.rap3f, race_table.rap5f, horse_table.race_time, horse_table.time_diff, horse_table.finish "
+            msg_select = msg_select + "horse_table.horsename, race_table.rap3f, race_table.rap5f, horse_table.race_time, horse_table.time_diff, horse_table.finish, race_table.level "
         elif select_pattern == 2:
-            msg_select = msg_select + "race_table.class, race_table.rap5f, race_table.last3f, horse_table.goal_order, horse_table.horsename, horse_table.race_time, horse_table.time_diff, horse_table.finish, horse_table.last3f "
+            msg_select = msg_select + "race_table.class, race_table.rap5f, race_table.last3f, horse_table.goal_order, horse_table.horsename, horse_table.race_time, horse_table.time_diff, horse_table.finish, horse_table.last3f, race_table.level "
         msg_from = "from horse_table "
         msg_join = "inner join race_table on horse_table.rdate = race_table.rdate and horse_table.place = race_table.place and horse_table.race = race_table.race "
         msg = msg_select+msg_from+msg_join+"where "+condition_msg+";"
@@ -118,6 +122,8 @@ class SQLPattern():
                         entry.append([self.convert_race_time(row[21]),row[14],self.convert_turf_dirt(row[16]),row[19],row[17],row[7]])
                     if len(row) > 30 and len(row[30]) > 0 and row[37] != "----": # 2走前
                         entry.append([self.convert_race_time(row[37]),row[30],self.convert_turf_dirt(row[32]),row[35],row[33],row[7]])
+                    if len(row) > 46 and len(row[46]) > 0 and row[53] != "----": # 3走前
+                        entry.append([self.convert_race_time(row[53]),row[46],self.convert_turf_dirt(row[48]),row[51],row[49],row[7]])
                 row_count = row_count+1
         return entry,target
 
@@ -150,4 +156,41 @@ class SQLPattern():
             return round((int(int(s)/1000)*600+int(s[-3:]))*0.1,1)
         else:
             return "0.0"
+
+    def set_race_level(self):
+        hoge = 3
+        place = ["札幌","函館","福島","新潟","中山","東京","中京","京都","阪神","小倉"]
+        cond = ["良","稍","重","不"]
+        td = ["芝","ダート"]
+        distance = [1000,1150,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,3000,3200,3600]
+        for a in range(len(place)):
+            for b in range(len(cond)):
+                for c in range(len(td)):
+                    for d in range(len(distance)):
+                        msg_pattern = ["rap3f","last3f"]
+                        if distance[d] >= 1600:
+                            msg_pattern = ["rap5f","last3f"]
+                        output_pattern = []
+                        manipulator = sql_manipulator.SQLManipulator()
+                        where_msg = "where place='"+place[a]+"' and course_condition='"+cond[b]+"' and turf_dirt='"+td[c]+"' and distance="+str(distance[d])
+                        print(where_msg)
+                        for mp in msg_pattern:
+                            msg = "select "+mp+" from race_table " + where_msg
+                            output_pattern.append(manipulator.sql_manipulator(msg+";"))
+                        if len(output_pattern[0]) == 0:
+                            continue
+                        standard_time = (min(output_pattern[0])[0]+max(output_pattern[0])[0]+min(output_pattern[1])[0]+max(output_pattern[1])[0])/2
+                        level_pattern = []
+                        for i in range(11):
+                            level_pattern.append(round(standard_time-2.5+i*0.5,1))
+                        for i in range(10):
+                            time_cond1 = " and "+msg_pattern[0]+"+last3f > "+str(level_pattern[i])
+                            time_cond2 = " and "+msg_pattern[0]+"+last3f < "+str(level_pattern[i+1])
+                            if i == 0:
+                                time_cond1 = ""
+                            elif i == 9:
+                                time_cond2 = ""
+                            #msg2 = "select class from race_table " + where_msg + time_cond1 + time_cond2 + ";"
+                            msg2 = "update race_table set level="+str(10-i)+ " "+where_msg + time_cond1 + time_cond2
+                            set_level = manipulator.sql_manipulator(msg2+";")
 sp = SQLPattern()
