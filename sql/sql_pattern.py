@@ -103,7 +103,7 @@ class SQLPattern():
             msg_select = msg_select + "race_table.class, race_table.rap5f, race_table.last3f, horse_table.goal_order, horse_table.horsename, horse_table.race_time, horse_table.time_diff, horse_table.finish, horse_table.last3f, race_table.level "
         msg_from = "from horse_table "
         msg_join = "inner join race_table on horse_table.rdate = race_table.rdate and horse_table.place = race_table.place and horse_table.race = race_table.race "
-        msg = msg_select+msg_from+msg_join+"where "+condition_msg+";"
+        msg = msg_select+msg_from+msg_join+"where race_time != 0 and "+condition_msg+";"
         ret = manipulator.sql_manipulator(msg)
         return ret
 
