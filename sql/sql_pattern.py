@@ -53,6 +53,7 @@ class SQLPattern():
             if i == len(similar_power_name)-1:
                 msg_or = ")"
             msg = msg + " horsename='"+similar_power_name[i][0]+"'"+msg_or
+        msg = msg + " and horsename != '"+self_data[0][0]+"'"
         record = self.get_sql_data(msg,2)
         comment = ""
         if len(record) <= 2:
