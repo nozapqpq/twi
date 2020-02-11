@@ -185,7 +185,7 @@ class SQLPattern():
                             level_pattern.append(round(standard_time-2.5+i*0.5,1))
                         for i in range(10):
                             time_cond1 = " and "+msg_pattern[0]+"+last3f > "+str(level_pattern[i])
-                            time_cond2 = " and "+msg_pattern[0]+"+last3f < "+str(level_pattern[i+1])
+                            time_cond2 = " and "+msg_pattern[0]+"+last3f <= "+str(level_pattern[i+1])
                             if i == 0:
                                 time_cond1 = ""
                             elif i == 9:
