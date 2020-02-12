@@ -23,16 +23,41 @@ class SQLPattern():
             with open('../sub.csv','w') as f:
                 i = 0
                 writer = csv.writer(f)
+                print("--------------------------------------------")
                 for sds in subdata_sum:
-                    writer.writerow([maindata_sum[i]])
-                    i = i + 1
-                    count = 0
-                    for sd in sds:
-                        writer.writerow(sd)
-                        count = count + 1
-                        if count == 15:
-                            break
-
+                    if len(maindata_sum[i]) > 0:
+                        temp_list = [maindata_sum[i][0][0][0],i+1]
+                        level_range_list = ["1~3","4~6","7~10","all"]
+                        for lrl in range(len(level_range_list)):
+                            diff_count_list = [0] * 30
+                            for sd in sds:
+                                if self.check_level_range(lrl,sd[9]):
+                                    if sd[6] >= 3.0:
+                                        diff_count_list[len(diff_count_list)-1] = diff_count_list[len(diff_count_list)-1] + 1
+                                    else:
+                                        diff_count_list[int(sd[6]*10)] = diff_count_list[int(sd[6]*10)] +1
+                            for ct in range(len(diff_count_list)):
+                                if ct > 0:
+                                    diff_count_list[ct] = diff_count_list[ct] + diff_count_list[ct-1]
+                            diff_sum = diff_count_list[len(diff_count_list)-1]
+                            if diff_sum >= 20:
+                                for ct in range(len(diff_count_list)):
+                                    diff_count_list[ct] = diff_count_list[ct]/diff_sum*20
+                            if diff_sum <= 3 and lrl == 4:
+                                print(maindata_sum[i])
+                            else:
+                                writer.writerow(temp_list+[level_range_list[lrl]]+diff_count_list)
+                    i = i+1
+    def check_level_range(self,level_idx,level):
+        if level_idx == 0 and (level >= 1 and level <= 3):
+            return True
+        elif level_idx == 1 and (level >= 4 and level <= 6):
+            return True
+        elif level_idx == 2 and (level >= 7 and level <= 10):
+            return True
+        elif level_idx == 3:
+            return True
+        return False
 
     def get_targetrace_statistics(self, entry, target):
         maindata = []
@@ -60,7 +85,7 @@ class SQLPattern():
             comment = "情報少、要注意"
         print_msg = str(self_data)+" "+str(len(similar_power_name))+" > "+str(len(record))+" "+comment
         print(print_msg)
-        maindata.append(print_msg)
+        maindata.append(self_data)
         total_num = 0
         goodrace_num = 0
         nice_num = 0
@@ -90,7 +115,6 @@ class SQLPattern():
         if total_num > 0:
             print_msg = str(result)+" 0.3s内："+str(round(goodrace_num/total_num*100,1))+"％ 0.8s内: "+str(round((goodrace_num+nice_num)/total_num*100,1))+"％"
             print(print_msg)
-            maindata.append(print_msg)
         return maindata, record
 
     def get_sql_data(self, condition_msg, select_pattern=0):
