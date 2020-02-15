@@ -23,10 +23,11 @@ class SQLPattern():
             with open('../sub.csv','w') as f:
                 i = 0
                 writer = csv.writer(f)
+                writer.writerow(["a","b","c"])
                 print("--------------------------------------------")
                 for sds in subdata_sum:
                     if len(maindata_sum[i]) > 0:
-                        temp_list = [maindata_sum[i][0][0][0],i+1]
+                        temp_list = [maindata_sum[i][0][0][0],entry[i][1],entry[i][2],entry[i][4]]
                         level_range_list = ["1~3","4~6","7~10","all"]
                         for lrl in range(len(level_range_list)):
                             diff_count_list = [0] * 30
@@ -40,10 +41,10 @@ class SQLPattern():
                                 if ct > 0:
                                     diff_count_list[ct] = diff_count_list[ct] + diff_count_list[ct-1]
                             diff_sum = diff_count_list[len(diff_count_list)-1]
-                            if diff_sum >= 20:
+                            if diff_sum >= 10:
                                 for ct in range(len(diff_count_list)):
-                                    diff_count_list[ct] = diff_count_list[ct]/diff_sum*20
-                            if diff_sum <= 3 and lrl == 4:
+                                    diff_count_list[ct] = diff_count_list[ct]/diff_sum*10
+                            if diff_sum <= 5 and lrl == 3:
                                 print(maindata_sum[i])
                             else:
                                 writer.writerow(temp_list+[level_range_list[lrl]]+diff_count_list)
@@ -69,23 +70,27 @@ class SQLPattern():
         self_data = self.get_sql_data(msg2,1)
         if len(self_data) == 0:
             return [], []
-        msg3 = msg+" and rap5f>"+str(self_data[0][2]-0.4)+" and rap5f<"+str(self_data[0][2]+0.4)+" and finish='"+self_data[0][5]+"'"
+        msg3 = msg+" and rap5f>"+str(self_data[0][2]-0.3)+" and rap5f<"+str(self_data[0][2]+0.3)+" and finish='"+self_data[0][5]+"'"
         similar_power_name = self.get_sql_data(msg3,1)
-        #msg = "race_table.place='"+target[0]+"' and turf_dirt='"+target[1]+"' and distance="+str(target[2])+" and (class='"+target[3]+"') and ("
         msg = "race_table.place='"+target[0]+"' and turf_dirt='"+target[1]+"' and distance="+str(target[2])+" and ("
         for i in range(len(similar_power_name)):
             msg_or = " or "
             if i == len(similar_power_name)-1:
                 msg_or = ")"
-            msg = msg + " horsename='"+similar_power_name[i][0]+"'"+msg_or
+            msg = msg + " (horsename='"+similar_power_name[i][0]+"' and race_table.rdate > '"+similar_power_name[i][7].strftime('%Y/%m/%d')+"' - INTERVAL 1 YEAR and race_table.rdate < '"+similar_power_name[i][7].strftime('%Y-%m-%d')+"' + INTERVAL 1 YEAR)"+msg_or
         msg = msg + " and horsename != '"+self_data[0][0]+"'"
         record = self.get_sql_data(msg,2)
+        finish_list = []
+        for r in record:
+            finish_list.append(r[7])
+        fin = [finish_list.count('逃げ'),finish_list.count('先行'),finish_list.count('中団'),finish_list.count('差し'),finish_list.count('後方'),finish_list.count('追込'),finish_list.count('マクリ')]
         comment = ""
         if len(record) <= 2:
             comment = "情報少、要注意"
         print_msg = str(self_data)+" "+str(len(similar_power_name))+" > "+str(len(record))+" "+comment
         print(print_msg)
         maindata.append(self_data)
+        maindata.append(["逃"+str(fin[0]),"先"+str(fin[1]),"中"+str(fin[2]),"差"+str(fin[3]),"後"+str(fin[4]),"追"+str(fin[5]),"マクリ"+str(fin[6])])
         total_num = 0
         goodrace_num = 0
         nice_num = 0
@@ -123,9 +128,9 @@ class SQLPattern():
         if select_pattern == 0:
             msg_select = msg_select + "race_table.rdate,race_table.place,race_table.race,race_table.turf_dirt,race_table.distance,horse_table.horsename,horse_table.race_time,horse_table.goal_order,horse_table.time_diff,race_table.level "
         elif select_pattern == 1:
-            msg_select = msg_select + "horse_table.horsename, race_table.rap3f, race_table.rap5f, horse_table.race_time, horse_table.time_diff, horse_table.finish, race_table.level "
+            msg_select = msg_select + "horse_table.horsename, race_table.rap3f, race_table.rap5f, horse_table.race_time, horse_table.time_diff, horse_table.finish, race_table.level, race_table.rdate "
         elif select_pattern == 2:
-            msg_select = msg_select + "race_table.class, race_table.rap5f, race_table.last3f, horse_table.goal_order, horse_table.horsename, horse_table.race_time, horse_table.time_diff, horse_table.finish, horse_table.last3f, race_table.level "
+            msg_select = msg_select + "race_table.class, race_table.rap5f, race_table.last3f, horse_table.goal_order, horse_table.horsename, horse_table.race_time, horse_table.time_diff, horse_table.finish, horse_table.last3f, race_table.level, race_table.rdate, race_table.place, race_table.turf_dirt, race_table.distance, race_table.course_condition "
         msg_from = "from horse_table "
         msg_join = "inner join race_table on horse_table.rdate = race_table.rdate and horse_table.place = race_table.place and horse_table.race = race_table.race "
         msg = msg_select+msg_from+msg_join+"where race_time != 0 and "+condition_msg+";"
