@@ -7,48 +7,50 @@ class SQLPattern():
         if option == "set_level":
             self.set_race_level()
         else:
-            entry, target = self.get_entry_target_data("../today.csv")
-            print(target)
-            maindata_sum = []
-            subdata_sum = []
-            for ent in entry:
-                maindata, subdata = self.get_targetrace_statistics(ent,target)
-                maindata_sum.append(maindata)
-                subdata_sum.append(subdata)
-            with open('../main.csv','w') as f:
-                writer = csv.writer(f)            
-                for mds in maindata_sum:
-                    for md in mds:
-                        writer.writerow([md])
-            with open('../sub.csv','w') as f:
-                i = 0
-                writer = csv.writer(f)
-                writer.writerow(["a","b","c"])
-                print("--------------------------------------------")
-                for sds in subdata_sum:
-                    if len(maindata_sum[i]) > 0:
-                        temp_list = [maindata_sum[i][0][0][0],entry[i][1],entry[i][2],entry[i][4]]
-                        level_range_list = ["1~3","4~6","7~10","all"]
-                        for lrl in range(len(level_range_list)):
-                            diff_count_list = [0] * 30
-                            for sd in sds:
-                                if self.check_level_range(lrl,sd[9]):
-                                    if sd[6] >= 3.0:
-                                        diff_count_list[len(diff_count_list)-1] = diff_count_list[len(diff_count_list)-1] + 1
-                                    else:
-                                        diff_count_list[int(sd[6]*10)] = diff_count_list[int(sd[6]*10)] +1
-                            for ct in range(len(diff_count_list)):
-                                if ct > 0:
-                                    diff_count_list[ct] = diff_count_list[ct] + diff_count_list[ct-1]
-                            diff_sum = diff_count_list[len(diff_count_list)-1]
-                            if diff_sum >= 10:
+            all_entry, all_target = self.get_entry_target_data("../today.csv")
+            for a in range(len(all_entry)):
+                maindata_sum = []
+                subdata_sum = []
+                for ent in all_entry[a]:
+                    maindata, subdata = self.get_targetrace_statistics(ent,all_target[a])
+                    maindata_sum.append(maindata)
+                    subdata_sum.append(subdata)
+                placename = self.convert_place_to_alpha(all_target[a][0])
+                str_name_prefix = "_"+placename+all_target[a][4]
+                with open('../main'+str_name_prefix+'.csv','w') as f:
+                    writer = csv.writer(f)
+                    for mds in maindata_sum:
+                        for md in mds:
+                            writer.writerow([md])
+                with open('../sub'+str_name_prefix+'.csv','w') as f:
+                    i = 0
+                    writer = csv.writer(f)
+                    writer.writerow(["a","b","c"])
+                    print("--------------------------------------------")
+                    for sds in subdata_sum:
+                        if len(maindata_sum[i]) > 0:
+                            temp_list = [maindata_sum[i][0][0][0],all_entry[a][i][1],all_entry[a][i][2],all_entry[a][i][4]]
+                            level_range_list = ["1~3","4~6","7~10","all"]
+                            for lrl in range(len(level_range_list)):
+                                diff_count_list = [0] * 30
+                                for sd in sds:
+                                    if self.check_level_range(lrl,sd[9]):
+                                        if sd[6] >= 3.0:
+                                            diff_count_list[len(diff_count_list)-1] = diff_count_list[len(diff_count_list)-1] + 1
+                                        else:
+                                            diff_count_list[int(sd[6]*10)] = diff_count_list[int(sd[6]*10)] +1
                                 for ct in range(len(diff_count_list)):
-                                    diff_count_list[ct] = diff_count_list[ct]/diff_sum*10
-                            if diff_sum <= 5 and lrl == 3:
-                                print(maindata_sum[i])
-                            else:
-                                writer.writerow(temp_list+[level_range_list[lrl]]+diff_count_list)
-                    i = i+1
+                                    if ct > 0:
+                                        diff_count_list[ct] = diff_count_list[ct] + diff_count_list[ct-1]
+                                diff_sum = diff_count_list[len(diff_count_list)-1]
+                                if diff_sum >= 10:
+                                    for ct in range(len(diff_count_list)):
+                                        diff_count_list[ct] = diff_count_list[ct]/diff_sum*10
+                                if diff_sum <= 5 and lrl == 3:
+                                    print(maindata_sum[i])
+                                else:
+                                    writer.writerow(temp_list+[level_range_list[lrl]]+diff_count_list)
+                        i = i+1
     def check_level_range(self,level_idx,level):
         if level_idx == 0 and (level >= 1 and level <= 3):
             return True
@@ -139,14 +141,21 @@ class SQLPattern():
 
     def get_entry_target_data(self, csvfile):
         row_count = 0
+        all_entry = []
+        all_target = []
         entry = []
         target = []
         with open(csvfile, 'r') as f:
             reader = csv.reader(f)
             for row in reader:
-                if row_count == 0:
+                # 1列目が1980を超えているならレースデータ（年月日）と判定
+                if int(row[0]) >= 1980:
                     cls = self.analyse_class(row[5])
-                    target=[row[3],row[7],row[8],cls]
+                    target=[row[3],row[7],row[8],cls,row[4]]
+                    all_target.append(target)
+                    if row_count > 0:
+                        all_entry.append(entry)
+                        entry = []
                 else:
                     if len(row) > 14 and len(row[14]) > 0 and row[21] != "----": # 1走前
                         entry.append([self.convert_race_time(row[21]),row[14],self.convert_turf_dirt(row[16]),row[19],row[17],row[7]])
@@ -155,7 +164,9 @@ class SQLPattern():
                     if len(row) > 46 and len(row[46]) > 0 and row[53] != "----": # 3走前
                         entry.append([self.convert_race_time(row[53]),row[46],self.convert_turf_dirt(row[48]),row[51],row[49],row[7]])
                 row_count = row_count+1
-        return entry,target
+            all_entry.append(entry)
+            all_target.append(target)
+        return all_entry,all_target
 
     def analyse_class(self, cls):
         if cls=="500万" or cls=="1勝":
@@ -186,6 +197,15 @@ class SQLPattern():
             return round((int(int(s)/1000)*600+int(s[-3:]))*0.1,1)
         else:
             return "0.0"
+
+    def convert_place_to_alpha(self, place):
+        print(place)
+        place_kanji = ["札幌","函館","福島","新潟","中山","東京","中京","京都","阪神","小倉"]
+        place_alpha = ["sapporo","hakodate","fukushima","niigata","nakayama","tokyo","chukyo","kyoto","hanshin","kokura"]
+        for p in range(len(place_kanji)):
+            if place == place_kanji[p]:
+                return place_alpha[p]
+        return "unknown"
 
     def set_race_level(self):
         hoge = 3
