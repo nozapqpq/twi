@@ -12,6 +12,7 @@ class SQLPattern():
             all_entry, all_target = self.get_entry_target_data("../today.csv")
             jockey_csvout = []
             for a in range(len(all_entry)):
+                jockey_csvout = []
                 maindata_sum = []
                 subdata_sum = []
                 ent_count = 0
