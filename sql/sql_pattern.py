@@ -1,22 +1,35 @@
 # coding: utf-8
 import sql_manipulator
+import sql_jockey
 import csv
 
 class SQLPattern():
     def __init__(self, option=""):
+        jk = sql_jockey.SQLJockey()
         if option == "set_level":
             self.set_race_level()
         else:
             all_entry, all_target = self.get_entry_target_data("../today.csv")
+            jockey_csvout = []
             for a in range(len(all_entry)):
                 maindata_sum = []
                 subdata_sum = []
+                ent_count = 0
                 for ent in all_entry[a]:
+                    if ent_count < len(all_entry[a])-1 and ent[6] != all_entry[a][ent_count+1][6] or ent_count == len(all_entry[a])-1:
+                        jockey_csvout.append(jk.get_jockey_info(ent[6],all_target[a][0],all_target[a][1],all_target[a][2]))
                     maindata, subdata = self.get_targetrace_statistics(ent,all_target[a])
                     maindata_sum.append(maindata)
                     subdata_sum.append(subdata)
+                    ent_count = ent_count + 1
                 placename = self.convert_place_to_alpha(all_target[a][0])
                 str_name_prefix = "_"+placename+all_target[a][4]
+                with open('../jockey'+str_name_prefix+'.csv','w') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(["a","b","c"])
+                    for jc in jockey_csvout:
+                        for j in jc:
+                            writer.writerow(j)
                 with open('../main'+str_name_prefix+'.csv','w') as f:
                     writer = csv.writer(f)
                     for mds in maindata_sum:
