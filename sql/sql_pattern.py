@@ -157,12 +157,15 @@ class SQLPattern():
                         all_entry.append(entry)
                         entry = []
                 else:
-                    if len(row) > 14 and len(row[14]) > 0 and row[21] != "----": # 1走前
-                        entry.append([self.convert_race_time(row[21]),row[14],self.convert_turf_dirt(row[16]),row[19],row[17],row[7]])
-                    if len(row) > 30 and len(row[30]) > 0 and row[37] != "----": # 2走前
-                        entry.append([self.convert_race_time(row[37]),row[30],self.convert_turf_dirt(row[32]),row[35],row[33],row[7]])
-                    if len(row) > 46 and len(row[46]) > 0 and row[53] != "----": # 3走前
-                        entry.append([self.convert_race_time(row[53]),row[46],self.convert_turf_dirt(row[48]),row[51],row[49],row[7]])
+                    if len(row) > 10 and len(row[10]) > 0 and row[17] != "----": # 1走前
+                        entry.append([self.convert_race_time(row[17]),row[10],self.convert_turf_dirt(row[12]),row[15],row[13],row[3],row[6]])
+                    if len(row) > 26 and len(row[26]) > 0 and row[33] != "----": # 2走前
+                        entry.append([self.convert_race_time(row[33]),row[26],self.convert_turf_dirt(row[28]),row[31],row[29],row[3],row[6]])
+                    if len(row) > 42 and len(row[42]) > 0 and row[49] != "----": # 3走前
+                        entry.append([self.convert_race_time(row[49]),row[42],self.convert_turf_dirt(row[44]),row[47],row[45],row[3],row[6]])
+                    if len(row) > 58 and len(row[58]) > 0 and row[65] != "----": # 4走前
+                        entry.append([self.convert_race_time(row[65]),row[58],self.convert_turf_dirt(row[60]),row[63],row[61],row[3],row[6]])
+
                 row_count = row_count+1
             all_entry.append(entry)
             all_target.append(target)
