@@ -8,7 +8,7 @@ class SQLJockey():
 
     def get_jockey_info(self, jockey, place, td, distance, condition="良"):
         base = self.get_jockey_sql_data(jockey,place,td,distance,condition)
-        time_list = [0,57.9,60.9,63.9,100]
+        time_list = [0,58.0,60.0,62.0,100]
         finish_list = ["逃げ","先行","中団","差し","追込","後方","マクリ"]
         about_fin = ["前","中","後","マクリ他"]
         result = [[[0 for i in range(31)] for j in range(4)] for k in range(4)]
