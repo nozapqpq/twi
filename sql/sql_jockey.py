@@ -37,7 +37,7 @@ class SQLJockey():
             for j in range(4):
                 if result[i][j][30] >= 10:
                     for k in range(31):
-                        result[i][j][k] = result[i][j][k]/result[i][j][30]
+                        result[i][j][k] = result[i][j][k]/result[i][j][30]*10
                 ret.append([jockey,condition,time_list[i],about_fin[j]]+result[i][j])
         return ret
 
