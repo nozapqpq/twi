@@ -66,6 +66,11 @@ class SQLPattern():
                                     writer.writerow(temp_list+[level_range_list[lrl]]+diff_count_list)
                         i = i+1
     def check_level_range(self,level_idx,level):
+        if level == None:
+            if level_idx == 0:
+                return True
+            else:
+                return False
         if level_idx == 0 and (level >= 1 and level <= 3):
             return True
         elif level_idx == 1 and (level >= 4 and level <= 6):
