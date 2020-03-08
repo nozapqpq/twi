@@ -83,7 +83,8 @@ class SQLManipulator():
         out_last5f = race_sm[13]
         out_course_class = race_sm[14]
         out_horse_total = race_sm[15]
-        msg = "insert into race_table values('"+out_date+"','"+out_place+"',"+out_race+",'"+out_class+"','"+out_td+"',"+out_distance+",'"+out_condition+"',"+out_time3f+","+out_time5f+","+out_last5f+",'"+out_course_class+"',"+out_horse_total+");"
+        # last column(level) is blank
+        msg = "insert into race_table values('"+out_date+"','"+out_place+"',"+out_race+",'"+out_class+"','"+out_td+"',"+out_distance+",'"+out_condition+"',"+out_time3f+","+out_time5f+","+out_last5f+",'"+out_course_class+"',"+out_horse_total+",0);"
         return msg
 
     def make_horse_data_message(self,race_dt):
@@ -136,12 +137,3 @@ class SQLManipulator():
         if str == "":
             return "0"
         return str
-
-#sm = SQLManipulator()
-#sm.convert_csv_to_db("../test.csv")
-#sm.convert_csv_to_db("../test2.csv")
-#sm.convert_csv_to_db("../test3.csv")
-#sm.convert_csv_to_db("../test4.csv")
-#sm.convert_csv_to_db("../test5.csv")
-#sm.convert_csv_to_db("../test6.csv")
-#sm.convert_csv_to_db("../test7.csv")

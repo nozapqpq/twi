@@ -5,66 +5,74 @@ import csv
 
 class SQLPattern():
     def __init__(self, option=""):
-        jk = sql_jockey.SQLJockey()
-        if option == "set_level":
-            self.set_race_level()
+        self.maindata = []
+        self.subdata = []
+        self.distribution = []
+
+    def write_list_to_csv(self,filename,target):
+        with open(filename,'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(["a","b","c"])
+            for a in target:
+                writer.writerow(a)
+
+    def write_list_to_csv_nest(self,filename,target):
+        with open(filename,'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(["a","b","c"])
+            for a in target:
+                for b in a:
+                    writer.writerow(b)
+
+
+    def make_timediff_accumulation_list(self,allmain,allsub,allentry,race_count):
+        retlist = []
+        race_range_list = ["~58.0","~60.0","~62.0","~64.0","~66.0","66.1~"]
+        class_list = ["新馬","未勝利","500万下","1000万下","1600万下","1勝","2勝","3勝","その他"]
+        for i in range(len(allsub)):
+            diff_list = [[0] * 31 for i in range(len(race_range_list)*len(class_list))]
+            if len(allmain[i]) > 0 and len(allmain[i][0][0]) > 0:
+                temp_list = list([allmain[i][0][0][0][0]])+[allentry[race_count][i][1],allentry[race_count][i][2],allentry[race_count][i][4]]
+                for sd in allsub[i]:
+                    idx = self.get_accumulation_list_index(race_range_list,class_list,sd[1],sd[0])
+                    if sd[6] >= 3.0:
+                        diff_list[idx][len(diff_list[idx])-1] = diff_list[idx][len(diff_list[idx])-1] + 1
+                    else:
+                        diff_list[idx][int(sd[6]*10)] = diff_list[idx][int(sd[6]*10)] +1
+                dl_count = 0
+                for dl in diff_list: # accumulate
+                    for i_d in range(len(dl)):
+                        if i_d > 0:
+                            dl[i_d] = dl[i_d] + dl[i_d-1]
+                    if dl[len(dl)-1] >= 10:
+                        for i_d in range(len(dl)):
+                            dl[i_d] = dl[i_d]/dl[len(dl)-1]*10
+                    retlist.append(temp_list+[race_range_list[int(dl_count%len(race_range_list))],class_list[int(dl_count/(len(class_list)-1))]]+dl)
+                    dl_count = dl_count + 1
+        return retlist
+
+    # race5f * class
+    def get_accumulation_list_index(self,l_5f,l_class,t5f,cls):
+        t5f_num = 0
+        cls_num = len(l_class)-1
+        if t5f <= 58.0:
+            t5f_num = 0
+        elif t5f <= 60.0:
+            t5f_num = 1
+        elif t5f <= 62.0:
+            t5f_num = 2
+        elif t5f <= 64.0:
+            t5f_num = 3
+        elif t5f <= 66.0:
+            t5f_num = 4
         else:
-            all_entry, all_target = self.get_entry_target_data("../today.csv")
-            jockey_csvout = []
-            for a in range(len(all_entry)):
-                jockey_csvout = []
-                maindata_sum = []
-                subdata_sum = []
-                ent_count = 0
-                for ent in all_entry[a]:
-                    if ent_count < len(all_entry[a])-1 and ent[6] != all_entry[a][ent_count+1][6] or ent_count == len(all_entry[a])-1:
-                        jockey_csvout.append(jk.get_jockey_info(ent[6],all_target[a][0],all_target[a][1],all_target[a][2]))
-                    maindata, subdata = self.get_targetrace_statistics(ent,all_target[a])
-                    maindata_sum.append(maindata)
-                    subdata_sum.append(subdata)
-                    ent_count = ent_count + 1
-                placename = self.convert_place_to_alpha(all_target[a][0])
-                str_name_prefix = "_"+placename+all_target[a][4]
-                with open('../jockey'+str_name_prefix+'.csv','w') as f:
-                    writer = csv.writer(f)
-                    writer.writerow(["a","b","c"])
-                    for jc in jockey_csvout:
-                        for j in jc:
-                            writer.writerow(j)
-                with open('../main'+str_name_prefix+'.csv','w') as f:
-                    writer = csv.writer(f)
-                    for mds in maindata_sum:
-                        for md in mds:
-                            writer.writerow([md])
-                with open('../sub'+str_name_prefix+'.csv','w') as f:
-                    i = 0
-                    writer = csv.writer(f)
-                    writer.writerow(["a","b","c"])
-                    print("--------------------------------------------")
-                    for sds in subdata_sum:
-                        if len(maindata_sum[i]) > 0:
-                            temp_list = [maindata_sum[i][0][0][0],all_entry[a][i][1],all_entry[a][i][2],all_entry[a][i][4]]
-                            level_range_list = ["1~3","4~6","7~10","all"]
-                            for lrl in range(len(level_range_list)):
-                                diff_count_list = [0] * 30
-                                for sd in sds:
-                                    if self.check_level_range(lrl,sd[9]):
-                                        if sd[6] >= 3.0:
-                                            diff_count_list[len(diff_count_list)-1] = diff_count_list[len(diff_count_list)-1] + 1
-                                        else:
-                                            diff_count_list[int(sd[6]*10)] = diff_count_list[int(sd[6]*10)] +1
-                                for ct in range(len(diff_count_list)):
-                                    if ct > 0:
-                                        diff_count_list[ct] = diff_count_list[ct] + diff_count_list[ct-1]
-                                diff_sum = diff_count_list[len(diff_count_list)-1]
-                                if diff_sum >= 10:
-                                    for ct in range(len(diff_count_list)):
-                                        diff_count_list[ct] = diff_count_list[ct]/diff_sum*10
-                                if diff_sum <= 5 and lrl == 3:
-                                    print(maindata_sum[i])
-                                else:
-                                    writer.writerow(temp_list+[level_range_list[lrl]]+diff_count_list)
-                        i = i+1
+            t5f_num = 5
+        for c in range(len(l_class)-1):
+            if cls in l_class[c]:
+                cls_num = c
+                break
+        return int(t5f_num+(cls_num*len(l_5f)))
+
     def check_level_range(self,level_idx,level):
         if level == None:
             if level_idx == 0:
@@ -81,67 +89,44 @@ class SQLPattern():
             return True
         return False
 
-    def get_targetrace_statistics(self, entry, target):
-        maindata = []
-        result = [[0 for i in range(4)] for j in range(4)]
-        print(entry)
+    def get_self_data(self, entry):
         cond = self.convert_condition(entry[3])
-        msg = "race_time>"+str(entry[0]-0.4)+" and race_time<"+str(entry[0]+0.4)+" and horse_table.place='"+entry[1]+"' and turf_dirt='"+entry[2]+"' and (course_condition='"+cond+"') and distance="+str(entry[4])
-        msg2 = "horsename='"+entry[5]+"' and "+msg
-        self_data = self.get_sql_data(msg2,1)
+        msg = "horsename='"+entry[5]+"' and race_time="+str(entry[0])+" and horse_table.place='"+entry[1]+"' and turf_dirt='"+entry[2]+"' and (course_condition='"+cond+"') and distance="+str(entry[4])
+        return self.get_sql_data(msg,1)
+
+    def get_similar_strength_horse_data(self,entry,self_data):
+        cond = self.convert_condition(entry[3])
         if len(self_data) == 0:
-            return [], []
-        msg3 = msg+" and rap5f>"+str(self_data[0][2]-0.3)+" and rap5f<"+str(self_data[0][2]+0.3)+" and finish='"+self_data[0][5]+"'"
-        similar_power_name = self.get_sql_data(msg3,1)
+            return ()
+        # rap5f vs timediff
+        msg = "rap5f>"+str(self_data[0][2]-0.2)+" and rap5f<"+str(self_data[0][2]+0.2)+" and class='"+self.analyse_class(self_data[0][8])+"' and time_diff>"+str(self_data[0][4]-0.2)+" and time_diff <"+str(self_data[0][4]+0.2)+" and horse_table.place='"+entry[1]+"' and turf_dirt='"+entry[2]+"' and (course_condition='"+cond+"') and finish='"+self_data[0][5]+"'"
+        # rap5f vs race_time
+        msg = "race_time>"+str(entry[0]-0.3)+" and race_time<"+str(entry[0]+0.3)+" and horse_table.place='"+entry[1]+"' and turf_dirt='"+entry[2]+"' and (course_condition=    '"+cond+"') and rap5f>"+str(self_data[0][2]-0.3)+" and rap5f<"+str(self_data[0][2]+0.3)+" and finish='"+self_data[0][5]+"'"
+        return self.get_sql_data(msg,1)
+
+    def get_similar_strength_horse_targetrace_data(self,entry,target,self_data):
+        similar_power_horse = self.get_similar_strength_horse_data(entry,self_data)
         msg = "race_table.place='"+target[0]+"' and turf_dirt='"+target[1]+"' and distance="+str(target[2])+" and ("
-        for i in range(len(similar_power_name)):
+        if len(similar_power_horse) == 0:
+            return ()
+        for i in range(len(similar_power_horse)):
             msg_or = " or "
-            if i == len(similar_power_name)-1:
+            if i == len(similar_power_horse)-1:
                 msg_or = ")"
-            msg = msg + " (horsename='"+similar_power_name[i][0]+"' and race_table.rdate > '"+similar_power_name[i][7].strftime('%Y/%m/%d')+"' - INTERVAL 1 YEAR and race_table.rdate < '"+similar_power_name[i][7].strftime('%Y-%m-%d')+"' + INTERVAL 1 YEAR)"+msg_or
-        msg = msg + " and horsename != '"+self_data[0][0]+"'"
-        record = self.get_sql_data(msg,2)
+            msg = msg + " (horsename='"+similar_power_horse[i][0]+"' and race_table.rdate > '"+similar_power_horse[i][7].strftime('%Y/%m/%d')+"' - INTERVAL 1 YEAR and race_table.rdate < '"+similar_power_horse[i][7].strftime('%Y-%m-%d')+"' + INTERVAL 1 YEAR)"+msg_or
+        msg = msg + " and horsename != '"+entry[5]+"'"
+        return self.get_sql_data(msg,2)
+
+    def get_finish_trend(self, record):
         finish_list = []
         for r in record:
             finish_list.append(r[7])
-        fin = [finish_list.count('逃げ'),finish_list.count('先行'),finish_list.count('中団'),finish_list.count('差し'),finish_list.count('後方'),finish_list.count('追込'),finish_list.count('マクリ')]
-        comment = ""
-        if len(record) <= 2:
-            comment = "情報少、要注意"
-        print_msg = str(self_data)+" "+str(len(similar_power_name))+" > "+str(len(record))+" "+comment
-        print(print_msg)
-        maindata.append(self_data)
-        maindata.append(["逃"+str(fin[0]),"先"+str(fin[1]),"中"+str(fin[2]),"差"+str(fin[3]),"後"+str(fin[4]),"追"+str(fin[5]),"マクリ"+str(fin[6])])
-        total_num = 0
-        goodrace_num = 0
-        nice_num = 0
-        for rc in record:
-            strategy = 0
-            time_diff = 0
-            total_num = total_num+1
-            if rc[7] == '逃げ' or rc[7] == '先行':
-                strategy = 0
-            elif rc[7] == '中団':
-                strategy = 1
-            elif rc[7] == '追込' or rc[7] == '後方':
-                strategy = 2
-            else:
-                strategy = 3
-            if rc[6] < 0.3:
-                time_diff = 0
-                goodrace_num = goodrace_num+1
-            elif rc[6] < 0.8:
-                nice_num = nice_num+1
-                time_diff = 1
-            elif rc[6] < 1.5:
-                time_diff = 2
-            else:
-                time_diff = 3
-            result[strategy][time_diff] = result[strategy][time_diff] + 1
-        if total_num > 0:
-            print_msg = str(result)+" 0.3s内："+str(round(goodrace_num/total_num*100,1))+"％ 0.8s内: "+str(round((goodrace_num+nice_num)/total_num*100,1))+"％"
-            print(print_msg)
-        return maindata, record
+        retval = [finish_list.count('逃げ'),finish_list.count('先行'),finish_list.count('中団'),finish_list.count('差し'),finish_list.count('後方'),finish_list.count('追込'),finish_list.count('マクリ')]
+        return retval
+
+    def get_finish_trend_list(self, record):
+        fin = self.get_finish_trend(record)
+        return ["逃"+str(fin[0]),"先"+str(fin[1]),"中"+str(fin[2]),"差"+str(fin[3]),"後"+str(fin[4]),"追"+str(fin[5]),"マクリ"+str(fin[6])] 
 
     def get_sql_data(self, condition_msg, select_pattern=0):
         manipulator = sql_manipulator.SQLManipulator()
@@ -149,7 +134,7 @@ class SQLPattern():
         if select_pattern == 0:
             msg_select = msg_select + "race_table.rdate,race_table.place,race_table.race,race_table.turf_dirt,race_table.distance,horse_table.horsename,horse_table.race_time,horse_table.goal_order,horse_table.time_diff,race_table.level "
         elif select_pattern == 1:
-            msg_select = msg_select + "horse_table.horsename, race_table.rap3f, race_table.rap5f, horse_table.race_time, horse_table.time_diff, horse_table.finish, race_table.level, race_table.rdate "
+            msg_select = msg_select + "horse_table.horsename, race_table.rap3f, race_table.rap5f, horse_table.race_time, horse_table.time_diff, horse_table.finish, race_table.level, race_table.rdate, race_table.class "
         elif select_pattern == 2:
             msg_select = msg_select + "race_table.class, race_table.rap5f, race_table.last3f, horse_table.goal_order, horse_table.horsename, horse_table.race_time, horse_table.time_diff, horse_table.finish, horse_table.last3f, race_table.level, race_table.rdate, race_table.place, race_table.turf_dirt, race_table.distance, race_table.course_condition "
         msg_from = "from horse_table "
@@ -265,4 +250,3 @@ class SQLPattern():
                             #msg2 = "select class from race_table " + where_msg + time_cond1 + time_cond2 + ";"
                             msg2 = "update race_table set level="+str(10-i)+ " "+where_msg + time_cond1 + time_cond2
                             set_level = manipulator.sql_manipulator(msg2+";")
-sp = SQLPattern()
