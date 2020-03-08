@@ -47,7 +47,8 @@ class SQLPattern():
                     if dl[len(dl)-1] >= 10:
                         for i_d in range(len(dl)):
                             dl[i_d] = dl[i_d]/dl[len(dl)-1]*10
-                    retlist.append(temp_list+[race_range_list[int(dl_count%len(race_range_list))],class_list[int(dl_count/(len(class_list)-1))]]+dl)
+                    if dl[len(dl)-1] > 0:
+                        retlist.append(temp_list+[race_range_list[int(dl_count%len(race_range_list))],class_list[int(dl_count/(len(class_list)-1))]]+dl)
                     dl_count = dl_count + 1
         return retlist
 
