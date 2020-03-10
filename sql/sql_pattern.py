@@ -24,32 +24,58 @@ class SQLPattern():
                 for b in a:
                     writer.writerow(b)
 
+    def get_diviation_value(self,entry,self_data):
+        retlist = []
+        target = "rap3f"
+        target_time = self_data[1]
+        if int(entry[4]) > 1500:
+            target = "rap5f"
+            target_time = self_data[2]
+        cond = self.convert_condition(entry[3])
+        msg = "race_table.place='"+entry[1]+"' and turf_dirt='"+entry[2]+"' and distance="+str(entry[4])+" and (race_table.course_condition='"+cond+"') and diff3f>="+str(self_data[9]-0.1)+" and diff3f<="+str(self_data[9]+0.1)+" and "+target+">="+str(target_time-0.3)+" and "+target+"<="+str(target_time+0.3)
+        sim_pos = self.get_sql_data(msg,1)
+        print(len(sim_pos))
+        if len(sim_pos) < 40:
+            return "データ不足(偏差値)","-","-"
+        mean_value = 0
+        mean_diff = 0
+        for sp in sim_pos:
+            mean_value = mean_value+sp[10]
+            mean_diff = mean_diff+sp[4]
+        mean_value = mean_value/len(sim_pos)
+        mean_diff = mean_diff/len(sim_pos)
+        sigma = 0
+        for sp in sim_pos:
+            sigma = sigma + (sp[10]-mean_value)**2
+        sigma = sigma/len(sim_pos)
+        diviation = -(self_data[10]-mean_value)/sigma*10+50
+        return diviation,sigma,mean_diff
 
-    def make_timediff_accumulation_list(self,allmain,allsub,allentry,race_count):
+
+    def make_timediff_accumulation_list(self,allsub,allentry,race_count):
         retlist = []
         race_range_list = ["~58.0","~60.0","~62.0","~64.0","~66.0","66.1~"]
         class_list = ["新馬","未勝利","500万下","1000万下","1600万下","1勝","2勝","3勝","その他"]
         for i in range(len(allsub)):
             diff_list = [[0] * 31 for i in range(len(race_range_list)*len(class_list))]
-            if len(allmain[i]) > 0 and len(allmain[i][0][0]) > 0:
-                temp_list = list([allmain[i][0][0][0][0]])+[allentry[race_count][i][1],allentry[race_count][i][2],allentry[race_count][i][4]]
-                for sd in allsub[i]:
-                    idx = self.get_accumulation_list_index(race_range_list,class_list,sd[1],sd[0])
-                    if sd[6] >= 3.0:
-                        diff_list[idx][len(diff_list[idx])-1] = diff_list[idx][len(diff_list[idx])-1] + 1
-                    else:
-                        diff_list[idx][int(sd[6]*10)] = diff_list[idx][int(sd[6]*10)] +1
-                dl_count = 0
-                for dl in diff_list: # accumulate
+            temp_list = [allentry[race_count][i][5],allentry[race_count][i][1],allentry[race_count][i][2],allentry[race_count][i][4]]
+            for sd in allsub[i]:
+                idx = self.get_accumulation_list_index(race_range_list,class_list,sd[1],sd[0])
+                if sd[6] >= 3.0:
+                    diff_list[idx][len(diff_list[idx])-1] = diff_list[idx][len(diff_list[idx])-1] + 1
+                else:
+                    diff_list[idx][int(sd[6]*10)] = diff_list[idx][int(sd[6]*10)] +1
+            dl_count = 0
+            for dl in diff_list: # accumulate
+                for i_d in range(len(dl)):
+                    if i_d > 0:
+                        dl[i_d] = dl[i_d] + dl[i_d-1]
+                if dl[len(dl)-1] >= 10:
                     for i_d in range(len(dl)):
-                        if i_d > 0:
-                            dl[i_d] = dl[i_d] + dl[i_d-1]
-                    if dl[len(dl)-1] >= 10:
-                        for i_d in range(len(dl)):
-                            dl[i_d] = dl[i_d]/dl[len(dl)-1]*10
-                    if dl[len(dl)-1] > 0:
-                        retlist.append(temp_list+[race_range_list[int(dl_count%len(race_range_list))],class_list[int(dl_count/(len(class_list)-1))]]+dl)
-                    dl_count = dl_count + 1
+                        dl[i_d] = dl[i_d]/dl[len(dl)-1]*10
+                if dl[len(dl)-1] > 0:
+                    retlist.append(temp_list+[race_range_list[int(dl_count%len(race_range_list))],class_list[int(dl_count/(len(class_list)-1))]]+dl)
+                dl_count = dl_count + 1
         return retlist
 
     # race5f * class
@@ -135,7 +161,7 @@ class SQLPattern():
         if select_pattern == 0:
             msg_select = msg_select + "race_table.rdate,race_table.place,race_table.race,race_table.turf_dirt,race_table.distance,horse_table.horsename,horse_table.race_time,horse_table.goal_order,horse_table.time_diff,race_table.level "
         elif select_pattern == 1:
-            msg_select = msg_select + "horse_table.horsename, race_table.rap3f, race_table.rap5f, horse_table.race_time, horse_table.time_diff, horse_table.finish, race_table.level, race_table.rdate, race_table.class "
+            msg_select = msg_select + "horse_table.horsename, race_table.rap3f, race_table.rap5f, horse_table.race_time, horse_table.time_diff, horse_table.finish, race_table.level, race_table.rdate, race_table.class, horse_table.diff3f, horse_table.last3f "
         elif select_pattern == 2:
             msg_select = msg_select + "race_table.class, race_table.rap5f, race_table.last3f, horse_table.goal_order, horse_table.horsename, horse_table.race_time, horse_table.time_diff, horse_table.finish, horse_table.last3f, race_table.level, race_table.rdate, race_table.place, race_table.turf_dirt, race_table.distance, race_table.course_condition "
         msg_from = "from horse_table "
