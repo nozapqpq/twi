@@ -15,24 +15,29 @@ for a in range(len(all_entry)):
     for ent in all_entry[a]:
         pat.maindata = []
         pat.subdata = []
-        if ent_count < len(all_entry[a])-1 and ent[6] != all_entry[a][ent_count+1][6] or ent_count == len(all_entry[a])-1:
-            jockey_csvout.append(jk.get_jockey_info(ent[6],all_target[a][0],all_target[a][1],all_target[a][2]))
+        if ent_count < len(all_entry[a])-1 and ent['jockey_name'] != all_entry[a][ent_count+1]['jockey_name'] or ent_count == len(all_entry[a])-1:
+            jockey_csvout.append(jk.get_jockey_info(ent['jockey_name'],all_target[a]['place'],all_target[a]['turf_dirt'],all_target[a]['distance']))
         print(ent)
         self_data = pat.get_self_data(ent)
         pat.subdata = pat.get_similar_strength_horse_targetrace_data(ent,all_target[a],self_data)
         if len(self_data) == 0:
             diviation = "データなし"
         else:
-            diviation,sigma,mean_diff = pat.get_diviation_value(ent,self_data[0])
+            diviation,sigma,mean_diff = pat.get_diviation_value(ent,self_data)
         for sd in pat.subdata:
-            pat.distribution.append([ent[5],sd[11],sd[12],sd[13],sd[14],sd[0],sd[1],sd[8],sd[6],sd[5]])
-        pat.maindata.append([ent[5]]+ent[1:5]+list(self_data[0][1:3])+[diviation,sigma,mean_diff,self_data]+pat.get_finish_trend_list(pat.subdata))
-        maindata_sum.append(pat.maindata)
+            pat.distribution.append([ent['horsename'],sd['place'],sd['turf_dirt'],sd['distance'],sd['course_condition'],sd['class'],sd['rap5f'],sd['horse_last3f'],sd['time_diff'],sd['race_time']])
+        goal = pat.get_sql_data("race_table.rdate='"+all_target[a]['rdate']+"' and race_table.place='"+all_target[a]['place']+"' and race_table.race="+all_target[a]['race']+" and horsename='"+ent['horsename']+"'")
+        main_pastgoal = "" # get goal_order only if analyse past race
+        if len(goal) > 0:
+            main_pastgoal = str(goal[0]['goal_order'])
+        if len(self_data) > 0:
+            pat.maindata.append([ent['horsename'],ent['place'],ent['turf_dirt'],ent['course_condition'],ent['distance'],main_pastgoal]+[self_data['rap3f'],self_data['rap5f']]+[diviation,sigma,mean_diff]+pat.get_finish_trend_list(pat.subdata))
+            maindata_sum.append(pat.maindata)
         subdata_sum.append(pat.subdata)
         ent_count = ent_count + 1
     timediff_acc = pat.make_timediff_accumulation_list(subdata_sum,all_entry,a)
-    placename = pat.convert_place_to_alpha(all_target[a][0])
-    str_name_prefix = "_"+placename+all_target[a][4]
+    placename = pat.convert_place_to_alpha(all_target[a]['place'])
+    str_name_prefix = "_"+placename+all_target[a]['race']
     pat.write_list_to_csv_nest('../jockey'+str_name_prefix+'.csv',jockey_csvout)
     pat.write_list_to_csv_nest('../main'+str_name_prefix+'.csv',maindata_sum)
     pat.write_list_to_csv('../sub'+str_name_prefix+'.csv',timediff_acc)

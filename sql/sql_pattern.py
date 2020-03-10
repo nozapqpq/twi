@@ -27,28 +27,27 @@ class SQLPattern():
     def get_diviation_value(self,entry,self_data):
         retlist = []
         target = "rap3f"
-        target_time = self_data[1]
-        if int(entry[4]) > 1500:
+        if int(entry['distance']) > 1500:
             target = "rap5f"
-            target_time = self_data[2]
-        cond = self.convert_condition(entry[3])
-        msg = "race_table.place='"+entry[1]+"' and turf_dirt='"+entry[2]+"' and distance="+str(entry[4])+" and (race_table.course_condition='"+cond+"') and diff3f>="+str(self_data[9]-0.1)+" and diff3f<="+str(self_data[9]+0.1)+" and "+target+">="+str(target_time-0.3)+" and "+target+"<="+str(target_time+0.3)
-        sim_pos = self.get_sql_data(msg,1)
+        target_time = self_data[target]
+        cond = self.convert_condition(entry['course_condition'])
+        msg = "race_table.place='"+entry['place']+"' and turf_dirt='"+entry['turf_dirt']+"' and distance="+str(entry['distance'])+" and (race_table.course_condition='"+cond+"') and diff3f>="+str(self_data['diff3f']-0.1)+" and diff3f<="+str(self_data['diff3f']+0.1)+" and "+target+">="+str(target_time-0.3)+" and "+target+"<="+str(target_time+0.3)
+        sim_pos = self.get_sql_data(msg)
         print(len(sim_pos))
         if len(sim_pos) < 40:
             return "データ不足(偏差値)","-","-"
         mean_value = 0
         mean_diff = 0
         for sp in sim_pos:
-            mean_value = mean_value+sp[10]
-            mean_diff = mean_diff+sp[4]
+            mean_value = mean_value+sp['horse_last3f']
+            mean_diff = mean_diff+sp['time_diff']
         mean_value = mean_value/len(sim_pos)
         mean_diff = mean_diff/len(sim_pos)
         sigma = 0
         for sp in sim_pos:
-            sigma = sigma + (sp[10]-mean_value)**2
+            sigma = sigma + (sp['horse_last3f']-mean_value)**2
         sigma = sigma/len(sim_pos)
-        diviation = -(self_data[10]-mean_value)/sigma*10+50
+        diviation = -(self_data['horse_last3f']-mean_value)/sigma*10+50
         return diviation,sigma,mean_diff
 
 
@@ -58,13 +57,13 @@ class SQLPattern():
         class_list = ["新馬","未勝利","500万下","1000万下","1600万下","1勝","2勝","3勝","その他"]
         for i in range(len(allsub)):
             diff_list = [[0] * 31 for i in range(len(race_range_list)*len(class_list))]
-            temp_list = [allentry[race_count][i][5],allentry[race_count][i][1],allentry[race_count][i][2],allentry[race_count][i][4]]
+            temp_list = [allentry[race_count][i]['horsename'],allentry[race_count][i]['place'],allentry[race_count][i]['turf_dirt'],allentry[race_count][i]['distance']]
             for sd in allsub[i]:
-                idx = self.get_accumulation_list_index(race_range_list,class_list,sd[1],sd[0])
-                if sd[6] >= 3.0:
+                idx = self.get_accumulation_list_index(race_range_list,class_list,sd['rap5f'],sd['class'])
+                if sd['time_diff'] >= 3.0:
                     diff_list[idx][len(diff_list[idx])-1] = diff_list[idx][len(diff_list[idx])-1] + 1
                 else:
-                    diff_list[idx][int(sd[6]*10)] = diff_list[idx][int(sd[6]*10)] +1
+                    diff_list[idx][int(sd['time_diff']*10)] = diff_list[idx][int(sd['time_diff']*10)] +1
             dl_count = 0
             for dl in diff_list: # accumulate
                 for i_d in range(len(dl)):
@@ -117,37 +116,49 @@ class SQLPattern():
         return False
 
     def get_self_data(self, entry):
-        cond = self.convert_condition(entry[3])
-        msg = "horsename='"+entry[5]+"' and race_time="+str(entry[0])+" and horse_table.place='"+entry[1]+"' and turf_dirt='"+entry[2]+"' and (course_condition='"+cond+"') and distance="+str(entry[4])
-        return self.get_sql_data(msg,1)
+        cond = self.convert_condition(entry['course_condition'])
+        msg = "horsename='"+entry['horsename']+"' and race_time="+str(entry['race_time'])+" and horse_table.place='"+entry['place']+"' and turf_dirt='"+entry['turf_dirt']+"' and (course_condition='"+cond+"') and distance="+str(entry['distance'])
+        ret = self.get_sql_data(msg)
+        if len(ret) > 0:
+            return ret[0]
+        else:
+            return []
 
     def get_similar_strength_horse_data(self,entry,self_data):
-        cond = self.convert_condition(entry[3])
+        cond = self.convert_condition(entry['course_condition'])
         if len(self_data) == 0:
-            return ()
+            return []
         # rap5f vs timediff
-        msg = "rap5f>"+str(self_data[0][2]-0.2)+" and rap5f<"+str(self_data[0][2]+0.2)+" and class='"+self.analyse_class(self_data[0][8])+"' and time_diff>"+str(self_data[0][4]-0.2)+" and time_diff <"+str(self_data[0][4]+0.2)+" and horse_table.place='"+entry[1]+"' and turf_dirt='"+entry[2]+"' and (course_condition='"+cond+"') and finish='"+self_data[0][5]+"'"
+        msg = "rap5f>"+str(self_data['rap5f']-0.2)+" and rap5f<"+str(self_data['rap5f']+0.2)+" and class='"+self.analyse_class(self_data['class'])+"' and time_diff>"+str(self_data['time_diff']-0.2)+" and time_diff <"+str(self_data['time_diff']+0.2)+" and horse_table.place='"+entry['place']+"' and turf_dirt='"+entry['turf_dirt']+"' and (course_condition='"+cond+"') and finish='"+self_data['finish']+"'"
         # rap5f vs race_time
-        msg = "race_time>"+str(entry[0]-0.3)+" and race_time<"+str(entry[0]+0.3)+" and horse_table.place='"+entry[1]+"' and turf_dirt='"+entry[2]+"' and (course_condition=    '"+cond+"') and rap5f>"+str(self_data[0][2]-0.3)+" and rap5f<"+str(self_data[0][2]+0.3)+" and finish='"+self_data[0][5]+"'"
-        return self.get_sql_data(msg,1)
+        msg = "race_time>"+str(entry['race_time']-0.3)+" and race_time<"+str(entry['race_time']+0.3)+" and horse_table.place='"+entry['place']+"' and turf_dirt='"+entry['turf_dirt']+"' and (course_condition='"+cond+"') and rap5f>"+str(self_data['rap5f']-0.3)+" and rap5f<"+str(self_data['rap5f']+0.3)+" and finish='"+self_data['finish']+"'"
+        ret =  self.get_sql_data(msg)
+        if len(ret) > 0:
+            return ret
+        else:
+            return []
 
     def get_similar_strength_horse_targetrace_data(self,entry,target,self_data):
         similar_power_horse = self.get_similar_strength_horse_data(entry,self_data)
-        msg = "race_table.place='"+target[0]+"' and turf_dirt='"+target[1]+"' and distance="+str(target[2])+" and ("
+        msg = "race_table.place='"+target['place']+"' and turf_dirt='"+target['turf_dirt']+"' and distance="+str(target['distance'])+" and ("
         if len(similar_power_horse) == 0:
-            return ()
+            return []
         for i in range(len(similar_power_horse)):
             msg_or = " or "
             if i == len(similar_power_horse)-1:
                 msg_or = ")"
-            msg = msg + " (horsename='"+similar_power_horse[i][0]+"' and race_table.rdate > '"+similar_power_horse[i][7].strftime('%Y/%m/%d')+"' - INTERVAL 1 YEAR and race_table.rdate < '"+similar_power_horse[i][7].strftime('%Y-%m-%d')+"' + INTERVAL 1 YEAR)"+msg_or
-        msg = msg + " and horsename != '"+entry[5]+"'"
-        return self.get_sql_data(msg,2)
+            msg = msg + " (horsename='"+similar_power_horse[i]['horsename']+"' and race_table.rdate > '"+similar_power_horse[i]['rdate'].strftime('%Y/%m/%d')+"' - INTERVAL 1 YEAR and race_table.rdate < '"+similar_power_horse[i]['rdate'].strftime('%Y-%m-%d')+"' + INTERVAL 1 YEAR)"+msg_or
+        msg = msg + " and horsename != '"+entry['horsename']+"'"
+        ret = self.get_sql_data(msg)
+        if len(ret) > 0:
+            return ret
+        else:
+            return []
 
     def get_finish_trend(self, record):
         finish_list = []
         for r in record:
-            finish_list.append(r[7])
+            finish_list.append(r['finish'])
         retval = [finish_list.count('逃げ'),finish_list.count('先行'),finish_list.count('中団'),finish_list.count('差し'),finish_list.count('後方'),finish_list.count('追込'),finish_list.count('マクリ')]
         return retval
 
@@ -155,20 +166,18 @@ class SQLPattern():
         fin = self.get_finish_trend(record)
         return ["逃"+str(fin[0]),"先"+str(fin[1]),"中"+str(fin[2]),"差"+str(fin[3]),"後"+str(fin[4]),"追"+str(fin[5]),"マクリ"+str(fin[6])] 
 
-    def get_sql_data(self, condition_msg, select_pattern=0):
+    def get_sql_data(self, condition_msg):
         manipulator = sql_manipulator.SQLManipulator()
-        msg_select = "select "
-        if select_pattern == 0:
-            msg_select = msg_select + "race_table.rdate,race_table.place,race_table.race,race_table.turf_dirt,race_table.distance,horse_table.horsename,horse_table.race_time,horse_table.goal_order,horse_table.time_diff,race_table.level "
-        elif select_pattern == 1:
-            msg_select = msg_select + "horse_table.horsename, race_table.rap3f, race_table.rap5f, horse_table.race_time, horse_table.time_diff, horse_table.finish, race_table.level, race_table.rdate, race_table.class, horse_table.diff3f, horse_table.last3f "
-        elif select_pattern == 2:
-            msg_select = msg_select + "race_table.class, race_table.rap5f, race_table.last3f, horse_table.goal_order, horse_table.horsename, horse_table.race_time, horse_table.time_diff, horse_table.finish, horse_table.last3f, race_table.level, race_table.rdate, race_table.place, race_table.turf_dirt, race_table.distance, race_table.course_condition "
+        msg_select = "select race_table.rdate,race_table.place,race_table.race,class,turf_dirt,distance,course_condition,rap3f,rap5f,race_table.last3f,course_class,horse_total,level,goal_order,brinker,horsenum,horsename,horse_sex,age,jockey_weight,jockey_name,race_time,time_diff,passorder1,passorder2,passorder3,passorder4,finish,horse_table.last3f,diff3f,odds_order,odds,horseweight,weightdiff,trainer,carrier,owner,breeder,stallion,broodmaresire,color,span "
         msg_from = "from horse_table "
         msg_join = "inner join race_table on horse_table.rdate = race_table.rdate and horse_table.place = race_table.place and horse_table.race = race_table.race "
         msg = msg_select+msg_from+msg_join+"where race_time != 0 and "+condition_msg+";"
-        ret = manipulator.sql_manipulator(msg)
-        return ret
+        tpl = manipulator.sql_manipulator(msg)
+        retlist = []
+        for t in tpl:
+            single_dict = {"rdate":t[0],"place":t[1],"race":t[2],"class":t[3],"turf_dirt":t[4],"distance":t[5],"course_condition":t[6],"rap3f":t[7],"rap5f":t[8],"race_last3f":t[9],"course_class":t[10],"horse_total":t[11],"level":t[12],"goal_order":t[13],"brinker":t[14],"horsenum":t[15],"horsename":t[16],"horse_sex":t[17],"age":t[18],"jockey_weight":t[19],"jockey_name":t[20],"race_time":t[21],"time_diff":t[22],"passorder1":t[23],"passorder2":t[24],"passorder3":t[25],"passorder4":t[26],"finish":t[27],"horse_last3f":t[28],"diff3f":t[29],"odds_order":t[30],"odds":t[31],"horseweight":t[32],"weightdiff":t[33],"trainer":t[34],"carrier":t[35],"owner":t[36],"breeder":t[37],"stallion":t[38],"broodmaresire":t[39],"color":t[40],"span":t[41]}
+            retlist.append(single_dict)
+        return retlist
 
     def get_entry_target_data(self, csvfile):
         row_count = 0
@@ -182,20 +191,20 @@ class SQLPattern():
                 # 1列目が1980を超えているならレースデータ（年月日）と判定
                 if int(row[0]) >= 1980:
                     cls = self.analyse_class(row[5])
-                    target=[row[3],row[7],row[8],cls,row[4]]
+                    target={"rdate":row[0]+"-"+row[1]+"-"+row[2],"place":row[3],"turf_dirt":row[7],"distance":row[8],"class_condition":cls,"race":row[4]}
                     all_target.append(target)
                     if row_count > 0:
                         all_entry.append(entry)
                         entry = []
                 else:
                     if len(row) > 10 and len(row[10]) > 0 and row[17] != "----": # 1走前
-                        entry.append([self.convert_race_time(row[17]),row[10],self.convert_turf_dirt(row[12]),row[15],row[13],row[3],row[6]])
+                        entry.append({"race_time":self.convert_race_time(row[17]),"place":row[10],"turf_dirt":self.convert_turf_dirt(row[12]),"course_condition":row[15],"distance":row[13],"horsename":row[3],"jockey_name":row[6],"horsenum":row[2]})
                     if len(row) > 26 and len(row[26]) > 0 and row[33] != "----": # 2走前
-                        entry.append([self.convert_race_time(row[33]),row[26],self.convert_turf_dirt(row[28]),row[31],row[29],row[3],row[6]])
+                        entry.append({"race_time":self.convert_race_time(row[33]),"place":row[26],"turf_dirt":self.convert_turf_dirt(row[28]),"course_condition":row[31],"distance":row[29],"horsename":row[3],"jockey_name":row[6],"horsenum":row[2]})
                     if len(row) > 42 and len(row[42]) > 0 and row[49] != "----": # 3走前
-                        entry.append([self.convert_race_time(row[49]),row[42],self.convert_turf_dirt(row[44]),row[47],row[45],row[3],row[6]])
+                        entry.append({"race_time":self.convert_race_time(row[49]),"place":row[42],"turf_dirt":self.convert_turf_dirt(row[44]),"course_condition":row[47],"distance":row[45],"horsename":row[3],"jockey_name":row[6],"horsenum":row[2]})
                     if len(row) > 58 and len(row[58]) > 0 and row[65] != "----": # 4走前
-                        entry.append([self.convert_race_time(row[65]),row[58],self.convert_turf_dirt(row[60]),row[63],row[61],row[3],row[6]])
+                        entry.append({"race_time":self.convert_race_time(row[65]),"place":row[58],"turf_dirt":self.convert_turf_dirt(row[60]),"course_condition":row[63],"distance":row[61],"horsename":row[3],"jockey_name":row[6],"horsenum":row[2]})
 
                 row_count = row_count+1
             all_entry.append(entry)
