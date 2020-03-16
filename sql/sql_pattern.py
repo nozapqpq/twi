@@ -35,20 +35,23 @@ class SQLPattern():
         sim_pos = self.get_sql_data(msg)
         print(len(sim_pos))
         if len(sim_pos) < 40:
-            return "データ不足(偏差値)","-","-"
+            return "データ不足(偏差値)","-","-","-"
         mean_value = 0
         mean_diff = 0
+        mean_level = 0
         for sp in sim_pos:
             mean_value = mean_value+sp['horse_last3f']
             mean_diff = mean_diff+sp['time_diff']
+            mean_level = mean_level+sp['level']
         mean_value = mean_value/len(sim_pos)
         mean_diff = mean_diff/len(sim_pos)
+        mean_level = mean_level/len(sim_pos)
         sigma = 0
         for sp in sim_pos:
             sigma = sigma + (sp['horse_last3f']-mean_value)**2
         sigma = sigma/len(sim_pos)
         diviation = -(self_data['horse_last3f']-mean_value)/sigma*10+50
-        return diviation,sigma,mean_diff
+        return diviation,sigma,mean_diff,mean_level
 
 
     def make_timediff_accumulation_list(self,allsub,allentry,race_count):

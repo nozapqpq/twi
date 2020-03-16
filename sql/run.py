@@ -23,7 +23,7 @@ for a in range(len(all_entry)):
         if len(self_data) == 0:
             diviation = "データなし"
         else:
-            diviation,sigma,mean_diff = pat.get_diviation_value(ent,self_data)
+            diviation,sigma,mean_diff,mean_level = pat.get_diviation_value(ent,self_data)
         for sd in pat.subdata:
             pat.distribution.append([ent['horsename'],sd['place'],sd['turf_dirt'],sd['distance'],sd['course_condition'],sd['class'],sd['rap5f'],sd['horse_last3f'],sd['time_diff'],sd['race_time']])
         goal = pat.get_sql_data("race_table.rdate='"+all_target[a]['rdate']+"' and race_table.place='"+all_target[a]['place']+"' and race_table.race="+all_target[a]['race']+" and horsename='"+ent['horsename']+"'")
@@ -31,7 +31,7 @@ for a in range(len(all_entry)):
         if len(goal) > 0:
             main_pastgoal = str(goal[0]['goal_order'])
         if len(self_data) > 0:
-            pat.maindata.append([ent['horsename'],ent['place'],ent['turf_dirt'],ent['course_condition'],ent['distance'],main_pastgoal]+[self_data['rap3f'],self_data['rap5f'],self_data['finish'],self_data['passorder3'],self_data['passorder4']]+[diviation,sigma,mean_diff]+pat.get_finish_trend_list(pat.subdata))
+            pat.maindata.append([ent['horsename'],ent['place'],ent['turf_dirt'],ent['course_condition'],ent['distance'],main_pastgoal]+[self_data['rap3f'],self_data['rap5f'],self_data['finish'],self_data['passorder3'],self_data['passorder4']]+[diviation,sigma,mean_diff,mean_level]+pat.get_finish_trend_list(pat.subdata))
             maindata_sum.append(pat.maindata)
         subdata_sum.append(pat.subdata)
         ent_count = ent_count + 1
