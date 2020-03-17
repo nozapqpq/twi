@@ -25,39 +25,49 @@ class SQLPattern():
                     writer.writerow(b)
 
     def get_diviation_value(self,entry,self_data):
-        retlist = []
+        class_dict = {"lv1":"未勝利' or class='新馬","lv2":"500万' or class='1勝","lv3":"1000万' or class='2勝","lv4":"1600万' or class='3勝' or class='オープン' or class='OP(L)' or class='Ｇ３' or class='Ｇ２' or class='Ｇ１"}
+        ret_dict = {}
+        lv = "lv4"
+        if self_data['class'] == "未勝利" or self_data['class'] == "新馬":
+            lv = "lv1"
+        elif self_data['class'] == "500万" or self_data['class'] == "1勝":
+            lv = "lv2"
+        elif self_data['class'] == "1000万" or self_data['class'] == "2勝":
+            lv = "lv3"
         target = "rap3f"
         if int(entry['distance']) > 1500:
             target = "rap5f"
         target_time = self_data[target]
         cond = self.convert_condition(entry['course_condition'])
-        msg = "race_table.place='"+entry['place']+"' and turf_dirt='"+entry['turf_dirt']+"' and distance="+str(entry['distance'])+" and (race_table.course_condition='"+cond+"') and diff3f>="+str(self_data['diff3f']-0.1)+" and diff3f<="+str(self_data['diff3f']+0.1)+" and "+target+">="+str(target_time-0.3)+" and "+target+"<="+str(target_time+0.3)
+        msg = "race_table.place='"+entry['place']+"' and turf_dirt='"+entry['turf_dirt']+"' and distance="+str(entry['distance'])+" and (race_table.course_condition='"+cond+"') and diff3f>="+str(self_data['diff3f']-0.1)+" and diff3f<="+str(self_data['diff3f']+0.1)+" and "+target+">="+str(target_time-0.3)+" and "+target+"<="+str(target_time+0.3)+" and (class='"+class_dict[lv]+"')"
         sim_pos = self.get_sql_data(msg)
         print(len(sim_pos))
-        if len(sim_pos) < 40:
-            return "データ不足(偏差値)","-","-","-"
-        mean_value = 0
-        mean_diff = 0
-        mean_level = 0
-        for sp in sim_pos:
-            mean_value = mean_value+sp['horse_last3f']
-            mean_diff = mean_diff+sp['time_diff']
-            mean_level = mean_level+sp['level']
-        mean_value = mean_value/len(sim_pos)
-        mean_diff = mean_diff/len(sim_pos)
-        mean_level = mean_level/len(sim_pos)
-        sigma = 0
-        for sp in sim_pos:
-            sigma = sigma + (sp['horse_last3f']-mean_value)**2
-        sigma = sigma/len(sim_pos)
-        diviation = -(self_data['horse_last3f']-mean_value)/sigma*10+50
-        return diviation,sigma,mean_diff,mean_level
+        if len(sim_pos) < 30:
+            ret_dict = {"diviation":"データ不足(偏差値)","sigma":"-","mean_value":"-","mean_diff":"-","mean_level":"-","class":self_data['class']}
+        else:
+            mean_value = 0
+            mean_diff = 0
+            mean_level = 0
+            for sp in sim_pos:
+                mean_value = mean_value+(sp['horse_last3f']-sp['race_last3f'])
+                mean_diff = mean_diff+sp['time_diff']
+                mean_level = mean_level+sp['level']
+            mean_value = mean_value/len(sim_pos)
+            mean_diff = mean_diff/len(sim_pos)
+            mean_level = mean_level/len(sim_pos)
+            sigma = 0
+            for sp in sim_pos:
+                sigma = sigma + ((sp['horse_last3f']-sp['race_last3f'])-mean_value)**2
+            sigma = sigma/len(sim_pos)
+            diviation = -((self_data['horse_last3f']-self_data['race_last3f'])-mean_value)/sigma*10+50
+            ret_dict = {"diviation":diviation,"sigma":sigma,"mean_value":mean_value,"mean_diff":mean_diff,"mean_level":mean_level,"class":self_data['class']}
+        return ret_dict
 
 
     def make_timediff_accumulation_list(self,allsub,allentry,race_count):
         retlist = []
         race_range_list = ["~58.0","~60.0","~62.0","~64.0","~66.0","66.1~"]
-        class_list = ["新馬","未勝利","500万下","1000万下","1600万下","1勝","2勝","3勝","その他"]
+        class_list = ["新馬","未勝利","500万","1000万","1600万","1勝","2勝","3勝","その他"]
         for i in range(len(allsub)):
             diff_list = [[0] * 31 for i in range(len(race_range_list)*len(class_list))]
             temp_list = [allentry[race_count][i]['horsename'],allentry[race_count][i]['place'],allentry[race_count][i]['turf_dirt'],allentry[race_count][i]['distance']]
