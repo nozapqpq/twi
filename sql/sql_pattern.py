@@ -43,13 +43,15 @@ class SQLPattern():
         sim_pos = self.get_sql_data(msg)
         print(len(sim_pos))
         if len(sim_pos) < 30:
-            ret_dict = {"diviation":"データ不足(偏差値)","sigma":"-","mean_value":"-","mean_diff":"-","mean_level":"-","class":self_data['class']}
+            ret_dict = {"diviation":"データ不足(偏差値)","sigma":"-","mean_value":"-","mean_diff":"-","mean_level":"-","diff3f":self_data['diff3f'],"horse_last3f":self_data['horse_last3f'],"class":self_data['class']}
         else:
             mean_value = 0
             mean_diff = 0
             mean_level = 0
+            target_str = 'horse_last3f'
             for sp in sim_pos:
-                mean_value = mean_value+(sp['horse_last3f']-sp['race_last3f'])
+                mean_value = mean_value+sp[target_str]
+                #mean_value = mean_value+(sp['horse_last3f']-sp['race_last3f'])
                 mean_diff = mean_diff+sp['time_diff']
                 mean_level = mean_level+sp['level']
             mean_value = mean_value/len(sim_pos)
@@ -57,10 +59,12 @@ class SQLPattern():
             mean_level = mean_level/len(sim_pos)
             sigma = 0
             for sp in sim_pos:
-                sigma = sigma + ((sp['horse_last3f']-sp['race_last3f'])-mean_value)**2
+                sigma = sigma + (sp[target_str]-mean_value)**2
+                #sigma = sigma + ((sp['horse_last3f']-sp['race_last3f'])-mean_value)**2
             sigma = sigma/len(sim_pos)
-            diviation = -((self_data['horse_last3f']-self_data['race_last3f'])-mean_value)/sigma*10+50
-            ret_dict = {"diviation":diviation,"sigma":sigma,"mean_value":mean_value,"mean_diff":mean_diff,"mean_level":mean_level,"class":self_data['class']}
+            diviation = -(self_data[target_str]-mean_value)/sigma*10+50
+            #diviation = -((self_data['horse_last3f']-self_data['race_last3f'])-mean_value)/sigma*10+50
+            ret_dict = {"diviation":diviation,"sigma":sigma,"mean_value":mean_value,"mean_diff":mean_diff,"mean_level":mean_level,"diff3f":self_data['diff3f'],"horse_last3f":self_data['horse_last3f'],"class":self_data['class']}
         return ret_dict
 
 
