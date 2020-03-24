@@ -37,7 +37,9 @@ for a in range(len(all_entry)):
             if div_dict['mean_value'] != "-":
                 min_val = float(div_dict['mean_value'])-float(div_dict['sigma'])
                 max_val = float(div_dict['mean_value'])+float(div_dict['sigma'])
-            pat.maindata.append([ent['horsename'],ent['place'],ent['turf_dirt'],ent['course_condition'],ent['distance'],main_pastgoal]+[self_data['rap3f'],self_data['rap5f'],self_data['finish'],self_data['passorder3'],self_data['passorder4']]+[div_dict['diviation'],div_dict['diff3f'],div_dict['horse_last3f'],div_dict['class'],min_val,max_val,div_dict['mean_diff']]+pat.get_finish_trend_list(pat.subdata))
+            print(all_target[a])
+            g_order_list = pat.get_target_goal_order_list(all_target[a],pat.subdata)
+            pat.maindata.append([ent['horsename'],ent['place'],ent['turf_dirt'],ent['course_condition'],ent['distance'],main_pastgoal]+[self_data['rap3f'],self_data['rap5f'],self_data['passorder3'],self_data['passorder4']]+[div_dict['diviation'],div_dict['diff3f'],div_dict['horse_last3f'],div_dict['class'],min_val,max_val,div_dict['mean_diff']]+g_order_list+pat.get_finish_trend_list(pat.subdata))
             maindata_sum.append(pat.maindata)
         subdata_sum.append(pat.subdata)
         ent_count = ent_count + 1

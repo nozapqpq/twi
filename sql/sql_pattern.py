@@ -172,6 +172,19 @@ class SQLPattern():
         else:
             return []
 
+    def get_target_goal_order_list(self,target,sub):
+        retlist = [0] * 6
+        if len(target) == 0:
+            return retlist 
+        for s in sub:
+            if s['class'] in target['class_condition']:
+                for i in range(5):
+                    if s['goal_order'] == i+1:
+                        retlist[i] = retlist[i] + 1
+                if s['goal_order'] > 5:
+                    retlist[5] = retlist[5]+1
+        return retlist
+
     def get_finish_trend(self, record):
         finish_list = []
         for r in record:
