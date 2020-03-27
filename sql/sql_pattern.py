@@ -8,6 +8,8 @@ class SQLPattern():
         self.maindata = []
         self.subdata = []
         self.distribution = []
+        self.place_kanji = ["札幌","函館","福島","新潟","中山","東京","中京","京都","阪神","小倉"]
+        self.place_alpha = ["sapporo","hakodate","fukushima","niigata","nakayama","tokyo","chukyo","kyoto","hanshin","kokura"]
 
     def write_list_to_csv(self,filename,target):
         with open(filename,'w') as f:
@@ -275,9 +277,15 @@ class SQLPattern():
         print(place)
         place_kanji = ["札幌","函館","福島","新潟","中山","東京","中京","京都","阪神","小倉"]
         place_alpha = ["sapporo","hakodate","fukushima","niigata","nakayama","tokyo","chukyo","kyoto","hanshin","kokura"]
-        for p in range(len(place_kanji)):
-            if place == place_kanji[p]:
-                return place_alpha[p]
+        for p in range(len(self.place_kanji)):
+            if place == self.place_kanji[p]:
+                return self.place_alpha[p]
+        return "unknown"
+
+    def convert_place_to_kanji(self, place):
+        for p in range(len(self.place_kanji)):
+            if place == self.place_alpha[p]:
+                return self.place_kanji[p]
         return "unknown"
 
     def set_race_level(self):
