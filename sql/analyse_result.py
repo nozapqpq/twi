@@ -7,7 +7,49 @@ import parse
 class AnalyseResult():
     def __init__(self):
         self.pat = sql_pattern.SQLPattern()
+
+    def show_analyse_result(self, input_data):
+        retlist = []
+        retlist.append(self.analyse_pattern1(input_data,"中京","ダート"))
+        retlist.append(self.analyse_pattern2(input_data,"中京","ダート"))
+        retlist.append(self.analyse_pattern3(input_data,"中京","ダート"))
+        retlist.append(self.analyse_pattern4(input_data,"中京","ダート"))
+        retlist.append(self.analyse_pattern5(input_data,"中京","ダート"))
+        retlist.append(self.analyse_pattern6(input_data,"中京","ダート"))
+        retlist.append(self.analyse_pattern7(input_data,"中京","ダート"))
+        retlist.append(self.analyse_pattern1(input_data,"中山","ダート"))
+        retlist.append(self.analyse_pattern2(input_data,"中山","ダート"))
+        retlist.append(self.analyse_pattern3(input_data,"中山","ダート"))
+        retlist.append(self.analyse_pattern4(input_data,"中山","ダート"))
+        retlist.append(self.analyse_pattern5(input_data,"中山","ダート"))
+        retlist.append(self.analyse_pattern6(input_data,"中山","ダート"))
+        retlist.append(self.analyse_pattern7(input_data,"中山","ダート"))
+        retlist.append(self.analyse_pattern1(input_data,"阪神","ダート"))
+        retlist.append(self.analyse_pattern2(input_data,"阪神","ダート"))
+        retlist.append(self.analyse_pattern3(input_data,"阪神","ダート"))
+        retlist.append(self.analyse_pattern4(input_data,"阪神","ダート"))
+        retlist.append(self.analyse_pattern5(input_data,"阪神","ダート"))
+        retlist.append(self.analyse_pattern6(input_data,"阪神","ダート"))
+        retlist.append(self.analyse_pattern7(input_data,"阪神","ダート"))
+        retlist.append(self.analyse_pattern1(input_data,"中山","芝"))
+        retlist.append(self.analyse_pattern2(input_data,"中山","芝"))
+        retlist.append(self.analyse_pattern3(input_data,"中山","芝"))
+        retlist.append(self.analyse_pattern4(input_data,"中山","芝"))
+        retlist.append(self.analyse_pattern5(input_data,"中山","芝"))
+        retlist.append(self.analyse_pattern6(input_data,"中山","芝"))
+        retlist.append(self.analyse_pattern7(input_data,"中山","芝"))
+        retlist.append(self.analyse_pattern1(input_data,"阪神","芝"))
+        retlist.append(self.analyse_pattern2(input_data,"阪神","芝"))
+        retlist.append(self.analyse_pattern3(input_data,"阪神","芝"))
+        retlist.append(self.analyse_pattern4(input_data,"阪神","芝"))
+        retlist.append(self.analyse_pattern5(input_data,"阪神","芝"))
+        retlist.append(self.analyse_pattern6(input_data,"阪神","芝"))
+        retlist.append(self.analyse_pattern7(input_data,"阪神","芝"))
+
+        return retlist
+
     def get_main_data_from_csv(self):
+        entry_horses_list = []
         all_files = os.listdir(path='..')
         # 名前が日付になっているフォルダを取得
         dir_list = [f for f in all_files if os.path.isdir(os.path.join('..',f)) and f[0].isdigit()]
@@ -21,7 +63,6 @@ class AnalyseResult():
                 fn_parse = parse.parse("main_{place:D}{race:d}.csv",fl)
                 main_lst = self.get_maindata_from_csv("../"+dl+"/"+fl)
                 horsename = ""
-                entry_horses_list = []
                 single_horse_dict = {}
                 for ml in main_lst:
                     single_dict = {}
@@ -52,15 +93,24 @@ class AnalyseResult():
                     if horsename == "" or horsename != single_dict["horsename"]:
                         if horsename != "":
                             entry_horses_list.append(single_horse_dict)
-                        single_horse_dict = {"rdate":rdate,"today_place":self.pat.convert_place_to_kanji(fn_parse["place"]),"race":fn_parse["race"],"horsename":single_dict["horsename"],"horsedata":""}
+                        single_horse_dict = {"rdate":rdate,"today_place":self.pat.convert_place_to_kanji(fn_parse["place"]),"race":str(fn_parse["race"]),"horsename":single_dict["horsename"],"horsedata":""}
+                        self_data = self.pat.get_sql_data("race_table.rdate='"+rdate+"' and race_table.place='"+single_horse_dict["today_place"]+"' and race_table.race="+single_horse_dict["race"]+" and horsename='"+single_horse_dict["horsename"]+"'")
+                        odds_order = 100
+                        turf_dirt = "-"
+                        if len(self_data) > 0:
+                            odds_order = self_data[0]["odds_order"]
+                            turf_dirt = self_data[0]["turf_dirt"]
+                        single_horse_dict["turf_dirt"] = turf_dirt 
+                        single_horse_dict["odds_order"] = odds_order
+                        single_horse_dict["goal_order"] = single_dict["goal_order"]
+                        print(single_horse_dict)
                     if single_horse_dict["horsedata"] == "":
-                        entry_horses_list.append(single_horse_dict)
                         single_horse_dict["horsedata"] = [single_dict]
                     else:
                         single_horse_dict["horsedata"].append(single_dict)
                     horsename = single_dict["horsename"]
-                entry_horses_list.append(single_horse_dict)
-        print(entry_horses_list[0])
+                if single_horse_dict != {}:
+                    entry_horses_list.append(single_horse_dict)
         return entry_horses_list
 
 
@@ -95,10 +145,96 @@ class AnalyseResult():
         else:
             return target
 
-#pat = sql_pattern.SQLPattern()
-#self_data = pat.get_self_data(ent)
+    def calc_goal_list(self, inplist, goal):
+        retlist = [0, 0, 0, 0, 0, 0]
+        if int(goal) >= 1 and int(goal) <= 5:
+            retlist[int(goal)-1] = retlist[int(goal)-1] + 1
+        elif int(goal) > 5:
+            retlist[5] = retlist[5] + 1
+        retlist = [x+y for (x,y) in zip(inplist,retlist)]
+        return retlist
+
+    def analyse_pattern1(self, input_data, place, turf_dirt):
+        retlist = [0, 0, 0, 0, 0, 0]
+        for inp in input_data:
+            flg = 0
+            goal = "0"
+            if int(inp["odds_order"]) >= 1 and int(inp["odds_order"]) <= 3 and inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
+                for hd in inp["horsedata"]:
+                    if int(hd["result_total"]) <= 3:
+                        flg = flg + 1
+                        goal = hd["goal_order"]
+                if len(inp["horsedata"]) == flg:
+                    retlist = self.calc_goal_list(retlist,goal)
+        return retlist+[place,turf_dirt,"1~3番人気でデータが少ない"]
+
+    def analyse_pattern2(self, input_data, place, turf_dirt):
+        retlist = [0, 0, 0, 0, 0, 0]
+        for inp in input_data:
+            flg = 0
+            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
+                for hd in inp["horsedata"]:
+                    if int(hd["result_total"]) > 0 and int(hd["result_1st"]) >= int(hd["result_alsoran"])*0.8:
+                        retlist = self.calc_goal_list(retlist,hd["goal_order"])
+                        break
+        return retlist+[place,turf_dirt,"1着数が着外数の8割以上"]
+
+    def analyse_pattern3(self, input_data, place, turf_dirt):
+        retlist = [0, 0, 0, 0, 0, 0]
+        for inp in input_data:
+            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
+                for hd in inp["horsedata"]:
+                    if int(hd["result_total"]) > 5 and int(hd["result_1st"])+int(hd["result_2nd"])+int(hd["result_3rd"]) >= int(hd["result_alsoran"]*2):
+                        retlist = self.calc_goal_list(retlist,hd["goal_order"])
+                        break
+        return retlist+[place,turf_dirt,"1~3着数の合計が着外数の2倍以上"]
+
+    def analyse_pattern4(self, input_data, place, turf_dirt):
+        retlist = [0, 0, 0, 0, 0, 0]
+        for inp in input_data:
+            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
+                for hd in inp["horsedata"]:
+                    if int(hd["result_total"]) > 5 and int(hd["result_1st"])+int(hd["result_2nd"])+int(hd["result_3rd"]) <= int(hd["result_alsoran"])*0.3:
+                        retlist = self.calc_goal_list(retlist,hd["goal_order"])
+                        break
+        return retlist+[place,turf_dirt,"1~3着数の合計が着外数の3割以下"]
+
+    def analyse_pattern5(self, input_data, place, turf_dirt):
+        retlist = [0, 0, 0, 0, 0, 0]
+        for inp in input_data:
+            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
+                if int(inp["odds_order"]) >= 1 and int(inp["odds_order"]) <= 3:
+                    retlist = self.calc_goal_list(retlist,inp["goal_order"])
+        return retlist+[place,turf_dirt,"1~3番人気"]
+
+    def analyse_pattern6(self, input_data, place, turf_dirt):
+        retlist = [0, 0, 0, 0, 0, 0]
+        for inp in input_data:
+            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
+                for hd in inp["horsedata"]:
+                    if float(hd["div_score"]) >= 70:
+                        retlist = self.calc_goal_list(retlist,hd["goal_order"])
+                        break
+        return retlist+[place,turf_dirt,"偏差値が70以上"]
+
+    def analyse_pattern7(self, input_data, place, turf_dirt):
+        retlist = [0, 0, 0, 0, 0, 0]
+        for inp in input_data:
+            flg = 0
+            goal = "0"
+            if int(inp["odds_order"]) >= 4 and inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
+                for hd in inp["horsedata"]:
+                    if int(hd["result_total"]) <= 3:
+                        flg = flg + 1
+                        goal = hd["goal_order"]
+                if len(inp["horsedata"]) == flg:
+                    retlist = self.calc_goal_list(retlist,goal)
+        return retlist+[place,turf_dirt,"4番人気以下でデータが少ない"]
+
+
 ar = AnalyseResult()
 lst = ar.get_main_data_from_csv()
-#lst = ar.get_main_data_from_csv()
-#pat.write_list_to_csv('../sample.csv',lst)
+result = ar.show_analyse_result(lst)
+for r in result:
+    print(r)
 
