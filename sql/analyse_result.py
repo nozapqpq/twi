@@ -17,6 +17,8 @@ class AnalyseResult():
         retlist.append(self.analyse_pattern5(input_data,"中京","ダート"))
         retlist.append(self.analyse_pattern6(input_data,"中京","ダート"))
         retlist.append(self.analyse_pattern7(input_data,"中京","ダート"))
+        retlist.append(self.analyse_pattern8(input_data,"中京","ダート"))
+        retlist.append(self.analyse_pattern9(input_data,"中京","ダート"))
         retlist.append(self.analyse_pattern1(input_data,"中山","ダート"))
         retlist.append(self.analyse_pattern2(input_data,"中山","ダート"))
         retlist.append(self.analyse_pattern3(input_data,"中山","ダート"))
@@ -24,6 +26,8 @@ class AnalyseResult():
         retlist.append(self.analyse_pattern5(input_data,"中山","ダート"))
         retlist.append(self.analyse_pattern6(input_data,"中山","ダート"))
         retlist.append(self.analyse_pattern7(input_data,"中山","ダート"))
+        retlist.append(self.analyse_pattern8(input_data,"中山","ダート"))
+        retlist.append(self.analyse_pattern9(input_data,"中山","ダート"))
         retlist.append(self.analyse_pattern1(input_data,"阪神","ダート"))
         retlist.append(self.analyse_pattern2(input_data,"阪神","ダート"))
         retlist.append(self.analyse_pattern3(input_data,"阪神","ダート"))
@@ -31,6 +35,17 @@ class AnalyseResult():
         retlist.append(self.analyse_pattern5(input_data,"阪神","ダート"))
         retlist.append(self.analyse_pattern6(input_data,"阪神","ダート"))
         retlist.append(self.analyse_pattern7(input_data,"阪神","ダート"))
+        retlist.append(self.analyse_pattern8(input_data,"阪神","ダート"))
+        retlist.append(self.analyse_pattern9(input_data,"阪神","ダート"))
+        retlist.append(self.analyse_pattern1(input_data,"中京","芝"))
+        retlist.append(self.analyse_pattern2(input_data,"中京","芝"))
+        retlist.append(self.analyse_pattern3(input_data,"中京","芝"))
+        retlist.append(self.analyse_pattern4(input_data,"中京","芝"))
+        retlist.append(self.analyse_pattern5(input_data,"中京","芝"))
+        retlist.append(self.analyse_pattern6(input_data,"中京","芝"))
+        retlist.append(self.analyse_pattern7(input_data,"中京","芝"))
+        retlist.append(self.analyse_pattern8(input_data,"中京","芝"))
+        retlist.append(self.analyse_pattern9(input_data,"中京","芝"))
         retlist.append(self.analyse_pattern1(input_data,"中山","芝"))
         retlist.append(self.analyse_pattern2(input_data,"中山","芝"))
         retlist.append(self.analyse_pattern3(input_data,"中山","芝"))
@@ -38,6 +53,8 @@ class AnalyseResult():
         retlist.append(self.analyse_pattern5(input_data,"中山","芝"))
         retlist.append(self.analyse_pattern6(input_data,"中山","芝"))
         retlist.append(self.analyse_pattern7(input_data,"中山","芝"))
+        retlist.append(self.analyse_pattern8(input_data,"中山","芝"))
+        retlist.append(self.analyse_pattern9(input_data,"中山","芝"))
         retlist.append(self.analyse_pattern1(input_data,"阪神","芝"))
         retlist.append(self.analyse_pattern2(input_data,"阪神","芝"))
         retlist.append(self.analyse_pattern3(input_data,"阪神","芝"))
@@ -45,6 +62,9 @@ class AnalyseResult():
         retlist.append(self.analyse_pattern5(input_data,"阪神","芝"))
         retlist.append(self.analyse_pattern6(input_data,"阪神","芝"))
         retlist.append(self.analyse_pattern7(input_data,"阪神","芝"))
+        retlist.append(self.analyse_pattern8(input_data,"阪神","芝"))
+        retlist.append(self.analyse_pattern9(input_data,"阪神","芝"))
+
 
         return retlist
 
@@ -231,6 +251,27 @@ class AnalyseResult():
                     retlist = self.calc_goal_list(retlist,goal)
         return retlist+[place,turf_dirt,"4番人気以下でデータが少ない"]
 
+    def analyse_pattern8(self, input_data, place, turf_dirt):
+        retlist = [0, 0, 0, 0, 0, 0]
+        for inp in input_data:
+            flg = 0
+            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
+                for hd in inp["horsedata"]:
+                    if int(hd["result_total"]) > 0 and int(hd["result_total"]) == int(hd["result_1st"]):
+                        retlist = self.calc_goal_list(retlist,hd["goal_order"])
+                        break
+        return retlist+[place,turf_dirt,"すべて1着"]
+
+    def analyse_pattern9(self, input_data, place, turf_dirt):
+        retlist = [0, 0, 0, 0, 0, 0]
+        for inp in input_data:
+            flg = 0
+            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
+                for hd in inp["horsedata"]:
+                    if int(hd["result_total"]) > 0 and int(hd["result_alsoran"]) == 0:
+                        retlist = self.calc_goal_list(retlist,hd["goal_order"])
+                        break
+        return retlist+[place,turf_dirt,"着外なし"]
 
 ar = AnalyseResult()
 lst = ar.get_main_data_from_csv()
