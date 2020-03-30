@@ -78,10 +78,11 @@ class AnalyseResult():
         for dl in dir_list:
             rdate = self.get_rdate_from_dirname(dl)
             csv_list = self.get_maincsv_list_from_dir(dl)
+            today_data = self.pat.get_sql_data("race_table.rdate='"+rdate+"'")
             
             for fl in csv_list:
                 fn_parse = parse.parse("main_{place:D}{race:d}.csv",fl)
-                main_lst = self.get_maindata_from_csv("../"+dl+"/"+fl)
+                main_lst = self.get_mainlist_from_csv("../"+dl+"/"+fl)
                 horsename = ""
                 single_horse_dict = {}
                 for ml in main_lst:
@@ -114,12 +115,18 @@ class AnalyseResult():
                         if horsename != "":
                             entry_horses_list.append(single_horse_dict)
                         single_horse_dict = {"rdate":rdate,"today_place":self.pat.convert_place_to_kanji(fn_parse["place"]),"race":str(fn_parse["race"]),"horsename":single_dict["horsename"],"horsedata":""}
-                        self_data = self.pat.get_sql_data("race_table.rdate='"+rdate+"' and race_table.place='"+single_horse_dict["today_place"]+"' and race_table.race="+single_horse_dict["race"]+" and horsename='"+single_horse_dict["horsename"]+"'")
+                        self_data = ()
+                        for today in today_data:
+                            if today["place"] == single_horse_dict["today_place"]:
+                                if str(today["race"]) == single_horse_dict["race"]:
+                                    if today["horsename"] == single_horse_dict["horsename"]:
+                                        self_data = today
+                                        break
                         odds_order = 100
                         turf_dirt = "-"
                         if len(self_data) > 0:
-                            odds_order = self_data[0]["odds_order"]
-                            turf_dirt = self_data[0]["turf_dirt"]
+                            odds_order = self_data["odds_order"]
+                            turf_dirt = self_data["turf_dirt"]
                         single_horse_dict["turf_dirt"] = turf_dirt 
                         single_horse_dict["odds_order"] = odds_order
                         single_horse_dict["goal_order"] = single_dict["goal_order"]
@@ -144,7 +151,7 @@ class AnalyseResult():
         file_list = [f for f in all_files if "main_" in f]
         return file_list
 
-    def get_maindata_from_csv(self, filename):
+    def get_mainlist_from_csv(self, filename):
         with open(filename,'r') as f:
             retlist = []
             reader = csv.reader(f)
