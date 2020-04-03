@@ -8,6 +8,7 @@ class AnalyseResult():
     def __init__(self):
         self.pat = sql_pattern.SQLPattern()
         self.today_pred_target = []
+        self.output_target_list = []
 
     def show_analyse_result(self, input_data):
         retlist = []
@@ -71,6 +72,7 @@ class AnalyseResult():
         retlist.append(self.analyse_pattern8(input_data,"阪神","芝"))
         retlist.append(self.analyse_pattern9(input_data,"阪神","芝"))
         retlist.append(self.analyse_pattern10(input_data,"阪神","芝"))
+        self.pat.write_list_to_csv("../analyse_result.csv",self.output_target_list)
 
         return retlist
 
@@ -210,11 +212,13 @@ class AnalyseResult():
         return retlist
 
     def high_expect_target_viewer(self, input_list, distribution, memo):
-        within = sum(distribution[0:2])
+        within = sum(distribution[0:3])
         total = sum(distribution)
-        rate = round(within/total*100,2)
-        if rate >= 20: # 最終的には70%以上のデータのみを表示していきたい
-            print(input_list["today_place"]+str(input_list["race"])+": "+str(input_list["horsename"])+" "+str(rate)+"% / "+str(total)+" ("+memo+")")
+        if total > 0: # 最終的には70%以上のデータのみを表示していきたい
+            rate = round(within/total*100,2)
+            if rate > 35:
+                self.output_target_list.append([input_list["today_place"],input_list["race"],input_list["horsename"],str(rate),str(total),memo])
+                print(input_list["today_place"]+str(input_list["race"])+": "+str(input_list["horsename"])+" "+str(rate)+"% / "+str(total)+" ("+memo+")")
 
     def analyse_pattern1(self, input_data, place, turf_dirt):
         retlist = [0, 0, 0, 0, 0, 0]
@@ -236,12 +240,11 @@ class AnalyseResult():
 
     def analyse_pattern2(self, input_data, place, turf_dirt):
         retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "1着数が着外数の8割以上"
+        pattern_memo = "1着+2着が着外の2倍以上且つ実績15戦以上"
         for inp in input_data+self.today_pred_target:
-            flg = 0
             if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
                 for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) > 0 and int(hd["result_1st"]) >= int(hd["result_alsoran"])*0.8:
+                    if int(hd["result_total"]) >= 15 and int(hd["result_1st"])+int(hd["result_2nd"]) >= int(hd["result_alsoran"])*2:
                         if hd["goal_order"] == "":
                             self.high_expect_target_viewer(inp,retlist,pattern_memo)
                             break
@@ -252,92 +255,128 @@ class AnalyseResult():
 
     def analyse_pattern3(self, input_data, place, turf_dirt):
         retlist = [0, 0, 0, 0, 0, 0]
-        for inp in input_data:
+        pattern_memo = "2戦以上で連対率100％"
+        for inp in input_data+self.today_pred_target:
             if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
                 for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) > 5 and int(hd["result_1st"])+int(hd["result_2nd"])+int(hd["result_3rd"]) >= int(hd["result_alsoran"]*2):
-                        retlist = self.calc_goal_list(retlist,hd["goal_order"])
-                        break
-        return retlist+[place,turf_dirt,"1~3着数の合計が着外数の2倍以上"]
+                    if int(hd["result_total"]) >= 2 and int(hd["result_3rd"]) == 0 and int(hd["result_4th"]) == 0 and int(hd["result_5th"]) == 0 and int(hd["result_alsoran"]) == 0:
+                        if hd["goal_order"] == "":
+                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
+                            break
+                        else:
+                            retlist = self.calc_goal_list(retlist,hd["goal_order"])
+                            break
+        return retlist+[place,turf_dirt,pattern_memo]
 
     def analyse_pattern4(self, input_data, place, turf_dirt):
         retlist = [0, 0, 0, 0, 0, 0]
-        for inp in input_data:
+        pattern_memo = "ダート1800mで前半62s以内で上がり地点差0.3s以内で偏差値55以上"
+        for inp in input_data+self.today_pred_target:
             if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
                 for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) > 5 and int(hd["result_1st"])+int(hd["result_2nd"])+int(hd["result_3rd"]) <= int(hd["result_alsoran"])*0.3:
-                        retlist = self.calc_goal_list(retlist,hd["goal_order"])
-                        break
-        return retlist+[place,turf_dirt,"1~3着数の合計が着外数の3割以下"]
+                    if float(hd["div_score"]) >= 55 and hd["turf_dirt"] == "ダート" and int(hd["distance"]) >= 1800 and float(hd["rap5f"]) >= 62 and float(hd["diff3f"]) <= 0.3:
+                        if hd["goal_order"] == "":
+                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
+                            break
+                        else:
+                            retlist = self.calc_goal_list(retlist,hd["goal_order"])
+                            break
+        return retlist+[place,turf_dirt,pattern_memo]
 
     def analyse_pattern5(self, input_data, place, turf_dirt):
         retlist = [0, 0, 0, 0, 0, 0]
-        for inp in input_data:
+        pattern_memo = "データなし且つ偏差値65以上"
+        for inp in input_data+self.today_pred_target:
             if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
-                if int(inp["odds_order"]) >= 1 and int(inp["odds_order"]) <= 3:
-                    retlist = self.calc_goal_list(retlist,inp["goal_order"])
-        return retlist+[place,turf_dirt,"1~3番人気"]
+                for hd in inp["horsedata"]:
+                    if int(hd["result_total"]) == 0 and float(hd["div_score"]) >= 65:
+                        if hd["goal_order"] == "":
+                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
+                            break
+                        else:
+                            retlist = self.calc_goal_list(retlist,inp["goal_order"])
+                            break
+        return retlist+[place,turf_dirt,pattern_memo]
 
     def analyse_pattern6(self, input_data, place, turf_dirt):
         retlist = [0, 0, 0, 0, 0, 0]
-        for inp in input_data:
+        pattern_memo = "ダートで上がり地点差0.4s以内で勝率3.5割以上"
+        for inp in input_data+self.today_pred_target:
             if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
                 for hd in inp["horsedata"]:
-                    if float(hd["div_score"]) >= 70:
-                        retlist = self.calc_goal_list(retlist,hd["goal_order"])
-                        break
-        return retlist+[place,turf_dirt,"偏差値が70以上"]
+                    if hd["turf_dirt"] == "ダート" and float(hd["diff3f"]) <= 0.4 and int(hd["result_1st"]) >= int(hd["result_total"])*0.35 and int(hd["result_total"]) > 0:
+                        if hd["goal_order"] == "":
+                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
+                            break
+                        else:
+                            retlist = self.calc_goal_list(retlist,hd["goal_order"])
+                            break
+        return retlist+[place,turf_dirt,pattern_memo]
 
     def analyse_pattern7(self, input_data, place, turf_dirt):
         retlist = [0, 0, 0, 0, 0, 0]
-        for inp in input_data:
-            flg = 0
-            goal = "0"
-            if int(inp["odds_order"]) >= 4 and inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
+        pattern_memo = "5戦以上で勝率5割以上"
+        for inp in input_data+self.today_pred_target:
+            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
                 for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) <= 3:
-                        flg = flg + 1
-                        goal = hd["goal_order"]
-                if len(inp["horsedata"]) == flg:
-                    retlist = self.calc_goal_list(retlist,goal)
-        return retlist+[place,turf_dirt,"4番人気以下でデータが少ない"]
+                    if int(hd["result_total"]) >= 5 and int(hd["result_1st"]) >= int(hd["result_total"])*0.5:
+                        if hd["goal_order"] == "":
+                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
+                            break
+                        else:
+                            retlist = self.calc_goal_list(retlist,hd["goal_order"])
+                            break
+        return retlist+[place,turf_dirt,pattern_memo]
 
     def analyse_pattern8(self, input_data, place, turf_dirt):
         retlist = [0, 0, 0, 0, 0, 0]
-        for inp in input_data:
-            flg = 0
+        pattern_memo = "別場で勝率4割以上"
+        for inp in input_data+self.today_pred_target:
             if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
                 for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) > 0 and int(hd["result_total"]) == int(hd["result_1st"]):
-                        retlist = self.calc_goal_list(retlist,hd["goal_order"])
-                        break
-        return retlist+[place,turf_dirt,"すべて1着"]
+                    if int(hd["result_total"]) > 0 and hd["place"] != inp["today_place"] and int(hd["result_1st"]) >= int(hd["result_total"])*0.4:
+                        if hd["goal_order"] == "":
+                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
+                            break
+                        else:
+                            retlist = self.calc_goal_list(retlist,hd["goal_order"])
+                            break
+        return retlist+[place,turf_dirt,pattern_memo]
 
     def analyse_pattern9(self, input_data, place, turf_dirt):
         retlist = [0, 0, 0, 0, 0, 0]
-        for inp in input_data:
-            flg = 0
+        pattern_memo = "6R以前で上がり地点差0.3s以内でデータなしで偏差値55以上"
+        for inp in input_data+self.today_pred_target:
             if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
                 for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) > 0 and int(hd["result_alsoran"]) == 0:
-                        retlist = self.calc_goal_list(retlist,hd["goal_order"])
-                        break
-        return retlist+[place,turf_dirt,"着外なし"]
+                    if int(hd["result_total"]) == 0 and int(inp["race"]) <= 6 and float(hd["diff3f"]) <= 0.3 and float(hd["div_score"]) >= 55:
+                        if hd["goal_order"] == "":
+                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
+                            break
+                        else:
+                            retlist = self.calc_goal_list(retlist,hd["goal_order"])
+                            break
+        return retlist+[place,turf_dirt,pattern_memo]
 
     def analyse_pattern10(self, input_data, place, turf_dirt):
         retlist = [0, 0, 0, 0, 0, 0]
-        for inp in input_data:
-            flg = 0
+        pattern_memo = "5戦以上で連対率5割以上"
+        for inp in input_data+self.today_pred_target:
             if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
                 for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) > 0 and int(hd["result_1st"])+int(hd["result_2nd"])+int(hd["result_3rd"]) >= int(hd["result_total"])*0.5 and int(inp["odds_order"]) <= 5 and float(hd["diff3f"]) <= 0.3:
-                        retlist = self.calc_goal_list(retlist,hd["goal_order"])
-                        break
-        return retlist+[place,turf_dirt,"5番人気以内で3F地点差0.3s以内で3着までが過半数"]
+                    if int(hd["result_total"]) >= 5 and int(hd["result_1st"])+int(hd["result_2nd"]) >= int(hd["result_total"])*0.5:
+                        if hd["goal_order"] == "":
+                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
+                            break
+                        else:
+                            retlist = self.calc_goal_list(retlist,hd["goal_order"])
+                            break
+        return retlist+[place,turf_dirt,pattern_memo]
 
 ar = AnalyseResult()
 lst = ar.get_main_data_from_csv()
+
 result = ar.show_analyse_result(lst)
-for r in result:
-    print(r)
+#for r in result:
+#    print(r)
 
