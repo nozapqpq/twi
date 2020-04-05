@@ -9,6 +9,7 @@ class AnalyseResult():
         self.pat = sql_pattern.SQLPattern()
         self.today_pred_target = []
         self.output_target_list = []
+        self.output_target_date = ""
 
     def show_analyse_result(self, input_data):
         retlist = []
@@ -82,12 +83,15 @@ class AnalyseResult():
         # 名前が日付になっているフォルダを取得
         dir_list = [f for f in all_files if os.path.isdir(os.path.join('..',f)) and f[0].isdigit()]
         print(dir_list)
+        dir_count = 0
         # フォルダ毎、main.csvを取得していく
         for dl in dir_list:
             rdate = self.get_rdate_from_dirname(dl)
             csv_list = self.get_maincsv_list_from_dir(dl)
             today_data = self.pat.get_sql_data("race_table.rdate='"+rdate+"'")
             baseinfo = self.get_baseinfo_from_distribution(dl)
+            if dir_count == len(dir_list)-1:
+                self.output_target_date = rdate
             count = 0
             for fl in csv_list:
                 fn_parse = parse.parse("main_{place:D}{race:d}.csv",fl)
@@ -154,6 +158,7 @@ class AnalyseResult():
                     else:
                         entry_horses_list.append(single_horse_dict)
                 count = count + 1
+            dir_count = dir_count + 1
         return entry_horses_list
 
 
@@ -178,8 +183,6 @@ class AnalyseResult():
             dic = {"today_place":lst[0][1],"turf_dirt":lst[0][2],"distance":lst[0][3]}
             retlist.append(dic)
         return retlist
-
-
 
     def get_mainlist_from_csv(self, filename):
         with open(filename,'r') as f:
@@ -216,7 +219,7 @@ class AnalyseResult():
         total = sum(distribution)
         if total > 0: # 最終的には70%以上のデータのみを表示していきたい
             rate = round(within/total*100,2)
-            if rate > 35:
+            if rate >= 35 and input_list["rdate"] == self.output_target_date:
                 self.output_target_list.append([input_list["today_place"],input_list["race"],input_list["horsename"],str(rate),str(total),memo])
                 print(input_list["today_place"]+str(input_list["race"])+": "+str(input_list["horsename"])+" "+str(rate)+"% / "+str(total)+" ("+memo+")")
 
@@ -240,11 +243,11 @@ class AnalyseResult():
 
     def analyse_pattern2(self, input_data, place, turf_dirt):
         retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "1着+2着が着外の2倍以上且つ実績15戦以上"
+        pattern_memo = "1着+2着が着外の2倍以上且つ実績10戦超"
         for inp in input_data+self.today_pred_target:
             if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
                 for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) >= 15 and int(hd["result_1st"])+int(hd["result_2nd"]) >= int(hd["result_alsoran"])*2:
+                    if int(hd["result_total"]) > 10 and int(hd["result_1st"])+int(hd["result_2nd"]) >= int(hd["result_alsoran"])*2:
                         if hd["goal_order"] == "":
                             self.high_expect_target_viewer(inp,retlist,pattern_memo)
                             break
@@ -270,11 +273,11 @@ class AnalyseResult():
 
     def analyse_pattern4(self, input_data, place, turf_dirt):
         retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "ダート1800mで前半62s以内で上がり地点差0.3s以内で偏差値55以上"
+        pattern_memo = "ダート1600m,1800mで偏差値45以上で前半64s未満で上がり地点差0.5s以内で1勝以上の実績あり、40戦以上で着外率5割以上を除く"
         for inp in input_data+self.today_pred_target:
             if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
                 for hd in inp["horsedata"]:
-                    if float(hd["div_score"]) >= 55 and hd["turf_dirt"] == "ダート" and int(hd["distance"]) >= 1800 and float(hd["rap5f"]) >= 62 and float(hd["diff3f"]) <= 0.3:
+                    if float(hd["div_score"]) >= 50 and hd["turf_dirt"] == "ダート" and (int(hd["distance"]) == 1600 or int(hd["distance"]) == 1800) and float(hd["rap5f"]) < 64 and float(hd["diff3f"]) <= 0.5 and int(hd["result_1st"]) > 0 and not (int(hd["result_total"]) > 40 and int(hd["result_alsoran"]) >= int(hd["result_total"])*0.5):
                         if hd["goal_order"] == "":
                             self.high_expect_target_viewer(inp,retlist,pattern_memo)
                             break
@@ -285,11 +288,11 @@ class AnalyseResult():
 
     def analyse_pattern5(self, input_data, place, turf_dirt):
         retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "データなし且つ偏差値65以上"
+        pattern_memo = "データなし且つ偏差値55以上(10,11Rを除く)"
         for inp in input_data+self.today_pred_target:
             if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
                 for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) == 0 and float(hd["div_score"]) >= 65:
+                    if int(hd["result_total"]) == 0 and float(hd["div_score"]) >= 55 and not (int(inp["race"]) == 10 or int(inp["race"]) == 11):
                         if hd["goal_order"] == "":
                             self.high_expect_target_viewer(inp,retlist,pattern_memo)
                             break
@@ -300,11 +303,11 @@ class AnalyseResult():
 
     def analyse_pattern6(self, input_data, place, turf_dirt):
         retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "ダートで上がり地点差0.4s以内で勝率3.5割以上"
+        pattern_memo = "ダート1400m以上で上がり地点差1.0s以内で勝ち数5以上、勝率1割以上、着外数70未満(10,11Rを除く)"
         for inp in input_data+self.today_pred_target:
             if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
                 for hd in inp["horsedata"]:
-                    if hd["turf_dirt"] == "ダート" and float(hd["diff3f"]) <= 0.4 and int(hd["result_1st"]) >= int(hd["result_total"])*0.35 and int(hd["result_total"]) > 0:
+                    if hd["turf_dirt"] == "ダート" and float(hd["diff3f"]) <= 1.0 and int(hd["distance"]) >= 1400 and int(hd["result_1st"]) >= 5 and int(hd["result_1st"]) >= int(hd["result_total"])*0.1 and int(hd["result_alsoran"]) < 70 and int(hd["result_total"]) > 0 and not (int(inp["race"]) == 10 or int(inp["race"]) == 11):
                         if hd["goal_order"] == "":
                             self.high_expect_target_viewer(inp,retlist,pattern_memo)
                             break
@@ -315,11 +318,11 @@ class AnalyseResult():
 
     def analyse_pattern7(self, input_data, place, turf_dirt):
         retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "5戦以上で勝率5割以上"
+        pattern_memo = "2勝以上で勝率8％以上(10R以降を除く)"
         for inp in input_data+self.today_pred_target:
             if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
                 for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) >= 5 and int(hd["result_1st"]) >= int(hd["result_total"])*0.5:
+                    if int(hd["result_1st"]) >= 2 and int(hd["result_1st"]) >= int(hd["result_total"])*0.08 and int(inp["race"]) < 10:
                         if hd["goal_order"] == "":
                             self.high_expect_target_viewer(inp,retlist,pattern_memo)
                             break
@@ -330,11 +333,11 @@ class AnalyseResult():
 
     def analyse_pattern8(self, input_data, place, turf_dirt):
         retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "別場で勝率4割以上"
+        pattern_memo = "4戦以上で勝率5％以上かつ複勝率7割以上(不良馬場以外)"
         for inp in input_data+self.today_pred_target:
             if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
                 for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) > 0 and hd["place"] != inp["today_place"] and int(hd["result_1st"]) >= int(hd["result_total"])*0.4:
+                    if int(hd["result_total"]) >= 4 and int(hd["result_1st"]) >= int(hd["result_total"])*0.05 and int(hd["result_1st"])+int(hd["result_2nd"])+int(hd["result_3rd"]) >= int(hd["result_total"])*0.7 and not "不" in hd["course_condition"]:
                         if hd["goal_order"] == "":
                             self.high_expect_target_viewer(inp,retlist,pattern_memo)
                             break
@@ -375,7 +378,6 @@ class AnalyseResult():
 
 ar = AnalyseResult()
 lst = ar.get_main_data_from_csv()
-
 result = ar.show_analyse_result(lst)
 #for r in result:
 #    print(r)
