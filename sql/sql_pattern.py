@@ -28,7 +28,7 @@ class SQLPattern():
 
     def get_diviation_value(self,entry,self_data):
         if len(self_data) == 0:
-            return {"diviation":0,"sigma":0,"total":0,"mean_value":0,"mean_diff":0,"mean_level":0,"diff3f":0,"horse_last3f":0,"class":''}
+            return {"diviation":0,"sigma":0,"total":0,"mean_value":0,"mean_diff":0,"mean_level":0,"mean_goal":0,"diff3f":0,"horse_last3f":0,"class":''}
         class_dict = {"lv1":"未勝利' or class='新馬","lv2":"500万' or class='1勝","lv3":"1000万' or class='2勝","lv4":"1600万' or class='3勝' or class='オープン' or class='OP(L)' or class='Ｇ３' or class='Ｇ２' or class='Ｇ１"}
         ret_dict = {}
         lv = "lv4"
@@ -46,20 +46,24 @@ class SQLPattern():
         msg = "race_table.place='"+entry['place']+"' and turf_dirt='"+entry['turf_dirt']+"' and distance="+str(entry['distance'])+" and (race_table.course_condition='"+cond+"') and diff3f>="+str(self_data['diff3f']-0.1)+" and diff3f<="+str(self_data['diff3f']+0.1)+" and "+target+">="+str(target_time-0.3)+" and "+target+"<="+str(target_time+0.3)+" and (class='"+class_dict[lv]+"')"
         sim_pos = self.get_sql_data(msg)
         if len(sim_pos) < 30:
-            ret_dict = {"diviation":0,"sigma":"-","total":len(sim_pos),"mean_value":"-","mean_diff":"-","mean_level":"-","diff3f":self_data['diff3f'],"horse_last3f":self_data['horse_last3f'],"class":self_data['class']}
+            ret_dict = {"diviation":0,"sigma":"-","total":len(sim_pos),"mean_value":"-","mean_diff":"-","mean_level":"-","mean_goal":"-","diff3f":self_data['diff3f'],"horse_last3f":self_data['horse_last3f'],"class":self_data['class']}
         else:
             mean_value = 0
             mean_diff = 0
             mean_level = 0
+            mean_goal = 0
             target_str = 'horse_last3f'
             for sp in sim_pos:
                 mean_value = mean_value+sp[target_str]
                 #mean_value = mean_value+(sp['horse_last3f']-sp['race_last3f'])
                 mean_diff = mean_diff+sp['time_diff']
                 mean_level = mean_level+sp['level']
+                if sp['goal_order'] > 0:
+                    mean_goal = mean_goal+sp['goal_order']
             mean_value = mean_value/len(sim_pos)
             mean_diff = mean_diff/len(sim_pos)
             mean_level = mean_level/len(sim_pos)
+            mean_goal = mean_goal/len(sim_pos)
             sigma = 0
             for sp in sim_pos:
                 sigma = sigma + (sp[target_str]-mean_value)**2
@@ -67,7 +71,7 @@ class SQLPattern():
             sigma = sigma/len(sim_pos)
             diviation = -(self_data[target_str]-mean_value)/sigma*10+50
             #diviation = -((self_data['horse_last3f']-self_data['race_last3f'])-mean_value)/sigma*10+50
-            ret_dict = {"diviation":diviation,"sigma":sigma,"total":len(sim_pos),"mean_value":mean_value,"mean_diff":mean_diff,"mean_level":mean_level,"diff3f":self_data['diff3f'],"horse_last3f":self_data['horse_last3f'],"class":self_data['class']}
+            ret_dict = {"diviation":diviation,"sigma":sigma,"total":len(sim_pos),"mean_value":mean_value,"mean_diff":mean_diff,"mean_level":mean_level,"mean_goal":mean_goal,"diff3f":self_data['diff3f'],"horse_last3f":self_data['horse_last3f'],"class":self_data['class']}
         return ret_dict
 
 
@@ -228,14 +232,14 @@ class SQLPattern():
                         all_entry.append(entry)
                         entry = []
                 else:
-                    if len(row) > 10 and len(row[10]) > 0 and row[17] != "----": # 1走前
-                        entry.append({"race_time":self.convert_race_time(row[17]),"place":row[10],"turf_dirt":self.convert_turf_dirt(row[12]),"course_condition":row[15],"distance":row[13],"horsename":row[3],"jockey_name":row[6],"horsenum":row[2]})
-                    if len(row) > 26 and len(row[26]) > 0 and row[33] != "----": # 2走前
-                        entry.append({"race_time":self.convert_race_time(row[33]),"place":row[26],"turf_dirt":self.convert_turf_dirt(row[28]),"course_condition":row[31],"distance":row[29],"horsename":row[3],"jockey_name":row[6],"horsenum":row[2]})
-                    if len(row) > 42 and len(row[42]) > 0 and row[49] != "----": # 3走前
-                        entry.append({"race_time":self.convert_race_time(row[49]),"place":row[42],"turf_dirt":self.convert_turf_dirt(row[44]),"course_condition":row[47],"distance":row[45],"horsename":row[3],"jockey_name":row[6],"horsenum":row[2]})
-                    if len(row) > 58 and len(row[58]) > 0 and row[65] != "----": # 4走前
-                        entry.append({"race_time":self.convert_race_time(row[65]),"place":row[58],"turf_dirt":self.convert_turf_dirt(row[60]),"course_condition":row[63],"distance":row[61],"horsename":row[3],"jockey_name":row[6],"horsenum":row[2]})
+                    if len(row) > 14 and len(row[14]) > 0 and row[21] != "----": # 1走前
+                        entry.append({"race_time":self.convert_race_time(row[21]),"place":row[14],"turf_dirt":self.convert_turf_dirt(row[16]),"course_condition":row[19],"distance":row[17],"horsename":row[3],"jockey_name":row[6],"jockey_weight":row[7],"zi":row[10],"horsenum":row[2],"pastnum":1})
+                    if len(row) > 30 and len(row[30]) > 0 and row[37] != "----": # 2走前
+                        entry.append({"race_time":self.convert_race_time(row[37]),"place":row[30],"turf_dirt":self.convert_turf_dirt(row[32]),"course_condition":row[35],"distance":row[33],"horsename":row[3],"jockey_name":row[6],"jockey_weight":row[7],"zi":row[10],"horsenum":row[2],"pastnum":2})
+                    if len(row) > 46 and len(row[46]) > 0 and row[53] != "----": # 3走前
+                        entry.append({"race_time":self.convert_race_time(row[53]),"place":row[46],"turf_dirt":self.convert_turf_dirt(row[48]),"course_condition":row[51],"distance":row[49],"horsename":row[3],"jockey_name":row[6],"jockey_weight":row[7],"zi":row[10],"horsenum":row[2],"pastnum":3})
+                    if len(row) > 62 and len(row[62]) > 0 and row[69] != "----": # 4走前
+                        entry.append({"race_time":self.convert_race_time(row[69]),"place":row[62],"turf_dirt":self.convert_turf_dirt(row[64]),"course_condition":row[67],"distance":row[65],"horsename":row[3],"jockey_name":row[6],"jockey_weight":row[7],"zi":row[10],"horsenum":row[2],"pastnum":4})
 
                 row_count = row_count+1
             all_entry.append(entry)
