@@ -27,6 +27,8 @@ class SQLPattern():
                     writer.writerow(b)
 
     def get_diviation_value(self,entry,self_data):
+        if len(self_data) == 0:
+            return {"diviation":0,"sigma":0,"total":0,"mean_value":0,"mean_diff":0,"mean_level":0,"diff3f":0,"horse_last3f":0,"class":''}
         class_dict = {"lv1":"未勝利' or class='新馬","lv2":"500万' or class='1勝","lv3":"1000万' or class='2勝","lv4":"1600万' or class='3勝' or class='オープン' or class='OP(L)' or class='Ｇ３' or class='Ｇ２' or class='Ｇ１"}
         ret_dict = {}
         lv = "lv4"
@@ -43,9 +45,8 @@ class SQLPattern():
         cond = self.convert_condition(entry['course_condition'])
         msg = "race_table.place='"+entry['place']+"' and turf_dirt='"+entry['turf_dirt']+"' and distance="+str(entry['distance'])+" and (race_table.course_condition='"+cond+"') and diff3f>="+str(self_data['diff3f']-0.1)+" and diff3f<="+str(self_data['diff3f']+0.1)+" and "+target+">="+str(target_time-0.3)+" and "+target+"<="+str(target_time+0.3)+" and (class='"+class_dict[lv]+"')"
         sim_pos = self.get_sql_data(msg)
-        print(len(sim_pos))
         if len(sim_pos) < 30:
-            ret_dict = {"diviation":"データ不足(偏差値)","sigma":"-","mean_value":"-","mean_diff":"-","mean_level":"-","diff3f":self_data['diff3f'],"horse_last3f":self_data['horse_last3f'],"class":self_data['class']}
+            ret_dict = {"diviation":0,"sigma":"-","total":len(sim_pos),"mean_value":"-","mean_diff":"-","mean_level":"-","diff3f":self_data['diff3f'],"horse_last3f":self_data['horse_last3f'],"class":self_data['class']}
         else:
             mean_value = 0
             mean_diff = 0
@@ -66,7 +67,7 @@ class SQLPattern():
             sigma = sigma/len(sim_pos)
             diviation = -(self_data[target_str]-mean_value)/sigma*10+50
             #diviation = -((self_data['horse_last3f']-self_data['race_last3f'])-mean_value)/sigma*10+50
-            ret_dict = {"diviation":diviation,"sigma":sigma,"mean_value":mean_value,"mean_diff":mean_diff,"mean_level":mean_level,"diff3f":self_data['diff3f'],"horse_last3f":self_data['horse_last3f'],"class":self_data['class']}
+            ret_dict = {"diviation":diviation,"sigma":sigma,"total":len(sim_pos),"mean_value":mean_value,"mean_diff":mean_diff,"mean_level":mean_level,"diff3f":self_data['diff3f'],"horse_last3f":self_data['horse_last3f'],"class":self_data['class']}
         return ret_dict
 
 
@@ -147,10 +148,8 @@ class SQLPattern():
         cond = self.convert_condition(entry['course_condition'])
         if len(self_data) == 0:
             return []
-        # rap5f vs timediff
-        msg = "rap5f>"+str(self_data['rap5f']-0.2)+" and rap5f<"+str(self_data['rap5f']+0.2)+" and class='"+self.analyse_class(self_data['class'])+"' and time_diff>"+str(self_data['time_diff']-0.2)+" and time_diff <"+str(self_data['time_diff']+0.2)+" and horse_table.place='"+entry['place']+"' and turf_dirt='"+entry['turf_dirt']+"' and (course_condition='"+cond+"') and finish='"+self_data['finish']+"'"
-        # rap5f vs race_time
-        msg = "race_time>"+str(entry['race_time']-0.3)+" and race_time<"+str(entry['race_time']+0.3)+" and horse_table.place='"+entry['place']+"' and turf_dirt='"+entry['turf_dirt']+"' and (course_condition='"+cond+"') and rap5f>"+str(self_data['rap5f']-0.3)+" and rap5f<"+str(self_data['rap5f']+0.3)+" and finish='"+self_data['finish']+"'"
+        # similar racetime, rap5f, diff3f
+        msg = "race_time>"+str(entry['race_time']-0.3)+" and race_time<"+str(entry['race_time']+0.3)+" and diff3f>"+str(self_data['diff3f']-0.3)+" and diff3f<"+str(self_data['diff3f']+0.3)+" and horse_table.place='"+entry['place']+"' and turf_dirt='"+entry['turf_dirt']+"' and (course_condition='"+cond+"') and rap5f>"+str(self_data['rap5f']-0.3)+" and rap5f<"+str(self_data['rap5f']+0.3)
         ret =  self.get_sql_data(msg)
         if len(ret) > 0:
             return ret
@@ -223,7 +222,7 @@ class SQLPattern():
                 # 1列目が1980を超えているならレースデータ（年月日）と判定
                 if int(row[0]) >= 1980:
                     cls = self.analyse_class(row[5])
-                    target={"rdate":row[0]+"-"+row[1]+"-"+row[2],"place":row[3],"turf_dirt":row[7],"distance":row[8],"class_condition":cls,"race":row[4]}
+                    target={"rdate":row[0]+"-"+row[1]+"-"+row[2],"place":row[3],"turf_dirt":row[7],"distance":row[8],"class":row[5],"class_condition":cls,"race":row[4]}
                     all_target.append(target)
                     if row_count > 0:
                         all_entry.append(entry)
