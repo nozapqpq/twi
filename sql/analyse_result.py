@@ -3,6 +3,7 @@ import sql_pattern
 import os
 import csv
 import parse
+import numpy as np
 
 class AnalyseResult():
     def __init__(self):
@@ -375,6 +376,122 @@ class AnalyseResult():
                             retlist = self.calc_goal_list(retlist,hd["goal_order"])
                             break
         return retlist+[place,turf_dirt,pattern_memo]
+
+    # deep learning "methods part"
+    def affine(z, W, b):
+        return np.dot(z, W) + b
+    def affine_back(du, z, W, b):
+        dz = np.dot(du, W.T)
+        dW = np.dot(z.T, du)
+        db = np.dot(np.ones(z.shape[0]).T, du)
+        return dz, dW, db
+    def relu(u):
+        return np.maximum(0, u)
+    def relu_back(dz, u):
+        return dz * np.where(u > 0, 1, 0)
+    def softmax(u):
+        max_u = np.max(u, axis=1, keepdims=True)
+        exp_u = np.exp(u-max_u)
+        return exp_u/np.sum(exp_u, axis=1, keepdims=True)
+    def cross_entropy_error(y, t):
+        return -np.sum(t * np.log(np.maximum(y,1e-7)))/y.shape[0]
+    def softmax_cross_entropy_error_back(y,t):
+        return (y-t)/y.shape[0]
+    def accuracy_rate(y, t):
+        max_y = np.argmax(y, axis=1)
+        max_t = np.argmax(t, axis=1)
+        return np.sum(max_y == max_t)/y.shape[0]
+
+    # deep learning "learn part"
+    def learn(x, t, W1, b1, W2, b2, W3, b3, lr):
+        u1 = affine(x, W1, b1)
+        z1 = relu(u1)
+        u2 = affine(z1, W2, b2)
+        z2 = relu(u2)
+        u3 = affine(z2, W3, b3)
+        y = softmax(u3)
+
+        dy = softmax_cross_entropy_error_back(y, t)
+        dz2, dW3, db3 = affine_back(dy, z2, W3, b3)
+        du2 = relu_back(dz2, u2)
+        dz1, dW2, db2 = affine_back(du2, z1, W2, b2)
+        du1 = relu_back(dz1, u1)
+        dx, dW1, db1 = affine_back(du1, x, W1, b1)
+
+        W1 = W1 - lr * dW1
+        b1 = b1 - lr * db1
+        W2 = W2 - lr * dW2
+        b2 = b2 - lr * db2
+        W3 = W3 - lr * dW3
+        b3 = b3 - lr * db3
+
+        return W1, b1, W2, b2, W3, b3
+
+    def predict(x, W1, b1, W2, b2, W3, b3):
+        u1 = affine(x, W1, b1)
+        z1 = relu(u1)
+        u2 = affine(z1, W2, b2)
+        z2 = relu(u2)
+        u3 = affine(z2, W3, b3)
+        y = softmax(u3)
+        return y
+
+    def load(self):
+        x_train = ""
+        t_train = ""
+        x_test = ""
+        t_test = ""
+        pat = sql_pattern.SQLPattern()
+        pat.get_maindata_dict_from_csv("aaa.csv")
+        return x_train, t_train, x_test, t_test
+
+    # 画像解析仕様になっているので必要に応じて変える
+    def deep_learning(self):
+        x_train, t_train, x_test, t_test = load()
+
+        nx_train = x_train/255
+        nx_test = x_test/255
+
+        d0 = nx_train.shape[1]
+        d1 = 100 # 1層目のノード数
+        d2 = 50  # 2層目のノード数
+        d3 = 10
+
+        np.random.seed(8)
+        W1 = np.random.rand(d0, d1) * 0.2 - 0.1
+        W2 = np.random.rand(d1, d2) * 0.2 - 0.1
+        W3 = np.random.rand(d2, d3) * 0.2 - 0.1
+
+        b1 = np.zeros(d1)
+        b2 = np.zeros(d2)
+        b3 = np.zeros(d3)
+
+        lr = 0.5 # 学習率
+        batch_size = 100 # バッチサイズ
+        epoch = 50 # 学習回数
+
+        # 予測(学習/テストデータ)
+        y_train = predict(nx_train, W1, b1, W2, b2, W3, b3)
+        y_test = predict(nx_test, W1, b1, W2, b2, W3, b3)
+
+        # 正解率、誤差表示
+        train_rate, train_err = accuracy_rate(y_train, t_train), cross_entropy_error(y_train, t_train)
+        test_rate, test_err = accuracy_rate(y_test, t_test), cross_entropy_error(y_test, t_test)
+        print("{0:3d} train_rate={1:6.2f}% test_rate={2:6.2f}% train_err={3:8.5f} test_err={4:8.5f}".format((0), train_rate*100, test_rate*100, train_err, test_err))
+
+        for i in range(epoch):
+            # 学習
+            for j in range(0, nx_train.shape[0], batch_size):
+                W1, b1, W2, b2, W3, b3 = learn(nx_train[j:j+batch_size], t_train[j:j+batch_size], W1, b1, W2, b2, W3, b3, lr)
+
+            # 予測（学習データ）
+            y_train = predict(nx_train, W1, b1, W2, b2, W3, b3)
+            # 予測（テストデータ）
+            y_test = predict(nx_test, W1, b1, W2, b2, W3, b3)
+            # 正解率、誤差表示
+            train_rate, train_err = accuracy_rate(y_train, t_train), cross_entropy_error(y_train, t_train)
+            test_rate, test_err = accuracy_rate(y_test, t_test), cross_entropy_error(y_test, t_test)
+            print("{0:3d} train_rate={1:6.2f}% test_rate={2:6.2f}% train_err={3:8.5f} test_err={4:8.5f}".format((i+1), train_rate*100, test_rate*100, train_err, test_err))
 
 ar = AnalyseResult()
 lst = ar.get_main_data_from_csv()
