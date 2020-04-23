@@ -372,7 +372,10 @@ class SQLPattern():
                 main_dict["past_total"] = int(row[27])
                 main_dict["past_horse_last3f"] = float(row[28])
                 main_dict["past_race_last3f"] = float(row[29])
-                main_dict["today_goal"] = int(row[30])
+                try:
+                    main_dict["today_goal"] = int(row[30])
+                except ValueError:
+                    main_dict["today_goal"] = 0
                 main_dict_list.append(main_dict)
         return main_dict_list
 

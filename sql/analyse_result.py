@@ -3,80 +3,22 @@ import sql_pattern
 import os
 import csv
 import parse
+import keras
+from keras.models import Sequential
+from keras.layers import Dense, Dropout
+from keras.optimizers import Adam
+from keras.layers.normalization import BatchNormalization
 import numpy as np
-
 class AnalyseResult():
     def __init__(self):
         self.pat = sql_pattern.SQLPattern()
         self.today_pred_target = []
         self.output_target_list = []
         self.output_target_date = ""
-
-    def show_analyse_result(self, input_data):
-        retlist = []
-        retlist.append(self.analyse_pattern1(input_data,"福島","ダート"))
-        retlist.append(self.analyse_pattern2(input_data,"福島","ダート"))
-        retlist.append(self.analyse_pattern3(input_data,"福島","ダート"))
-        retlist.append(self.analyse_pattern4(input_data,"福島","ダート"))
-        retlist.append(self.analyse_pattern5(input_data,"福島","ダート"))
-        retlist.append(self.analyse_pattern6(input_data,"福島","ダート"))
-        retlist.append(self.analyse_pattern7(input_data,"福島","ダート"))
-        retlist.append(self.analyse_pattern8(input_data,"福島","ダート"))
-        retlist.append(self.analyse_pattern9(input_data,"福島","ダート"))
-        retlist.append(self.analyse_pattern10(input_data,"福島","ダート"))
-        retlist.append(self.analyse_pattern1(input_data,"中山","ダート"))
-        retlist.append(self.analyse_pattern2(input_data,"中山","ダート"))
-        retlist.append(self.analyse_pattern3(input_data,"中山","ダート"))
-        retlist.append(self.analyse_pattern4(input_data,"中山","ダート"))
-        retlist.append(self.analyse_pattern5(input_data,"中山","ダート"))
-        retlist.append(self.analyse_pattern6(input_data,"中山","ダート"))
-        retlist.append(self.analyse_pattern7(input_data,"中山","ダート"))
-        retlist.append(self.analyse_pattern8(input_data,"中山","ダート"))
-        retlist.append(self.analyse_pattern9(input_data,"中山","ダート"))
-        retlist.append(self.analyse_pattern10(input_data,"中山","ダート"))
-        retlist.append(self.analyse_pattern1(input_data,"阪神","ダート"))
-        retlist.append(self.analyse_pattern2(input_data,"阪神","ダート"))
-        retlist.append(self.analyse_pattern3(input_data,"阪神","ダート"))
-        retlist.append(self.analyse_pattern4(input_data,"阪神","ダート"))
-        retlist.append(self.analyse_pattern5(input_data,"阪神","ダート"))
-        retlist.append(self.analyse_pattern6(input_data,"阪神","ダート"))
-        retlist.append(self.analyse_pattern7(input_data,"阪神","ダート"))
-        retlist.append(self.analyse_pattern8(input_data,"阪神","ダート"))
-        retlist.append(self.analyse_pattern9(input_data,"阪神","ダート"))
-        retlist.append(self.analyse_pattern10(input_data,"阪神","ダート"))
-        retlist.append(self.analyse_pattern1(input_data,"福島","芝"))
-        retlist.append(self.analyse_pattern2(input_data,"福島","芝"))
-        retlist.append(self.analyse_pattern3(input_data,"福島","芝"))
-        retlist.append(self.analyse_pattern4(input_data,"福島","芝"))
-        retlist.append(self.analyse_pattern5(input_data,"福島","芝"))
-        retlist.append(self.analyse_pattern6(input_data,"福島","芝"))
-        retlist.append(self.analyse_pattern7(input_data,"福島","芝"))
-        retlist.append(self.analyse_pattern8(input_data,"福島","芝"))
-        retlist.append(self.analyse_pattern9(input_data,"福島","芝"))
-        retlist.append(self.analyse_pattern10(input_data,"福島","芝"))
-        retlist.append(self.analyse_pattern1(input_data,"中山","芝"))
-        retlist.append(self.analyse_pattern2(input_data,"中山","芝"))
-        retlist.append(self.analyse_pattern3(input_data,"中山","芝"))
-        retlist.append(self.analyse_pattern4(input_data,"中山","芝"))
-        retlist.append(self.analyse_pattern5(input_data,"中山","芝"))
-        retlist.append(self.analyse_pattern6(input_data,"中山","芝"))
-        retlist.append(self.analyse_pattern7(input_data,"中山","芝"))
-        retlist.append(self.analyse_pattern8(input_data,"中山","芝"))
-        retlist.append(self.analyse_pattern9(input_data,"中山","芝"))
-        retlist.append(self.analyse_pattern10(input_data,"中山","芝"))
-        retlist.append(self.analyse_pattern1(input_data,"阪神","芝"))
-        retlist.append(self.analyse_pattern2(input_data,"阪神","芝"))
-        retlist.append(self.analyse_pattern3(input_data,"阪神","芝"))
-        retlist.append(self.analyse_pattern4(input_data,"阪神","芝"))
-        retlist.append(self.analyse_pattern5(input_data,"阪神","芝"))
-        retlist.append(self.analyse_pattern6(input_data,"阪神","芝"))
-        retlist.append(self.analyse_pattern7(input_data,"阪神","芝"))
-        retlist.append(self.analyse_pattern8(input_data,"阪神","芝"))
-        retlist.append(self.analyse_pattern9(input_data,"阪神","芝"))
-        retlist.append(self.analyse_pattern10(input_data,"阪神","芝"))
-        self.pat.write_list_to_csv("../analyse_result.csv",self.output_target_list)
-
-        return retlist
+        self.left_turning_list = ["新潟","中京","東京"]
+        self.small_turning_list = ["札幌","函館","小倉","福島"]
+        self.west_list = ["小倉","阪神","京都","中京"]
+        self.zako_list = ["未勝利","1勝","500万","新馬"]
 
     def get_main_data_from_csv(self):
         entry_horses_list = []
@@ -87,82 +29,175 @@ class AnalyseResult():
         dir_count = 0
         # フォルダ毎、main.csvを取得していく
         for dl in dir_list:
-            rdate = self.get_rdate_from_dirname(dl)
             csv_list = self.get_maincsv_list_from_dir(dl)
-            today_data = self.pat.get_sql_data("race_table.rdate='"+rdate+"'")
-            baseinfo = self.get_baseinfo_from_distribution(dl)
-            if dir_count == len(dir_list)-1:
-                self.output_target_date = rdate
-            count = 0
             for fl in csv_list:
-                fn_parse = parse.parse("main_{place:D}{race:d}.csv",fl)
-                main_lst = self.get_mainlist_from_csv("../"+dl+"/"+fl)
-                horsename = ""
-                single_horse_dict = {}
-                for ml in main_lst:
-                    single_dict = {}
-                    single_dict["horsename"] = ml[0]
-                    single_dict["place"] = ml[1]
-                    single_dict["turf_dirt"] = ml[2]
-                    single_dict["course_condition"] = ml[3]
-                    single_dict["distance"] = ml[4]
-                    single_dict["goal_order"] = ml[5]
-                    single_dict["rap3f"] = ml[6]
-                    single_dict["rap5f"] = ml[7]
-                    single_dict["passorder3"] = ml[8]
-                    single_dict["passorder4"] = ml[9]
-                    single_dict["div_score"] = self.convert_nondigit_to_strzero(ml[10])
-                    single_dict["diff3f"] = ml[11]
-                    single_dict["last3f"] = ml[12]
-                    single_dict["class"] = ml[13]
-                    single_dict["low_1sigma"] = self.convert_nondigit_to_strzero(ml[14])
-                    single_dict["high_1sigma"] = self.convert_nondigit_to_strzero(ml[15])
-                    single_dict["sigma"] = self.convert_nondigit_to_strzero(ml[16])
-                    single_dict["result_1st"] = ml[17]
-                    single_dict["result_2nd"] = ml[18]
-                    single_dict["result_3rd"] = ml[19]
-                    single_dict["result_4th"] = ml[20]
-                    single_dict["result_5th"] = ml[21]
-                    single_dict["result_alsoran"] = ml[22]
-                    single_dict["result_total"] = str(int(ml[17])+int(ml[18])+int(ml[19])+int(ml[20])+int(ml[21])+int(ml[22]))
-                    if horsename == "" or horsename != single_dict["horsename"]:
-                        if horsename != "":
-                            if single_horse_dict["horsedata"][0]["goal_order"] == "":
-                                self.today_pred_target.append(single_horse_dict)
-                            else:
-                                entry_horses_list.append(single_horse_dict)
-                        single_horse_dict = {"rdate":rdate,"today_place":self.pat.convert_place_to_kanji(fn_parse["place"]),"race":str(fn_parse["race"]),"horsename":single_dict["horsename"],"horsedata":""}
-                        self_data = ()
-                        for today in today_data:
-                            if today["place"] == single_horse_dict["today_place"]:
-                                if str(today["race"]) == single_horse_dict["race"]:
-                                    if today["horsename"] == single_horse_dict["horsename"]:
-                                        self_data = today
-                                        break
-                        odds_order = 100
-                        turf_dirt = baseinfo[count]["turf_dirt"]
-                        if len(self_data) > 0:
-                            odds_order = self_data["odds_order"]
-                            turf_dirt = self_data["turf_dirt"]
-                        single_horse_dict["turf_dirt"] = turf_dirt 
-                        single_horse_dict["odds_order"] = odds_order
-                        single_horse_dict["goal_order"] = single_dict["goal_order"]
-                        print(single_horse_dict)
-                    if single_horse_dict["horsedata"] == "":
-                        single_horse_dict["horsedata"] = [single_dict]
-                    else:
-                        single_horse_dict["horsedata"].append(single_dict)
-                    horsename = single_dict["horsename"]
-                if single_horse_dict != {}:
-                    if single_horse_dict["horsedata"][0]["goal_order"] == "":
-                        self.today_pred_target.append(single_horse_dict)
-                    else:
-                        entry_horses_list.append(single_horse_dict)
-                count = count + 1
-            dir_count = dir_count + 1
+                print("../"+dl+"."+fl)
+                main_dict = self.pat.get_maindata_dict_from_csv("../"+dl+"/"+fl)
+                entry_horses_list.append(main_dict)
         return entry_horses_list
 
+    # input_lst[1レース分][1頭分]
+    def make_deeplearning_data(self, input_lst):
+        count = 0
+        learn = [] # 学習用
+        target = [] # 予想対象
+        ans = []
+        horsename_lst = []
+        todayinfo_lst = []
+        today_date = input_lst[-1][0]["today_rdate"]
+        for single_race in input_lst:
+            zi_list = []
+            horse_name = ""
+            horse_count = 0
+            max_zi = 0
+            for dct in single_race:
+                zi_list.append(dct["today_zi"])
+                if dct["horsename"] != horse_name:
+                    horse_count = horse_count + 1
+                    horse_name = dct["horsename"]
+            try:
+                max_zi = max(zi_list)
+            except:
+                max_zi = 0
+            for dct in single_race:
+                single_learn = []
+                single_learn.append(self.get_dl_element1(dct,max_zi))
+                single_learn.append(self.get_dl_element2(dct))
+                single_learn.append(self.get_dl_element3(dct))
+                single_learn.append(self.get_dl_element4(dct))
+                single_learn.append(self.get_dl_element5(dct))
+                single_learn.append(self.get_dl_element6(horse_count))
+                single_learn.append(self.get_dl_element7(dct))
+                single_learn.append(self.get_dl_element8(dct))
+                single_learn.append(self.get_dl_element9(dct))
+                single_learn.append(self.get_dl_element10(dct))
+                single_learn.append(self.get_dl_element11(dct))
+                single_learn.append(self.get_dl_element12(dct))
+                single_learn.append(self.get_dl_element13(dct))
+                single_learn.append(self.get_dl_element14(dct))
+                single_learn.append(self.get_dl_element15(dct))
+                single_learn.append(self.get_dl_element16(dct))
+                single_learn.append(self.get_dl_element17(dct))
+                single_learn.append(self.get_dl_element18(dct))
+                single_learn.append(self.get_dl_element19(dct))
+                single_learn.append(self.get_dl_element20(dct))
+                # 本日と過去走のデータリストを作成、障害や出走取り消し等で着順が入っていないデータは双方から除外
+                if (dct["today_goal"] == 0 and dct["today_rdate"] == today_date and not "障害" in dct["today_turf_dirt"]):
+                    target.append(single_learn)
+                    todayinfo_lst.append([dct["today_place"],dct["today_race"],dct["horsename"]])
+                elif dct["today_goal"] != 0:
+                    learn.append(single_learn)
+                    ans.append(dct["today_goal"])
+                    horsename_lst.append(dct["horsename"])
+        return learn, ans, horsename_lst, target, todayinfo_lst
 
+    # そのレースの最大ZIの馬との差
+    def get_dl_element1(self, dct, max_zi):
+        if max_zi == 0:
+            return 0
+        return (max_zi-dct["today_zi"])/max_zi
+
+    # 芝かダートか
+    def get_dl_element2(self, dct):
+        if dct["today_turf_dirt"] == "芝":
+            return 1
+        return 0
+    # 上がり3F地点差0.0を0, 1.5以上を1とする
+    def get_dl_element3(self, dct):
+        val = dct["past_diff3f"]
+        if (val >= 1.5):
+            val = 1.5
+        return val/1.5
+    # 偏差値60以上か
+    def get_dl_element4(self, dct):
+        if (dct["past_diviation"] >= 60):
+            return 1
+        return 0
+
+    # 偏差値データなしか
+    def get_dl_element5(self, dct):
+        if (dct["past_diviation"] == 0):
+            return 1
+        return 0
+    # 10頭未満のレースか
+    def get_dl_element6(self, horse_count):
+        if horse_count < 10:
+            return 1
+        return 0
+    # 偏差値40以下か
+    def get_dl_element7(self, dct):
+        if dct["past_diviation"] <= 40:
+            return 1
+        return 0
+    # 過去走は小回りか
+    def get_dl_element8(self, dct):
+        if dct["past_place"] in self.small_turning_list:
+            return 1
+        return 0
+    # 今回は小回りか
+    def get_dl_element9(self, dct):
+        if dct["today_place"] in self.small_turning_list:
+            return 1
+        return 0
+    # 過去走は左回りか
+    def get_dl_element10(self, dct):
+        if dct["past_place"] in self.left_turning_list:
+            return 1
+        return 0
+    # 今回は左回りか
+    def get_dl_element11(self, dct):
+        if dct["today_place"] in self.left_turning_list:
+            return 1
+        return 0
+    # 過去走は西のレースか
+    def get_dl_element12(self, dct):
+        if dct["past_place"] in self.west_list:
+            return 1
+        return 0
+    # 今回は西のレースか
+    def get_dl_element13(self, dct):
+        if dct["today_place"] in self.west_list:
+            return 1
+        return 0
+    # 過去走は500万以下のレースか
+    def get_dl_element14(self, dct):
+        if dct["past_class"] in self.zako_list:
+            return 1
+        return 0
+    # 今回は500万以下のレースか
+    def get_dl_element15(self, dct):
+        if dct["today_class"] in self.zako_list:
+            return 1
+        return 0
+    # 過去走の距離は1400m以下か
+    def get_dl_element16(self, dct):
+        if dct["past_distance"] <= 1400:
+            return 1
+        return 0
+    # 今回の距離は1400m以下か
+    def get_dl_element17(self, dct):
+        if dct["today_distance"] <= 1400:
+            return 1
+        return 0
+    # 今回の距離は過去走より200m以上長いか
+    def get_dl_element18(self, dct):
+        if dct["today_distance"] >= dct["past_distance"] + 200:
+            return 1
+        return 0
+    # 今回の距離は過去走より200m以上短いか
+    def get_dl_element19(self,dct):
+        if dct["today_distance"] <= dct["past_distance"] - 200:
+            return 1
+        return 0
+    # 偏差値70以上か
+    def get_dl_element20(self, dct):
+        if (dct["past_diviation"] >= 70):
+            return 1
+        return 0
+
+
+
+    # ディレクトリ名"yymmdd"から日付を取得
     def get_rdate_from_dirname(self, dirname):
         yyyymmdd = "20"+dirname[0:2]+"-"+dirname[2:4]+"-"+dirname[4:6]
         return yyyymmdd
@@ -172,18 +207,6 @@ class AnalyseResult():
         all_files = os.listdir(path=pathname)
         file_list = [f for f in all_files if "main_" in f]
         return file_list
-
-    def get_baseinfo_from_distribution(self, dirname):
-        retlist = []
-        pathname = "../"+dirname
-        all_files = os.listdir(path=pathname)
-        file_list = [f for f in all_files if "distribution_map_" in f]
-        for f in file_list:
-            fn_parse = parse.parse("distribution_map_{place:D}{race:d}.csv",f)
-            lst = self.get_mainlist_from_csv("../"+dirname+"/"+f)
-            dic = {"today_place":lst[0][1],"turf_dirt":lst[0][2],"distance":lst[0][3]}
-            retlist.append(dic)
-        return retlist
 
     def get_mainlist_from_csv(self, filename):
         with open(filename,'r') as f:
@@ -206,296 +229,67 @@ class AnalyseResult():
         else:
             return target
 
-    def calc_goal_list(self, inplist, goal):
-        retlist = [0, 0, 0, 0, 0, 0]
-        if int(goal) >= 1 and int(goal) <= 5:
-            retlist[int(goal)-1] = retlist[int(goal)-1] + 1
-        elif int(goal) > 5:
-            retlist[5] = retlist[5] + 1
-        retlist = [x+y for (x,y) in zip(inplist,retlist)]
-        return retlist
+    def convert_fullgate_goal_list(self, goal):
+        goal_list = []
+        goal_feature = 0
+        if goal == 1:
+            goal_feature = 0
+        elif goal <= 3 and goal != 0:
+            goal_feature = 1
+        elif goal <= 5 and goal != 0:
+            goal_feature = 2
+        elif goal <= 10 and goal != 0:
+            goal_feature = 3
+        else:
+            goal_feature = 4
 
-    def high_expect_target_viewer(self, input_list, distribution, memo):
-        within = sum(distribution[0:3])
-        total = sum(distribution)
-        if total > 0: # 最終的には70%以上のデータのみを表示していきたい
-            rate = round(within/total*100,2)
-            if rate >= 35 and input_list["rdate"] == self.output_target_date:
-                self.output_target_list.append([input_list["today_place"],input_list["race"],input_list["horsename"],str(rate),str(total),memo])
-                print(input_list["today_place"]+str(input_list["race"])+": "+str(input_list["horsename"])+" "+str(rate)+"% / "+str(total)+" ("+memo+")")
+        for i in range(5):
+            if i == goal_feature:
+                goal_list.append(1)
+            else:
+                goal_list.append(0)
+        return goal_list
 
-    def analyse_pattern1(self, input_data, place, turf_dirt):
-        retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "1~3番人気でデータが少ない"
-        for inp in input_data+self.today_pred_target:
-            flg = 0
-            goal = "0"
-            if int(inp["odds_order"]) >= 1 and int(inp["odds_order"]) <= 3 and inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
-                if inp["horsedata"][0]["goal_order"] == "":
-                    self.high_expect_target_viewer(inp,retlist,pattern_memo)
-                else:
-                    for hd in inp["horsedata"]:
-                        if int(hd["result_total"]) <= 3:
-                            flg = flg + 1
-                            goal = hd["goal_order"]
-                    if len(inp["horsedata"]) == flg:
-                        retlist = self.calc_goal_list(retlist,goal)
-        return retlist+[place,turf_dirt,pattern_memo]
+# deep learning "methods part"
+    def deep_learning(self, x_train, y_train, dim, horsename_list, pred_x_np, todayinfo_lst):
+        model = Sequential()
+        model.add(Dense(dim*3, activation='relu', input_dim=dim))
+        model.add(Dropout(0.2))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*3, activation='relu'))
+        model.add(Dropout(0.3))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*3, activation='relu'))
+        model.add(Dropout(0.3))
+        model.add(BatchNormalization())
+        model.add(Dense(5, activation='softmax'))
 
-    def analyse_pattern2(self, input_data, place, turf_dirt):
-        retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "1着+2着が着外の2倍以上且つ実績10戦超"
-        for inp in input_data+self.today_pred_target:
-            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
-                for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) > 10 and int(hd["result_1st"])+int(hd["result_2nd"]) >= int(hd["result_alsoran"])*2:
-                        if hd["goal_order"] == "":
-                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
-                            break
-                        else:
-                            retlist = self.calc_goal_list(retlist,hd["goal_order"])
-                            break
-        return retlist+[place,turf_dirt,pattern_memo]
+        adam = Adam()
+        model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
 
-    def analyse_pattern3(self, input_data, place, turf_dirt):
-        retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "2戦以上で連対率100％"
-        for inp in input_data+self.today_pred_target:
-            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
-                for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) >= 2 and int(hd["result_3rd"]) == 0 and int(hd["result_4th"]) == 0 and int(hd["result_5th"]) == 0 and int(hd["result_alsoran"]) == 0:
-                        if hd["goal_order"] == "":
-                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
-                            break
-                        else:
-                            retlist = self.calc_goal_list(retlist,hd["goal_order"])
-                            break
-        return retlist+[place,turf_dirt,pattern_memo]
+        history = model.fit(x_train, y_train, epochs=30, batch_size=50, validation_split=0.1)
+        #loss, accuracy = model.evaluate(x_train[29000:],y_train[29000:],verbose=0)
+        #print("Accuracy = {:.2f}".format(accuracy))
+        output_list = []
+        with open("../deeplearning_result.csv","w") as f:
+            writer = csv.writer(f)
+            writer.writerow(["place","race","horsename","1st","~3rd","~5th","~10th","11th~"])
+            for i in range(len(pred_x_np)):
+                score = list(model.predict(pred_x_np[i].reshape(1,dim))[0])
+                writer.writerow(todayinfo_lst[i]+score)
 
-    def analyse_pattern4(self, input_data, place, turf_dirt):
-        retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "ダート1600m,1800mで偏差値45以上で前半64s未満で上がり地点差0.5s以内で1勝以上の実績あり、40戦以上で着外率5割以上を除く"
-        for inp in input_data+self.today_pred_target:
-            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
-                for hd in inp["horsedata"]:
-                    if float(hd["div_score"]) >= 50 and hd["turf_dirt"] == "ダート" and (int(hd["distance"]) == 1600 or int(hd["distance"]) == 1800) and float(hd["rap5f"]) < 64 and float(hd["diff3f"]) <= 0.5 and int(hd["result_1st"]) > 0 and not (int(hd["result_total"]) > 40 and int(hd["result_alsoran"]) >= int(hd["result_total"])*0.5):
-                        if hd["goal_order"] == "":
-                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
-                            break
-                        else:
-                            retlist = self.calc_goal_list(retlist,hd["goal_order"])
-                            break
-        return retlist+[place,turf_dirt,pattern_memo]
-
-    def analyse_pattern5(self, input_data, place, turf_dirt):
-        retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "データなし且つ偏差値55以上(10,11Rを除く)"
-        for inp in input_data+self.today_pred_target:
-            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
-                for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) == 0 and float(hd["div_score"]) >= 55 and not (int(inp["race"]) == 10 or int(inp["race"]) == 11):
-                        if hd["goal_order"] == "":
-                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
-                            break
-                        else:
-                            retlist = self.calc_goal_list(retlist,inp["goal_order"])
-                            break
-        return retlist+[place,turf_dirt,pattern_memo]
-
-    def analyse_pattern6(self, input_data, place, turf_dirt):
-        retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "ダート1400m以上で上がり地点差1.0s以内で勝ち数5以上、勝率1割以上、着外数70未満(10,11Rを除く)"
-        for inp in input_data+self.today_pred_target:
-            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
-                for hd in inp["horsedata"]:
-                    if hd["turf_dirt"] == "ダート" and float(hd["diff3f"]) <= 1.0 and int(hd["distance"]) >= 1400 and int(hd["result_1st"]) >= 5 and int(hd["result_1st"]) >= int(hd["result_total"])*0.1 and int(hd["result_alsoran"]) < 70 and int(hd["result_total"]) > 0 and not (int(inp["race"]) == 10 or int(inp["race"]) == 11):
-                        if hd["goal_order"] == "":
-                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
-                            break
-                        else:
-                            retlist = self.calc_goal_list(retlist,hd["goal_order"])
-                            break
-        return retlist+[place,turf_dirt,pattern_memo]
-
-    def analyse_pattern7(self, input_data, place, turf_dirt):
-        retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "2勝以上で勝率8％以上(10R以降を除く)"
-        for inp in input_data+self.today_pred_target:
-            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
-                for hd in inp["horsedata"]:
-                    if int(hd["result_1st"]) >= 2 and int(hd["result_1st"]) >= int(hd["result_total"])*0.08 and int(inp["race"]) < 10:
-                        if hd["goal_order"] == "":
-                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
-                            break
-                        else:
-                            retlist = self.calc_goal_list(retlist,hd["goal_order"])
-                            break
-        return retlist+[place,turf_dirt,pattern_memo]
-
-    def analyse_pattern8(self, input_data, place, turf_dirt):
-        retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "4戦以上で勝率5％以上かつ複勝率7割以上(不良馬場以外)"
-        for inp in input_data+self.today_pred_target:
-            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
-                for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) >= 4 and int(hd["result_1st"]) >= int(hd["result_total"])*0.05 and int(hd["result_1st"])+int(hd["result_2nd"])+int(hd["result_3rd"]) >= int(hd["result_total"])*0.7 and not "不" in hd["course_condition"]:
-                        if hd["goal_order"] == "":
-                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
-                            break
-                        else:
-                            retlist = self.calc_goal_list(retlist,hd["goal_order"])
-                            break
-        return retlist+[place,turf_dirt,pattern_memo]
-
-    def analyse_pattern9(self, input_data, place, turf_dirt):
-        retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "6R以前で上がり地点差0.3s以内でデータなしで偏差値55以上"
-        for inp in input_data+self.today_pred_target:
-            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
-                for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) == 0 and int(inp["race"]) <= 6 and float(hd["diff3f"]) <= 0.3 and float(hd["div_score"]) >= 55:
-                        if hd["goal_order"] == "":
-                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
-                            break
-                        else:
-                            retlist = self.calc_goal_list(retlist,hd["goal_order"])
-                            break
-        return retlist+[place,turf_dirt,pattern_memo]
-
-    def analyse_pattern10(self, input_data, place, turf_dirt):
-        retlist = [0, 0, 0, 0, 0, 0]
-        pattern_memo = "5戦以上で連対率5割以上"
-        for inp in input_data+self.today_pred_target:
-            if inp["today_place"] == place and inp["turf_dirt"] == turf_dirt:
-                for hd in inp["horsedata"]:
-                    if int(hd["result_total"]) >= 5 and int(hd["result_1st"])+int(hd["result_2nd"]) >= int(hd["result_total"])*0.5:
-                        if hd["goal_order"] == "":
-                            self.high_expect_target_viewer(inp,retlist,pattern_memo)
-                            break
-                        else:
-                            retlist = self.calc_goal_list(retlist,hd["goal_order"])
-                            break
-        return retlist+[place,turf_dirt,pattern_memo]
-
-    # deep learning "methods part"
-    def affine(z, W, b):
-        return np.dot(z, W) + b
-    def affine_back(du, z, W, b):
-        dz = np.dot(du, W.T)
-        dW = np.dot(z.T, du)
-        db = np.dot(np.ones(z.shape[0]).T, du)
-        return dz, dW, db
-    def relu(u):
-        return np.maximum(0, u)
-    def relu_back(dz, u):
-        return dz * np.where(u > 0, 1, 0)
-    def softmax(u):
-        max_u = np.max(u, axis=1, keepdims=True)
-        exp_u = np.exp(u-max_u)
-        return exp_u/np.sum(exp_u, axis=1, keepdims=True)
-    def cross_entropy_error(y, t):
-        return -np.sum(t * np.log(np.maximum(y,1e-7)))/y.shape[0]
-    def softmax_cross_entropy_error_back(y,t):
-        return (y-t)/y.shape[0]
-    def accuracy_rate(y, t):
-        max_y = np.argmax(y, axis=1)
-        max_t = np.argmax(t, axis=1)
-        return np.sum(max_y == max_t)/y.shape[0]
-
-    # deep learning "learn part"
-    def learn(x, t, W1, b1, W2, b2, W3, b3, lr):
-        u1 = affine(x, W1, b1)
-        z1 = relu(u1)
-        u2 = affine(z1, W2, b2)
-        z2 = relu(u2)
-        u3 = affine(z2, W3, b3)
-        y = softmax(u3)
-
-        dy = softmax_cross_entropy_error_back(y, t)
-        dz2, dW3, db3 = affine_back(dy, z2, W3, b3)
-        du2 = relu_back(dz2, u2)
-        dz1, dW2, db2 = affine_back(du2, z1, W2, b2)
-        du1 = relu_back(dz1, u1)
-        dx, dW1, db1 = affine_back(du1, x, W1, b1)
-
-        W1 = W1 - lr * dW1
-        b1 = b1 - lr * db1
-        W2 = W2 - lr * dW2
-        b2 = b2 - lr * db2
-        W3 = W3 - lr * dW3
-        b3 = b3 - lr * db3
-
-        return W1, b1, W2, b2, W3, b3
-
-    def predict(x, W1, b1, W2, b2, W3, b3):
-        u1 = affine(x, W1, b1)
-        z1 = relu(u1)
-        u2 = affine(z1, W2, b2)
-        z2 = relu(u2)
-        u3 = affine(z2, W3, b3)
-        y = softmax(u3)
-        return y
-
-    def load(self):
-        x_train = ""
-        t_train = ""
-        x_test = ""
-        t_test = ""
-        pat = sql_pattern.SQLPattern()
-        pat.get_maindata_dict_from_csv("aaa.csv")
-        return x_train, t_train, x_test, t_test
-
-    # 画像解析仕様になっているので必要に応じて変える
-    def deep_learning(self):
-        x_train, t_train, x_test, t_test = load()
-
-        nx_train = x_train/255
-        nx_test = x_test/255
-
-        d0 = nx_train.shape[1]
-        d1 = 100 # 1層目のノード数
-        d2 = 50  # 2層目のノード数
-        d3 = 10
-
-        np.random.seed(8)
-        W1 = np.random.rand(d0, d1) * 0.2 - 0.1
-        W2 = np.random.rand(d1, d2) * 0.2 - 0.1
-        W3 = np.random.rand(d2, d3) * 0.2 - 0.1
-
-        b1 = np.zeros(d1)
-        b2 = np.zeros(d2)
-        b3 = np.zeros(d3)
-
-        lr = 0.5 # 学習率
-        batch_size = 100 # バッチサイズ
-        epoch = 50 # 学習回数
-
-        # 予測(学習/テストデータ)
-        y_train = predict(nx_train, W1, b1, W2, b2, W3, b3)
-        y_test = predict(nx_test, W1, b1, W2, b2, W3, b3)
-
-        # 正解率、誤差表示
-        train_rate, train_err = accuracy_rate(y_train, t_train), cross_entropy_error(y_train, t_train)
-        test_rate, test_err = accuracy_rate(y_test, t_test), cross_entropy_error(y_test, t_test)
-        print("{0:3d} train_rate={1:6.2f}% test_rate={2:6.2f}% train_err={3:8.5f} test_err={4:8.5f}".format((0), train_rate*100, test_rate*100, train_err, test_err))
-
-        for i in range(epoch):
-            # 学習
-            for j in range(0, nx_train.shape[0], batch_size):
-                W1, b1, W2, b2, W3, b3 = learn(nx_train[j:j+batch_size], t_train[j:j+batch_size], W1, b1, W2, b2, W3, b3, lr)
-
-            # 予測（学習データ）
-            y_train = predict(nx_train, W1, b1, W2, b2, W3, b3)
-            # 予測（テストデータ）
-            y_test = predict(nx_test, W1, b1, W2, b2, W3, b3)
-            # 正解率、誤差表示
-            train_rate, train_err = accuracy_rate(y_train, t_train), cross_entropy_error(y_train, t_train)
-            test_rate, test_err = accuracy_rate(y_test, t_test), cross_entropy_error(y_test, t_test)
-            print("{0:3d} train_rate={1:6.2f}% test_rate={2:6.2f}% train_err={3:8.5f} test_err={4:8.5f}".format((i+1), train_rate*100, test_rate*100, train_err, test_err))
-
+goal_list = []
 ar = AnalyseResult()
 lst = ar.get_main_data_from_csv()
-result = ar.show_analyse_result(lst)
-#for r in result:
-#    print(r)
-
+learn_lst, ans_lst, hn_lst, target, todayinfo_lst = ar.make_deeplearning_data(lst)
+dim = len(learn_lst[0])
+# 着順分類リスト作成
+for i in range(len(learn_lst)):
+    gl = ar.convert_fullgate_goal_list(ans_lst[i])
+    goal_list.append(gl)
+# 各リストのnumpy化
+x_np = np.array(learn_lst)
+y_np = np.array(goal_list)
+pred_x_np = np.array(target)
+# ディープラーニング
+ar.deep_learning(x_np, y_np, dim, hn_lst, pred_x_np, todayinfo_lst)
