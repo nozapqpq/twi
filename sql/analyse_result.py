@@ -21,6 +21,8 @@ class AnalyseResult():
         self.small_turning_list = ["札幌","函館","小倉","福島"]
         self.west_list = ["小倉","阪神","京都","中京"]
         self.zako_list = ["未勝利","1勝","500万","新馬"]
+        self.main_placeA_list = ["中山","阪神"]
+        self.main_placeB_list = ["京都","東京"]
         self.kami_jockey_list = ["モレイラ","ルメール","レーン","川田将雅","ムーア","マーフィ","Ｍ．デム","Ｃ．デム","北村友一","福永祐一","戸崎圭太","武豊"]
         self.chuana_jockey_list = ["ルメール","川田将雅","フォーリ","Ｍ．デム","田辺裕信","北村友一","松田大作","松山弘平","福永祐一","シュタル","戸崎圭太","岩田康誠","石橋脩","勝浦正樹","武豊","三浦皇成","浜中俊","国分恭介","丸山元気","秋山真一","池添謙一"]
 
@@ -55,9 +57,9 @@ class AnalyseResult():
             horse_count = 0
             kamij_count = 0
             chuanaj_count = 0
-            max_zi = 0
             for dct in single_race:
-                zi_list.append(dct["today_zi"])
+                if dct["today_zi"] != 0:
+                    zi_list.append(dct["today_zi"])
                 if dct["horsename"] != horse_name:
                     horse_count = horse_count + 1
                     horse_name = dct["horsename"]
@@ -65,14 +67,10 @@ class AnalyseResult():
                     kamij_count = kamij_count + 1
                 if dct["today_jockey_name"] in self.chuana_jockey_list:
                     chuanaj_count = chuanaj_count + 1
-            try:
-                max_zi = max(zi_list)
-            except:
-                max_zi = 0
             for dct in single_race:
                 single_learn = []
-                single_learn.append(self.get_dl_element_ex1(dct))
-                single_learn.append(self.get_dl_element1(dct,max_zi))
+                #single_learn.append(self.get_dl_element_ex1(dct))
+                single_learn.append(self.get_dl_element1(dct,zi_list))
                 single_learn.append(self.get_dl_element2(dct))
                 single_learn.append(self.get_dl_element3(dct))
                 single_learn.append(self.get_dl_element4(dct))
@@ -103,6 +101,20 @@ class AnalyseResult():
                 single_learn.append(self.get_dl_element29(dct))
                 single_learn.append(self.get_dl_element30(dct))
                 single_learn.append(self.get_dl_element31(dct))
+                single_learn.append(self.get_dl_element32(dct))
+                single_learn.append(self.get_dl_element33(dct))
+                single_learn.append(self.get_dl_element34(dct))
+                single_learn.append(self.get_dl_element35(dct))
+                single_learn.append(self.get_dl_element36(dct))
+                single_learn.append(self.get_dl_element37(dct))
+                single_learn.append(self.get_dl_element38(dct))
+                single_learn.append(self.get_dl_element39(dct))
+                single_learn.append(self.get_dl_element40(dct))
+                single_learn.append(self.get_dl_element41(dct))
+                single_learn.append(self.get_dl_element42(dct))
+                single_learn.append(self.get_dl_element43(dct))
+                single_learn.append(self.get_dl_element44(dct))
+                single_learn.append(self.get_dl_element45(dct))
 
                 # 本日と過去走のデータリストを作成、障害や出走取り消し等で着順が入っていないデータは双方から除外
                 if (dct["today_rdate"] == self.today_date and not "障害" in dct["today_turf_dirt"]):
@@ -119,12 +131,13 @@ class AnalyseResult():
         if dct["today_jockey_name"] == "国分恭介":
             return 1
         return 0
-    # そのレースの最大ZIの馬との差
-    def get_dl_element1(self, dct, max_zi):
-        diff = max_zi-dct["today_zi"]
-        if max_zi == 0:
+    # そのレースのZI平均より大きいか
+    def get_dl_element1(self, dct, zi_list):
+        if dct["today_zi"] == 0 or len(zi_list) == 0:
             return 0
-        return diff/max_zi
+        mx_mn_diff = max(max(zi_list)-min(zi_list),1)
+        diff = max(dct["today_zi"]-sum(zi_list)/len(zi_list),0)
+        return diff/mx_mn_diff
     # 今回は芝かダートか
     def get_dl_element2(self, dct):
         if dct["today_turf_dirt"] == "芝":
@@ -138,7 +151,7 @@ class AnalyseResult():
     # 偏差値60以上か
     def get_dl_element4(self, dct):
         if (dct["past_diviation"] >= 60):
-            return 1
+            return (min(dct["past_diviation"],80)-60)/20
         return 0
     # 偏差値データなしか
     def get_dl_element5(self, dct):
@@ -150,11 +163,12 @@ class AnalyseResult():
         if horse_count < 10:
             return 1
         return 0
-    # 偏差値40以下か
+    # 偏差値50以下か
     def get_dl_element7(self, dct):
-        if dct["past_diviation"] <= 40:
-            return 1
-        return 0
+        if dct["past_diviation"] == 0 or dct["past_diviation"] > 50:
+            return 0
+        div = max(dct["past_diviation"],25)
+        return (50-div)/50
     # 過去走は小回りか
     def get_dl_element8(self, dct):
         if dct["past_place"] in self.small_turning_list:
@@ -188,72 +202,66 @@ class AnalyseResult():
     # 斤量
     def get_dl_element14(self, dct):
         return (min(dct["today_jockey_weight"],60)-48)/12
-    # 今回は500万以下のレースか
+    # 過去走は芝かダートか
     def get_dl_element15(self, dct):
-        if dct["today_class"] in self.zako_list:
+        if dct["past_turf_dirt"] == "芝":
             return 1
         return 0
-    # 過去走の距離は1600m以下か
+    # けつばん
     def get_dl_element16(self, dct):
-        return (1600-min(dct["past_distance"],1600))/1600
-    # 今回の距離は1600m以下か
+        return 1
+    # けつばん
     def get_dl_element17(self, dct):
-        return (1600-min(dct["past_distance"],1600))/1600
+        return 1
     # 今回の距離は過去走より長いか
     def get_dl_element18(self, dct):
         return min(max(dct["today_distance"]-dct["past_distance"],0),1000)/1000
     # 今回の距離は過去走より短いか
     def get_dl_element19(self,dct):
         return min(max(dct["past_distance"]-dct["today_distance"],0),1000)/1000
-    # 偏差値70以上か
+    # レース間隔が１年以上空いているか
     def get_dl_element20(self, dct):
-        if (dct["past_diviation"] >= 70):
-            return 1
+        diff = (dct["today_rdate"]-dct["past_rdate"]).days
+        if diff > 350:
+            return (max(diff,750)-350)/400
         return 0
-    # 今回と過去走でクラスが別か
+    # 今回のクラスランク2進数の2桁目
     def get_dl_element21(self, dct):
-        if (dct["past_class"] != dct["today_class"]):
-            return 1
-        return 0
-    # 今回と過去走で芝/ダートが異なるか
+        bi = '{:02b}'.format(self.get_class_rank(dct["today_class"]))
+        return bi[1]
+    # 今回のクラスランク2進数の1桁目
     def get_dl_element22(self, dct):
-        if (dct["past_turf_dirt"] != dct["today_turf_dirt"]):
-            return 1
-        return 0
-    # 今回が1000万以上で過去走が未勝利・新馬か
+        bi = '{:02b}'.format(self.get_class_rank(dct["today_class"]))
+        return bi[0]
+    # 過去走のクラスランク2進数の2桁目
     def get_dl_element23(self, dct):
-        if (not dct["today_class"] in self.zako_list and dct["past_class"] in ["未勝利","新馬"]):
-            return 1
-        return 0
-    # 神ジョッキーが乗るか
+        bi = '{:02b}'.format(self.get_class_rank(dct["past_class"]))
+        return bi[1]
+    # 過去走のクラスランク2進数の1桁目
     def get_dl_element24(self, dct):
-        if dct["today_jockey_name"] in self.kami_jockey_list:
-            return 1
-        return 0
+        bi = '{:02b}'.format(self.get_class_rank(dct["past_class"]))
+        return bi[0] 
     # 神ジョッキーが今回のレースに何人乗るか
     def get_dl_element25(self, dct, j_count):
         count = max([j_count,8])
         if count == 0:
             return 0
         return (count+8)/16
-    # 前半ラップは58s以内か
+    # 前半ラップ57s+二進数000の3桁目
     def get_dl_element26(self, dct):
-        if dct["past_rap5f"] <= 58:
-            return 1
-        return 0
-    # 前半ラップは60s以内か
+        bi = '{:03b}'.format(min(max(int(dct["past_rap5f"]),57),64)-57)
+        return bi[2]
+    # 前半ラップ57s+二進数000の2桁目
     def get_dl_element27(self, dct):
-        if dct["past_rap5f"] <= 60:
-            return 1
-        return 0
-    # 前半ラップは62s以内か
+        bi = '{:03b}'.format(min(max(int(dct["past_rap5f"]),57),64)-57)
+        return bi[1] 
+    # 前半ラップ57s+二進数000の1桁目
     def get_dl_element28(self, dct):
-        if dct["past_rap5f"] <= 62:
-            return 1
-        return 0
-    # 前半ラップは64s以内か
+        bi = '{:03b}'.format(min(max(int(dct["past_rap5f"]),57),64)-57)
+        return bi[0]
+    # 神ジョッキーが乗るか
     def get_dl_element29(self, dct):
-        if dct["past_rap5f"] <= 64:
+        if dct["today_jockey_name"] in self.kami_jockey_list:
             return 1
         return 0
     # 過去走で上がり3Fはレース上がりより速かったか
@@ -270,6 +278,66 @@ class AnalyseResult():
         if diff < 0:
             return 0
         return (diff+3.0)/6.0
+    # 過去走は阪神・中山開催か
+    def get_dl_element32(self, dct):
+        if dct["past_place"] in self.main_placeA_list:
+            return 1
+        return 0
+    # 過去走は京都・東京開催か
+    def get_dl_element33(self, dct):
+        if dct["past_place"] in self.main_placeB_list:
+            return 1
+        return 0
+    # 今回は阪神・中山開催か
+    def get_dl_element34(self, dct):
+        if dct["today_place"] in self.main_placeA_list:
+            return 1
+        return 0
+    # 今回は京都・東京開催か
+    def get_dl_element35(self, dct):
+        if dct["today_place"] in self.main_placeB_list:
+            return 1
+        return 0
+    # 過去走は上がり3F地点差2s以上の差があるか
+    def get_dl_element36(self, dct):
+        if dct["past_diff3f"] >= 2.0:
+            return 1
+        return 0
+    # 前走の着差
+    def get_dl_element37(self, dct):
+        return min(dct["past_time_diff"],2.5)/2.5
+    # 今回の距離インデックス4桁目
+    def get_dl_element38(self, dct):
+        bi = '{:04b}'.format(self.get_distance_index(dct["today_distance"]))
+        return bi[3]
+    # 今回の距離インデックス3桁目
+    def get_dl_element39(self, dct):
+        bi = '{:04b}'.format(self.get_distance_index(dct["today_distance"]))
+        return bi[2]
+    # 今回の距離インデックス2桁目
+    def get_dl_element40(self, dct):
+        bi = '{:04b}'.format(self.get_distance_index(dct["today_distance"]))
+        return bi[1]
+    # 今回の距離インデックス1桁目
+    def get_dl_element41(self, dct):
+        bi = '{:04b}'.format(self.get_distance_index(dct["today_distance"]))
+        return bi[0]
+    # 過去走の距離インデックス4桁目
+    def get_dl_element42(self, dct):
+        bi = '{:04b}'.format(self.get_distance_index(dct["past_distance"]))
+        return bi[3]
+    # 過去走の距離インデックス3桁目
+    def get_dl_element43(self, dct):
+        bi = '{:04b}'.format(self.get_distance_index(dct["past_distance"]))
+        return bi[2]
+    # 過去走の距離インデックス2桁目
+    def get_dl_element44(self, dct):
+        bi = '{:04b}'.format(self.get_distance_index(dct["past_distance"]))
+        return bi[1]
+    # 過去走の距離インデックス1桁目
+    def get_dl_element45(self, dct):
+        bi = '{:04b}'.format(self.get_distance_index(dct["past_distance"]))
+        return bi[0]
 
     # ディレクトリ名"yymmdd"から日付を取得
     def get_date_from_dirname(self, dirname):
@@ -303,21 +371,59 @@ class AnalyseResult():
         else:
             return target
 
+    # クラスランク0~3を取得
+    def get_class_rank(self, cls):
+        if cls in ["未勝利","新馬"]:
+            return 0
+        if cls in ["500万","1勝"]:
+            return 1
+        if cls in ["1000万","2勝","1600万","3勝"]:
+            return 2
+        return 3
+
+    # 距離インデックスを取得
+    def get_distance_index(self, dist):
+        if dist < 1000:
+            return 0
+        if dist <= 1000:
+            return 1
+        if dist <= 1150:
+            return 2
+        if dist <= 1200:
+            return 3
+        if dist <= 1300:
+            return 4
+        if dist <= 1400:
+            return 5
+        if dist <= 1500:
+            return 6
+        if dist <= 1600:
+            return 7
+        if dist <= 1700:
+            return 8
+        if dist <= 1800:
+            return 9
+        if dist <= 2000:
+            return 10
+        if dist <= 2200:
+            return 11
+        if dist <= 2600:
+            return 12
+        if dist > 2600:
+            return 13
+        return 0
+
     def convert_fullgate_goal_list(self, goal):
         goal_list = []
         goal_feature = 0
-        if goal == 1:
+        if goal <= 2 and goal != 0:
             goal_feature = 0
-        elif goal <= 3 and goal != 0:
+        elif goal <= 8 and goal != 0:
             goal_feature = 1
-        elif goal <= 5 and goal != 0:
-            goal_feature = 2
-        elif goal <= 10 and goal != 0:
-            goal_feature = 3
         else:
-            goal_feature = 4
+            goal_feature = 2 
 
-        for i in range(5):
+        for i in range(3):
             if i == goal_feature:
                 goal_list.append(1)
             else:
@@ -327,27 +433,37 @@ class AnalyseResult():
 # deep learning "methods part"
     def deep_learning(self, x_train, y_train, dim, horsename_list, pred_x_np, todayinfo_lst):
         model = Sequential()
-        model.add(Dense(dim*3, activation='relu', input_dim=dim))
-        model.add(Dropout(0))
-        model.add(BatchNormalization())
-        model.add(Dense(dim*5, activation='relu'))
-        model.add(Dropout(0))
-        model.add(BatchNormalization())
-        model.add(Dense(dim*5, activation='relu'))
+        model.add(Dense(dim*2, activation='relu', input_dim=dim))
+        #model.add(Dropout(0.2))
+        #model.add(BatchNormalization())
+        #model.add(Dense(dim*3, activation='relu'))
+        #model.add(Dropout(0.3))
+        #model.add(BatchNormalization())
+        #model.add(Dense(dim*3, activation='relu'))
+        #model.add(Dropout(0.3))
         model.add(Dropout(0.5))
         model.add(BatchNormalization())
-        model.add(Dense(5, activation='softmax'))
+        model.add(Dense(dim*3, activation='relu'))
+        model.add(Dropout(0.3))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*3, activation='relu'))
+        model.add(Dropout(0.3))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*3, activation='relu'))
+        model.add(Dropout(0.3))
+        model.add(BatchNormalization())
+        model.add(Dense(3, activation='softmax'))
 
         adam = Adam()
         model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
 
-        history = model.fit(x_train, y_train, epochs=30, batch_size=100, validation_split=0.1)
+        history = model.fit(x_train, y_train, epochs=500, batch_size=3000, validation_split=0.1)
         #loss, accuracy = model.evaluate(x_train[29000:],y_train[29000:],verbose=0)
         #print("Accuracy = {:.2f}".format(accuracy))
         output_list = []
         with open("../deeplearning_result.csv","w") as f:
             writer = csv.writer(f)
-            writer.writerow(["place","race","horsename","1st","~3rd","~5th","~10th","11th~"])
+            writer.writerow(["place","race","horsename","~2nd","~8th","9th~"])
             for i in range(len(pred_x_np)):
                 score = list(model.predict(pred_x_np[i].reshape(1,dim))[0])
                 writer.writerow(todayinfo_lst[i]+score)
