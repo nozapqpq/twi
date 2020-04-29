@@ -416,3 +416,100 @@ class SQLPattern():
                             #msg2 = "select class from race_table " + where_msg + time_cond1 + time_cond2 + ";"
                             msg2 = "update race_table set level="+str(10-i)+ " "+where_msg + time_cond1 + time_cond2
                             set_level = manipulator.sql_manipulator(msg2+";")
+    def set_race_last3f_correction(self):
+        pattern_list = [] # 各コース情報
+        date_list = [] # 日付リスト
+        manipulator = sql_manipulator.SQLManipulator()
+        pattern_msg = "select distinct place,turf_dirt,course_condition,distance,class from race_table;"
+        date_msg = "select distinct rdate from race_table order by rdate ASC;"
+        for tpl in manipulator.sql_manipulator(date_msg):
+            date_list.append(str(tpl[0]).replace('-','/'))
+        for tpl in manipulator.sql_manipulator(pattern_msg):
+            single_dic = {"place":tpl[0],"turf_dirt":tpl[1],"course_condition":tpl[2],"distance":tpl[3],"class":tpl[4],"average":None,"sigma":None,"size":None}
+            pattern_list.append(single_dic)
+        count = 0
+        for lst in pattern_list:
+            if lst["distance"] > 2200:
+                lst["average"] = 0
+                lst["sigma"] = 0
+                lst["size"] = 0
+            else:
+                msg = "select rap5f,last3f from race_table where place='"+lst["place"]+"' and turf_dirt='"+lst["turf_dirt"]+"' and course_condition='"+lst["course_condition"]+"' and distance="+str(lst["distance"])+" and class='"+lst["class"]+"';"
+                races = manipulator.sql_manipulator(msg)
+                if len(races) < 15:
+                    pattern_list[count]["average"] = 0
+                    pattern_list[count]["sigma"] = 0
+                    pattern_list[count]["size"] = len(races)
+                else:
+                    average = 0
+                    sigma = 0
+                    time_list = []
+                    for single in races:
+                        single_dict = {"rap5f":single[0],"last3f":single[1]}
+                        average = average + single_dict["rap5f"] + single_dict["last3f"]
+                        time_list.append(single_dict["rap5f"]+single_dict["last3f"])
+                    average = round(average / len(races),1)
+                    for tl in time_list:
+                        sigma = sigma + pow(tl-average,2)
+                    sigma = round(pow(sigma/len(races),0.5),3)
+                    pattern_list[count]["average"] = average
+                    pattern_list[count]["sigma"] = sigma
+                    pattern_list[count]["size"] = len(races)
+                    print(pattern_list[count])
+            count = count + 1
+        for dt in date_list:
+            single_date_msg = "select * from race_table where rdate='"+dt+"';"
+            single_date_list = manipulator.sql_manipulator(single_date_msg)
+            count_dict = {"turf_plus":0,"turf_minus":0,"dirt_plus":0,"dirt_minus":0}
+            single_date_list_detail = []
+            for sd in single_date_list:
+                single_dict = {"rdate":sd[0],"place":sd[1],"race":sd[2],"class":sd[3],"turf_dirt":sd[4],"distance":sd[5],"course_condition":sd[6],"rap5f":sd[8],"last3f":sd[9],"diff":0,"average":0}
+                for pl in pattern_list:
+                    flg_place = single_dict["place"] == pl["place"]
+                    flg_td = single_dict["turf_dirt"] == pl["turf_dirt"]
+                    flg_cond = single_dict["course_condition"] == pl["course_condition"]
+                    flg_dist = single_dict["distance"] == pl["distance"]
+                    flg_cls = single_dict["class"] == pl["class"]
+                    if flg_place and flg_td and flg_cond and flg_dist and flg_cls and pl["average"] != 0:
+                        if single_dict["rap5f"]+single_dict["last3f"] > pl["average"]:
+                            if single_dict["turf_dirt"] == "芝":
+                                count_dict["turf_plus"] = count_dict["turf_plus"] + 1
+                            elif single_dict["turf_dirt"] == "ダート":
+                                count_dict["dirt_plus"] = count_dict["dirt_plus"] + 1
+                        else:
+                            if single_dict["turf_dirt"] == "芝":
+                                count_dict["turf_minus"] = count_dict["turf_minus"] + 1
+                            elif single_dict["turf_dirt"] == "ダート":
+                                count_dict["dirt_minus"] = count_dict["dirt_minus"] + 1
+                        single_dict["average"] = pl["average"]
+                        single_dict["diff"] = round(single_dict["rap5f"]+single_dict["last3f"]-pl["average"],2)
+                        break
+                single_date_list_detail.append(single_dict)
+            turf_time_correct = 0
+            dirt_time_correct = 0
+            turf_plus_flg = count_dict["turf_plus"] > count_dict["turf_minus"]*1.5
+            turf_minus_flg = count_dict["turf_minus"] > count_dict["turf_plus"]*1.5
+            dirt_plus_flg = count_dict["dirt_plus"] > count_dict["dirt_minus"]*1.5
+            dirt_minus_flg = count_dict["dirt_minus"] > count_dict["dirt_plus"]*1.5
+            for sd in single_date_list_detail:
+                if sd["turf_dirt"] == "芝":
+                    if turf_plus_flg and sd["diff"] > 0:
+                        turf_time_correct = turf_time_correct + sd["diff"]/count_dict["turf_plus"]
+                    elif turf_minus_flg and sd["diff"] <= 0:
+                        turf_time_correct = turf_time_correct + sd["diff"]/count_dict["turf_minus"]
+                elif sd["turf_dirt"] == "ダート":
+                    if dirt_plus_flg and sd["diff"] > 0:
+                        dirt_time_correct = dirt_time_correct + sd["diff"]/count_dict["dirt_plus"]
+                    if dirt_minus_flg and sd["diff"] <= 0:
+                        dirt_time_correct = dirt_time_correct + sd["diff"]/count_dict["dirt_minus"]
+            for sd in single_date_list_detail:
+                msg = ""
+                if sd["distance"] > 2200:
+                    msg = "UPDATE race_table SET last3f_correct=0 where rdate='"+str(sd["rdate"].strftime('%Y/%m/%d'))+"' and race="+str(sd["race"])+" and place='"+sd["place"]+"';"
+                elif sd["turf_dirt"] == "芝":
+                    msg = "UPDATE race_table SET last3f_correct="+str(round(turf_time_correct,1))+" where rdate='"+str(sd["rdate"].strftime('%Y/%m/%d'))+"' and race="+str(sd["race"])+" and place='"+sd["place"]+"';"
+                elif sd["turf_dirt"] == "ダート":
+                    msg = "UPDATE race_table SET last3f_correct="+str(round(dirt_time_correct,1))+" where rdate='"+str(sd["rdate"].strftime('%Y/%m/%d'))+"' and race="+str(sd["race"])+" and place='"+sd["place"]+"';"
+                if msg != "":
+                    print(msg)
+                    manipulator.sql_manipulator(msg)
