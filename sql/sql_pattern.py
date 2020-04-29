@@ -11,6 +11,11 @@ class SQLPattern():
         self.distribution = []
         self.place_kanji = ["札幌","函館","福島","新潟","中山","東京","中京","京都","阪神","小倉"]
         self.place_alpha = ["sapporo","hakodate","fukushima","niigata","nakayama","tokyo","chukyo","kyoto","hanshin","kokura"]
+        self.place_list = ["札幌","函館","福島","新潟","中山","東京","中京","京都","阪神","小倉"]
+        self.cond_list = ["良","稍","重","不"]
+        self.td_list = ["芝","ダート"]
+        self.distance_list = [1000,1150,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500    ,2600,3000,3200,3600]
+
 
     def write_list_to_csv(self,filename,target):
         with open(filename,'w') as f:
@@ -381,20 +386,16 @@ class SQLPattern():
 
     def set_race_level(self):
         hoge = 3
-        place = ["札幌","函館","福島","新潟","中山","東京","中京","京都","阪神","小倉"]
-        cond = ["良","稍","重","不"]
-        td = ["芝","ダート"]
-        distance = [1000,1150,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,3000,3200,3600]
-        for a in range(len(place)):
-            for b in range(len(cond)):
-                for c in range(len(td)):
-                    for d in range(len(distance)):
+        for a in range(len(self.place_list)):
+            for b in range(len(self.cond_list)):
+                for c in range(len(self.td_list)):
+                    for d in range(len(self.distance_list)):
                         msg_pattern = ["rap3f","last3f"]
                         if distance[d] >= 1600:
                             msg_pattern = ["rap5f","last3f"]
                         output_pattern = []
                         manipulator = sql_manipulator.SQLManipulator()
-                        where_msg = "where place='"+place[a]+"' and course_condition='"+cond[b]+"' and turf_dirt='"+td[c]+"' and distance="+str(distance[d])
+                        where_msg = "where place='"+self.place_list[a]+"' and course_condition='"+self.cond_list[b]+"' and turf_dirt='"+self.td_list[c]+"' and distance="+str(self.distance_list[d])
                         print(where_msg)
                         for mp in msg_pattern:
                             msg = "select "+mp+" from race_table " + where_msg
