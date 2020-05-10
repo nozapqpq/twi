@@ -7,7 +7,7 @@ from datetime import datetime as dt
 import keras
 from keras.models import Sequential, model_from_json
 from keras.layers import Dense, Dropout
-from keras.optimizers import Adam
+from keras.optimizers import Adamax 
 from keras.layers.normalization import BatchNormalization
 import numpy as np
 class AnalyseResult():
@@ -70,7 +70,7 @@ class AnalyseResult():
             for dct in single_race:
                 single_learn = []
                 #single_learn.append(self.get_dl_element_ex1(dct))
-                single_learn.append(self.get_dl_element1(dct,zi_list))
+                #single_learn.append(self.get_dl_element1(dct,zi_list))
                 single_learn.append(self.get_dl_element2(dct))
                 single_learn.append(self.get_dl_element3(dct))
                 single_learn.append(self.get_dl_element4(dct))
@@ -117,6 +117,7 @@ class AnalyseResult():
                 single_learn.append(self.get_dl_element45(dct))
                 single_learn.append(self.get_dl_element46(dct))
                 single_learn.append(self.get_dl_element47(dct))
+                single_learn.append(self.get_dl_element48(dct))
 
                 # 本日と過去走のデータリストを作成、障害や出走取り消し等で着順が入っていないデータは双方から除外
                 if (dct["today_rdate"] == self.today_date and not "障害" in dct["today_turf_dirt"]):
@@ -150,11 +151,9 @@ class AnalyseResult():
         if dct["past_diviation"] == 0:
             return 0
         return (3-max(dct["past_diff3f"],3))/3
-    # 偏差値60以上か
+    # 過去走の偏差値 
     def get_dl_element4(self, dct):
-        if (dct["past_diviation"] >= 60):
-            return (min(dct["past_diviation"],80)-60)/20
-        return 0
+        return (min(max(dct["past_diviation"],20),70)-20)/50
     # 偏差値データなしか
     def get_dl_element5(self, dct):
         if (dct["past_diviation"] == 0):
@@ -165,12 +164,9 @@ class AnalyseResult():
         if horse_count < 10:
             return 1
         return 0
-    # 偏差値50以下か
+    # 過去走の馬体重
     def get_dl_element7(self, dct):
-        if dct["past_diviation"] == 0 or dct["past_diviation"] > 50:
-            return 0
-        div = max(dct["past_diviation"],25)
-        return (50-div)/50
+        return (min(max(dct["past_horseweight"],380),560)-380)/180
     # 過去走は小回りか
     def get_dl_element8(self, dct):
         if dct["past_place"] in self.small_turning_list:
@@ -268,20 +264,12 @@ class AnalyseResult():
         if dct["today_jockey_name"] in self.kami_jockey_list:
             return 1
         return 0
-    # 過去走で上がり3Fはレース上がりより速かったか
+    # 過去走の偏差値のσ値 
     def get_dl_element30(self, dct):
-        diff = dct["past_horse_last3f"]-dct["past_race_last3f"]
-        diff = min([diff,-3.0])
-        if diff > 0:
-            return 0
-        return (diff-3.0)/(-6.0)
-    # 過去走で上がり3Fはレース上がりより遅かったか
+        return min(dct["past_sigma"],5.0)/5.0
+    # 過去走の平均着順
     def get_dl_element31(self, dct):
-        diff = dct["past_horse_last3f"]-dct["past_race_last3f"]
-        diff = max([diff,3.0])
-        if diff < 0:
-            return 0
-        return (diff+3.0)/6.0
+        return min(dct["past_mean_goal"],12.0)/12.0
     # 過去走は阪神・中山開催か
     def get_dl_element32(self, dct):
         if dct["past_place"] in self.main_placeA_list:
@@ -354,6 +342,9 @@ class AnalyseResult():
         if diff >= 0.2:
             return (diff-0.2)/1.8
         return 0
+    # 過去走の馬体重
+    def get_dl_element48(self, dct):
+        return (min(max(dct["past_horseweight"],380),560)-380)/180.0
 
     # ディレクトリ名"yymmdd"から日付を取得
     def get_date_from_dirname(self, dirname):
@@ -444,7 +435,7 @@ class AnalyseResult():
     def convert_fullgate_goal_list(self, goal):
         goal_list = []
         goal_feature = 0
-        if goal <= 3 and goal != 0:
+        if goal <= 2 and goal != 0:
             goal_feature = 0
         else:
             goal_feature = 1
@@ -460,40 +451,34 @@ class AnalyseResult():
     def deep_learning(self, x_train, y_train, dim, horsename_list, pred_x_np, todayinfo_lst):
         model = Sequential()
         model.add(Dense(dim*2, activation='relu', input_dim=dim))
-        model.add(Dropout(0.2))
+        model.add(Dropout(0.3))
         model.add(BatchNormalization())
         model.add(Dense(dim*2, activation='relu'))
-        model.add(Dropout(0.2))
+        model.add(Dropout(0.3))
         model.add(BatchNormalization())
-        model.add(Dense(dim*1, activation='relu'))
-        model.add(Dropout(0.2))
-        model.add(BatchNormalization())
-        model.add(Dense(dim*1, activation='relu'))
-        model.add(Dropout(0.2))
-        model.add(BatchNormalization())
-        model.add(Dense(dim*1, activation='relu'))
-        model.add(Dropout(0.2))
+        model.add(Dense(dim*2, activation='relu'))
+        model.add(Dropout(0.3))
         model.add(BatchNormalization())
         model.add(Dense(2, activation='softmax'))
 
-        adam = Adam()
-        model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
+        adamax = Adamax()
+        model.compile(loss='categorical_crossentropy', optimizer=adamax, metrics=['accuracy'])
 
         history = model.fit(x_train, y_train, epochs=120, batch_size=5000, validation_split=0.1)
         #loss, accuracy = model.evaluate(x_train[29000:],y_train[29000:],verbose=0)
         #print("Accuracy = {:.2f}".format(accuracy))
         
         # モデル、学習済の重みを保存
-        open('deep_model5.json',"w").write(model.to_json())
-        model.save_weights('deep_model5.h5')
+        open('deep_model.json',"w").write(model.to_json())
+        model.save_weights('deep_model.h5')
 
     def output_deeplearning_result_to_csv(self , pred_x_np, todayinfo_lst):
-        model = model_from_json(open('deep_model5.json',"r").read())
-        model.load_weights('deep_model5.h5')
+        model = model_from_json(open('deep_model.json',"r").read())
+        model.load_weights('deep_model.h5')
 
         with open("../deeplearning_result.csv","w") as f:
             writer = csv.writer(f)
-            writer.writerow(["place","race","horsename","~2nd","~8th","9th~"])
+            writer.writerow(["place","race","horsename","~2nd","3rd~"])
             for i in range(len(pred_x_np)):
                 score = list(model.predict(pred_x_np[i].reshape(1,dim))[0])
                 writer.writerow(todayinfo_lst[i]+score)
@@ -512,5 +497,5 @@ x_np = np.array(learn_lst)
 y_np = np.array(goal_list)
 pred_x_np = np.array(target)
 # ディープラーニング, 読み込むだけのときはコメントアウトする
-ar.deep_learning(x_np, y_np, dim, hn_lst, pred_x_np, todayinfo_lst)
+#ar.deep_learning(x_np, y_np, dim, hn_lst, pred_x_np, todayinfo_lst)
 ar.output_deeplearning_result_to_csv(pred_x_np, todayinfo_lst)
