@@ -19,19 +19,19 @@ for a in range(len(all_entry)):
     for ent in all_entry[a]:
         maindata = []
         subdata = []
-        print(ent)
         self_data = pat.get_self_data(ent)
         subdata = pat.get_similar_strength_horse_targetrace_data(ent,all_target[a],self_data)
         div_dict = util.get_diviation_value(ent,self_data)
         # get goal_order when analyse past race data.
         goal = util.get_sql_data("race_table.rdate='"+all_target[a]['rdate']+"' and race_table.place='"+all_target[a]['place']+"' and race_table.race="+all_target[a]['race']+" and horsename='"+ent['horsename']+"'")
         main_pastgoal = ""
+        main_triple = ""
         if len(goal) > 0:
             main_pastgoal = str(goal[0]['goal_order'])
+            main_triple = goal[0]['triple_dividend']
         if len(self_data) > 0:
-            single_maindata = pat.set_single_maindata(ent, all_target[a], self_data, div_dict, main_pastgoal)
+            single_maindata = pat.set_single_maindata(ent, all_target[a], self_data, div_dict, main_pastgoal, main_triple)
             maindata.append(single_maindata)
-            print(single_maindata)
             maindata_sum.append(maindata)
         ent_count = ent_count + 1
     placename = util.convert_place_to_alpha(all_target[a]['place'])
