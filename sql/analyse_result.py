@@ -464,7 +464,7 @@ class AnalyseResult():
         adamax = Adamax()
         model.compile(loss='categorical_crossentropy', optimizer=adamax, metrics=['accuracy'])
 
-        history = model.fit(x_train, y_train, epochs=120, batch_size=5000, validation_split=0.1)
+        history = model.fit(x_train, y_train, epochs=40, batch_size=5000, validation_split=0.1)
         #loss, accuracy = model.evaluate(x_train[29000:],y_train[29000:],verbose=0)
         #print("Accuracy = {:.2f}".format(accuracy))
         
