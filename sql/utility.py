@@ -321,6 +321,24 @@ class Utility():
             if place == self.place_alpha[p]:
                 return self.place_kanji[p]
         return "unknown"
+    def convert_span_word(self, span):
+        if "連" in span:
+            return 1
+        try:
+            return int(span)
+        except ValueError:
+            print("span : ValueError")
+            return 0
+    def convert_not_int_to_zero(self, num):
+        try:
+            return int(num)
+        except ValueError:
+            return 0
+    def convert_not_float_to_zero(self, num):
+        try:
+            return float(num)
+        except ValueError:
+            return 0
     def remove_pm_space(self, pm):
         return pm.replace(" ","")
 
