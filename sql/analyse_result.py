@@ -52,7 +52,7 @@ class AnalyseResult():
         adamax = Adamax()
         model.compile(loss='categorical_crossentropy', optimizer=adamax, metrics=['accuracy'])
 
-        history = model.fit(x_train, y_train, epochs=80, batch_size=5000, validation_split=0.1)
+        history = model.fit(x_train, y_train, epochs=30, batch_size=5000, validation_split=0.1)
         #loss, accuracy = model.evaluate(x_train[29000:],y_train[29000:],verbose=0)
         #print("Accuracy = {:.2f}".format(accuracy))
         
@@ -66,7 +66,7 @@ class AnalyseResult():
 
         with open("../deeplearning_result.csv","w") as f:
             writer = csv.writer(f)
-            writer.writerow(["place","race","horsename","~3rd(~10k)","~3rd(~100k)","~3rd(100k~)","4th~"])
+            writer.writerow(["place","race","horsename","~3rd(~10k)","~3rd(~50k)","~3rd(50k~)","4th~"])
             for i in range(len(pred_x_np)):
                 score = list(model.predict(pred_x_np[i].reshape(1,dim))[0])
                 writer.writerow(todayinfo_lst[i]+score)

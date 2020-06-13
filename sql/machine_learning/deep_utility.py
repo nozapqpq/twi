@@ -37,46 +37,31 @@ class Utility():
         return 3
     # 馬場状態インデックスを取得
     def get_condition_index(self, cond):
-        if cond == "不":
+        if cond[0] == "不":
             return 0
-        if cond == "重":
+        if cond[0] == "重":
             return 1
-        if cond == "稍":
+        if cond[0] == "稍":
             return 2
-        if cond == "良":
+        if cond[0] == "良":
             return 3
         return 0
     # 距離インデックスを取得
     def get_distance_index(self, dist):
+        dist_list = [1000,1150,1200,1300,1400,1500,1600,1700,1800,1900,2000,2200,2600]
         if dist < 1000:
             return 0
-        if dist <= 1000:
-            return 1
-        if dist <= 1150:
-            return 2
-        if dist <= 1200:
-            return 3
-        if dist <= 1300:
-            return 4
-        if dist <= 1400:
-            return 5
-        if dist <= 1500:
-            return 6
-        if dist <= 1600:
-            return 7
-        if dist <= 1700:
-            return 8
-        if dist <= 1800:
-            return 9
-        if dist <= 2000:
-            return 10
-        if dist <= 2200:
-            return 11
-        if dist <= 2600:
-            return 12
-        if dist > 2600:
-            return 13
-        return 0
+        for i in range(len(dist_list)):
+            if dist <= dist_list[i]:
+                return i+1
+        return len(dist_list)+1
+    def get_exec_command(self,funcname,arg_list):
+        args = ""
+        for i in range(len(arg_list)):
+            if i != 0:
+                args = args + ","
+            args = args + arg_list[i]
+        return "self."+funcname+"("+args+")"
     def convert_nondigit_to_strzero(self, target):
         if not target.isdecimal():
             try:

@@ -6,14 +6,10 @@ class DeepOneTwoPred():
     def __init__(self):
         self.util = deep_utility.Utility()
         self.today_date = ""
-        self.left_turning_list = ["新潟","中京","東京"]
-        self.small_turning_list = ["札幌","函館","小倉","福島"]
+        self.european_grass_list = ["札幌","函館"]
+        self.spiral_list = ["札幌","函館","小倉","福島"]
         self.west_list = ["小倉","阪神","京都","中京"]
-        self.zako_list = ["未勝利","1勝","500万","新馬"]
-        self.main_placeA_list = ["中山","阪神"]
-        self.main_placeB_list = ["京都","東京"]
         self.kami_jockey_list = ["モレイラ","ルメール","レーン","川田将雅","ムーア","マーフィ","Ｍ．デム","Ｃ．デム","北村友一","福永祐一","戸崎圭太","武豊"]
-        self.chuana_jockey_list = ["ルメール","川田将雅","フォーリ","Ｍ．デム","田辺裕信","北村友一","松田大作","松山弘平","福永祐一","シュタル","戸崎圭太","岩田康誠","石橋脩","勝浦正樹","武豊","三浦皇成","浜中俊","国分恭介","丸山元気","秋山真一","池添謙一"]
 
     # input_lst[1レース分][1頭分]
     def make_deeplearning_data(self, input_lst, json_fn=""):
@@ -31,7 +27,6 @@ class DeepOneTwoPred():
             horse_name = ""
             horse_count = 0
             kamij_count = 0
-            chuanaj_count = 0
             for dct in single_race:
                 if dct["today_zi"] != 0:
                     zi_list.append(dct["today_zi"])
@@ -40,18 +35,11 @@ class DeepOneTwoPred():
                     horse_name = dct["horsename"]
                 if dct["today_jockey_name"] in self.kami_jockey_list:
                     kamij_count = kamij_count + 1
-                if dct["today_jockey_name"] in self.chuana_jockey_list:
-                    chuanaj_count = chuanaj_count + 1
             for dct in single_race:
                 single_learn = []
                 for ptn in json_load["object_list"]:
                     if ptn["activate"] == "on":
-                        args = ""
-                        for i in range(len(ptn["args"])):
-                            if i != 0:
-                                args = args + ","
-                            args = args + ptn["args"][i]
-                        exec_cmd = "self."+ptn["func"]+"("+args+")"
+                        exec_cmd = self.util.get_exec_command(ptn["func"],ptn["args"])
                         single_learn.append(eval(exec_cmd))
                 # 本日と過去走のデータリストを作成、障害や出走取り消し等で着順が入っていないデータは双方から除外
                 if (dct["today_rdate"] == self.today_date and not "障害" in dct["today_turf_dirt"]):
@@ -68,13 +56,11 @@ class DeepOneTwoPred():
         if dct["today_jockey_name"] == "国分恭介":
             return 1
         return 0
-    # そのレースのZI平均より大きいか
-    def get_dl_element1(self, dct, zi_list):
-        if dct["today_zi"] == 0 or len(zi_list) == 0:
-            return 0
-        mx_mn_diff = max(max(zi_list)-min(zi_list),1)
-        diff = max(dct["today_zi"]-sum(zi_list)/len(zi_list),0)
-        return diff/mx_mn_diff
+    # 過去走は芝かダートか 
+    def get_dl_element1(self, dct):
+        if dct["past_turf_dirt"] == "芝":
+            return 1
+        return 0
     # 今回は芝かダートか
     def get_dl_element2(self, dct):
         if dct["today_turf_dirt"] == "芝":
@@ -98,45 +84,37 @@ class DeepOneTwoPred():
         if horse_count < 10:
             return 1
         return 0
-    # 過去走の馬体重
+    # 今回と過去走の馬体重差
     def get_dl_element7(self, dct):
-        return (min(max(dct["past_horseweight"],380),560)-380)/180
-    # 過去走は小回りか
+        return min(max(dct["today_horseweight"]-dct["past_horseweight"],-20),20)/40+0.5
+    # 今回の馬体重 
     def get_dl_element8(self, dct):
-        if dct["past_place"] in self.small_turning_list:
-            return 1
-        return 0
-    # 今回は小回りか
+        return (min(max(dct["today_horseweight"],380),560)-380)/180
+    # 今回の斤量
     def get_dl_element9(self, dct):
-        if dct["today_place"] in self.small_turning_list:
-            return 1
-        return 0
-    # 過去走は左回りか
+        return (min(max(dct["today_jockey_weight"],48),60)-48)/12
+    # 今回と過去走の斤量差
     def get_dl_element10(self, dct):
-        if dct["past_place"] in self.left_turning_list:
-            return 1
-        return 0
-    # 今回は左回りか
+        return min(max(dct["today_jockey_weight"]-dct["past_jockey_weight"],-12),12)/24+0.5
+    # 過去走馬番
     def get_dl_element11(self, dct):
-        if dct["today_place"] in self.left_turning_list:
-            return 1
-        return 0
-    # 過去走は西のレースか
+        return (dct["past_horsenum"]-1)/17
+    # 今回馬番
     def get_dl_element12(self, dct):
-        if dct["past_place"] in self.west_list:
-            return 1
-        return 0
-    # 今回は西のレースか
+        return (dct["today_horsenum"]-1)/17 
+    # 今回コースグループ1
     def get_dl_element13(self, dct):
-        if dct["today_place"] in self.west_list:
+        if "[G001]" in dct["today_course_mark"]:
             return 1
         return 0
-    # 斤量
+    # 今回コースグループ2
     def get_dl_element14(self, dct):
-        return (min(dct["today_jockey_weight"],60)-48)/12
-    # 過去走は芝かダートか
+        if "[G002]" in dct["today_course_mark"]:
+            return 1
+        return 0
+    # 今回コースグループ3 
     def get_dl_element15(self, dct):
-        if dct["past_turf_dirt"] == "芝":
+        if "[G003]" in dct["today_course_mark"]:
             return 1
         return 0
     # 過去走の馬場状態インデックス2進数の2桁目
@@ -147,18 +125,19 @@ class DeepOneTwoPred():
     def get_dl_element17(self, dct):
         bi = '{:02b}'.format(self.util.get_condition_index(dct["past_course_condition"]))
         return bi[0]
-    # 今回の距離は過去走より長いか
+    # 転厩初戦か
     def get_dl_element18(self, dct):
-        return min(max(dct["today_distance"]-dct["past_distance"],0),1000)/1000
-    # 今回の距離は過去走より短いか
-    def get_dl_element19(self,dct):
-        return min(max(dct["past_distance"]-dct["today_distance"],0),1000)/1000
-    # レース間隔が１年以上空いているか
-    def get_dl_element20(self, dct):
-        diff = (dct["today_rdate"]-dct["past_rdate"]).days
-        if diff > 350:
-            return (max(diff,750)-350)/400
+        if "転初" in dct["transfer"]:
+            return 1
         return 0
+    # 去勢空けか
+    def get_dl_element19(self,dct):
+        if "去初" in dct["castration"]:
+            return 1
+        return 0
+    # ブランク
+    def get_dl_element20(self, dct):
+        return min(dct["today_span"]-1,20)/20
     # 今回のクラスランク2進数の2桁目
     def get_dl_element21(self, dct):
         bi = '{:02b}'.format(self.util.get_class_rank(dct["today_class"]))
@@ -204,32 +183,30 @@ class DeepOneTwoPred():
     # 過去走の平均着順
     def get_dl_element31(self, dct):
         return min(dct["past_mean_goal"],12.0)/12.0
-    # 過去走は阪神・中山開催か
+    # 今回コースグループ4
     def get_dl_element32(self, dct):
-        if dct["past_place"] in self.main_placeA_list:
+        if "[G004]" in dct["today_course_mark"]:
             return 1
         return 0
-    # 過去走は京都・東京開催か
+    # 今回コースグループ5
     def get_dl_element33(self, dct):
-        if dct["past_place"] in self.main_placeB_list:
+        if "[G005]" in dct["today_course_mark"]:
             return 1
         return 0
-    # 今回は阪神・中山開催か
+    # 今回コースグループ6
     def get_dl_element34(self, dct):
-        if dct["today_place"] in self.main_placeA_list:
+        if "[G006]" in dct["today_course_mark"]:
             return 1
         return 0
-    # 今回は京都・東京開催か
+    # 今回の馬場状態インデックス2進数の2桁目
     def get_dl_element35(self, dct):
-        if dct["today_place"] in self.main_placeB_list:
-            return 1
-        return 0
-    # 過去走は上がり3F地点差2s以上の差があるか
+        bi = '{:02b}'.format(self.util.get_condition_index(dct["today_course_condition"]))
+        return bi[1]
+    # 今回の馬場状態インデックス2進数の1桁目
     def get_dl_element36(self, dct):
-        if dct["past_diff3f"] >= 2.0:
-            return 1
-        return 0
-    # 前走の着差
+        bi = '{:02b}'.format(self.util.get_condition_index(dct["today_course_condition"]))
+        return bi[0]
+    # 過去走の着差
     def get_dl_element37(self, dct):
         return min(dct["past_time_diff"],2.5)/2.5
     # 今回の距離インデックス4桁目
@@ -276,9 +253,91 @@ class DeepOneTwoPred():
         if diff >= 0.2:
             return (diff-0.2)/1.8
         return 0
-    # 過去走の馬体重
+    # 過去走は上がり3F地点差2s以上の差があるか
     def get_dl_element48(self, dct):
-        return (min(max(dct["past_horseweight"],380),560)-380)/180.0
+        if dct["past_diff3f"] >= 2.0:
+            return 1
+        return 0
+    # 最高と最低を除いたZI値の範囲
+    def get_dl_element49(self, dct, zi_list):
+        if len(zi_list) < 3:
+            return 0
+        return min(sorted(zi_list)[-2]-sorted(zi_list)[1],40)/40
+    # 最高と2番目のZI値の差
+    def get_dl_element50(self, dct, zi_list):
+        if len(zi_list) < 3:
+            return 0
+        return min(sorted(zi_list)[-1]-sorted(zi_list)[-2],40)/40
+    # ZI最高値の馬か
+    def get_dl_element51(self, dct, zi_list):
+        if dct["today_zi"] == sorted(zi_list)[-1]:
+            return 1
+        return 0
+    # 連闘か
+    def get_dl_element52(self, dct):
+        if dct["today_span"] == 1:
+            return 1
+        return 0
+    # 過去走コースグループ1
+    def get_dl_element53(self, dct):
+        if "[G001]" in dct["past_course_mark"]:
+            return 1
+        return 0
+    # 過去走コースグループ2
+    def get_dl_element54(self, dct):
+        if "[G002]" in dct["past_course_mark"]:
+            return 1
+        return 0
+    # 過去走コースグループ3
+    def get_dl_element55(self, dct):
+        if "[G003]" in dct["past_course_mark"]:
+            return 1
+        return 0
+    # 過去走コースグループ4
+    def get_dl_element56(self, dct):
+        if "[G004]" in dct["past_course_mark"]:
+            return 1
+        return 0
+    # 過去走コースグループ5
+    def get_dl_element57(self, dct):
+        if "[G005]" in dct["past_course_mark"]:
+            return 1
+        return 0
+    # 過去走コースグループ6
+    def get_dl_element58(self, dct):
+        if "[G006]" in dct["past_course_mark"]:
+            return 1
+        return 0
+    # 過去走洋芝コースか
+    def get_dl_element59(self, dct):
+        if dct["past_place"] in self.european_grass_list and dct["past_turf_dirt"] == "芝":
+            return 1
+        return 0
+    # 今回洋芝コースか
+    def get_dl_element60(self, dct):
+        if dct["today_place"] in self.european_grass_list and dct["today_turf_dirt"] == "芝":
+            return 1
+        return 0
+    # 過去走スパイラルカーブか
+    def get_dl_element61(self, dct):
+        if dct["past_place"] in self.spiral_list:
+            return 1
+        return 0
+    # 今回スパイラルカーブか
+    def get_dl_element62(self, dct):
+        if dct["today_place"] in self.spiral_list:
+            return 1
+        return 0
+    # 過去走西のコースか
+    def get_dl_element63(self, dct):
+        if dct["past_place"] in self.west_list:
+            return 1
+        return 0
+    # 今回西のコースか
+    def get_dl_element64(self, dct):
+        if dct["today_place"] in self.west_list:
+            return 1
+        return 0
 
     # [0, 0, 0, 0]の形式、 ３着内率を配当で細分化したものに変換
     def convert_fullgate_goal_list(self, goal, triple):
@@ -286,9 +345,9 @@ class DeepOneTwoPred():
         goal_feature = 0
         if goal <= 3 and goal != 0 and triple <= 10000:
             goal_feature = 0
-        elif goal <= 3 and goal != 0 and triple <= 100000:
+        elif goal <= 3 and goal != 0 and triple <= 50000:
             goal_feature = 1
-        elif goal <= 3 and goal != 0 and triple > 100000:
+        elif goal <= 3 and goal != 0 and triple > 50000:
             goal_feature = 2
         else:
             goal_feature = 3
