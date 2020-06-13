@@ -1,6 +1,6 @@
 {
 		"object_list":[
-				{"func":"get_dl_element_ex1","activate":"off":"overview":"国分恭介くんが乗っているか","args":["dct"]},
+				{"func":"get_dl_element_ex1","activate":"off","overview":"国分恭介くんが乗っているか","args":["dct"]},
 				{"func":"get_dl_element1","activate":"on","overview":"ZI平均より大きいか","args":["dct","zi_list"]},
 				{"func":"get_dl_element2","activate":"on","overview":"今回芝_ダート","args":["dct"]},
                 {"func":"get_dl_element3","activate":"on","overview":"上がり3F地点差","args":["dct"]},
@@ -32,10 +32,10 @@
                 {"func":"get_dl_element29","activate":"on","overview":"神ジョッキーが乗るか","args":["dct"]},
                 {"func":"get_dl_element30","activate":"on","overview":"過去走の偏差値σ値","args":["dct"]},
                 {"func":"get_dl_element31","activate":"on","overview":"過去走の平均着順","args":["dct"]},
-                {"func":"get_dl_element32","activate":"on","overview":"過去走は阪神_中山開催か","args":["dct"]},
-                {"func":"get_dl_element33","activate":"on","overview":"過去走は京都_東京開催か","args":["dct"]},
-                {"func":"get_dl_element34","activate":"on","overview":"今回は阪神_中山開催か","args":["dct"]},
-                {"func":"get_dl_element35","activate":"on","overview":"今回は京都_東京開催か","args":["dct"]},
+                {"func":"get_dl_element32","activate":"off","overview":"過去走は阪神_中山開催か","args":["dct"]},
+                {"func":"get_dl_element33","activate":"off","overview":"過去走は京都_東京開催か","args":["dct"]},
+                {"func":"get_dl_element34","activate":"off","overview":"今回は阪神_中山開催か","args":["dct"]},
+                {"func":"get_dl_element35","activate":"off","overview":"今回は京都_東京開催か","args":["dct"]},
                 {"func":"get_dl_element36","activate":"on","overview":"過去走は上がり3F地点差2s以上差があるか","args":["dct"]},
                 {"func":"get_dl_element37","activate":"on","overview":"過去走着差","args":["dct"]},
                 {"func":"get_dl_element38","activate":"on","overview":"今回距離インデックス4_4","args":["dct"]},
