@@ -95,7 +95,7 @@ class DeepOneTwoPred():
                     todayinfo_lst.append([dct["today_place"],dct["today_race"],dct["horsename"]])
                 elif dct["today_goal"] != 0:
                     learn.append(single_learn)
-                    ans.append(dct["today_goal"])
+                    ans.append([dct["today_goal"],dct["today_triple_dividend"]])
                     horsename_lst.append(dct["horsename"])
         return learn, ans, horsename_lst, target, todayinfo_lst
 
@@ -316,15 +316,19 @@ class DeepOneTwoPred():
     def get_dl_element48(self, dct):
         return (min(max(dct["past_horseweight"],380),560)-380)/180.0
 
-    # 2着以内なら[1, 0] 3着以上なら[0, 1]を返す
-    def convert_fullgate_goal_list(self, goal):
+    # [0, 0, 0, 0]の形式、 ３着内率を配当で細分化したものに変換
+    def convert_fullgate_goal_list(self, goal, triple):
         goal_list = []
         goal_feature = 0
-        if goal <= 2 and goal != 0:
+        if goal <= 3 and goal != 0 and triple <= 10000:
             goal_feature = 0
-        else:
+        elif goal <= 3 and goal != 0 and triple <= 100000:
             goal_feature = 1
-        for i in range(2):
+        elif goal <= 3 and goal != 0 and triple > 100000:
+            goal_feature = 2
+        else:
+            goal_feature = 3
+        for i in range(4):
             if i == goal_feature:
                 goal_list.append(1)
             else:
