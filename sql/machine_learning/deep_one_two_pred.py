@@ -1,5 +1,6 @@
 # coding: utf-8
 from . import deep_utility
+import json
 
 class DeepOneTwoPred():
     def __init__(self):
@@ -15,13 +16,16 @@ class DeepOneTwoPred():
         self.chuana_jockey_list = ["ルメール","川田将雅","フォーリ","Ｍ．デム","田辺裕信","北村友一","松田大作","松山弘平","福永祐一","シュタル","戸崎圭太","岩田康誠","石橋脩","勝浦正樹","武豊","三浦皇成","浜中俊","国分恭介","丸山元気","秋山真一","池添謙一"]
 
     # input_lst[1レース分][1頭分]
-    def make_deeplearning_data(self, input_lst):
+    def make_deeplearning_data(self, input_lst, json_fn=""):
         count = 0
         learn = [] # 学習用
         target = [] # 予想対象
         ans = []
         horsename_lst = []
         todayinfo_lst = []
+        if json_fn != "":
+            json_open = open(json_fn,'r')
+            json_load = json.load(json_open)
         for single_race in input_lst:
             zi_list = []
             horse_name = ""
@@ -40,55 +44,15 @@ class DeepOneTwoPred():
                     chuanaj_count = chuanaj_count + 1
             for dct in single_race:
                 single_learn = []
-                #single_learn.append(self.get_dl_element_ex1(dct))
-                #single_learn.append(self.get_dl_element1(dct,zi_list))
-                single_learn.append(self.get_dl_element2(dct))
-                single_learn.append(self.get_dl_element3(dct))
-                single_learn.append(self.get_dl_element4(dct))
-                single_learn.append(self.get_dl_element5(dct))
-                single_learn.append(self.get_dl_element6(horse_count))
-                single_learn.append(self.get_dl_element7(dct))
-                single_learn.append(self.get_dl_element8(dct))
-                single_learn.append(self.get_dl_element9(dct))
-                single_learn.append(self.get_dl_element10(dct))
-                single_learn.append(self.get_dl_element11(dct))
-                single_learn.append(self.get_dl_element12(dct))
-                single_learn.append(self.get_dl_element13(dct))
-                single_learn.append(self.get_dl_element14(dct))
-                single_learn.append(self.get_dl_element15(dct))
-                single_learn.append(self.get_dl_element16(dct))
-                single_learn.append(self.get_dl_element17(dct))
-                single_learn.append(self.get_dl_element18(dct))
-                single_learn.append(self.get_dl_element19(dct))
-                single_learn.append(self.get_dl_element20(dct))
-                single_learn.append(self.get_dl_element21(dct))
-                single_learn.append(self.get_dl_element22(dct))
-                single_learn.append(self.get_dl_element23(dct))
-                single_learn.append(self.get_dl_element24(dct))
-                single_learn.append(self.get_dl_element25(dct, kamij_count))
-                single_learn.append(self.get_dl_element26(dct))
-                single_learn.append(self.get_dl_element27(dct))
-                single_learn.append(self.get_dl_element28(dct))
-                single_learn.append(self.get_dl_element29(dct))
-                single_learn.append(self.get_dl_element30(dct))
-                single_learn.append(self.get_dl_element31(dct))
-                single_learn.append(self.get_dl_element32(dct))
-                single_learn.append(self.get_dl_element33(dct))
-                single_learn.append(self.get_dl_element34(dct))
-                single_learn.append(self.get_dl_element35(dct))
-                single_learn.append(self.get_dl_element36(dct))
-                single_learn.append(self.get_dl_element37(dct))
-                single_learn.append(self.get_dl_element38(dct))
-                single_learn.append(self.get_dl_element39(dct))
-                single_learn.append(self.get_dl_element40(dct))
-                single_learn.append(self.get_dl_element41(dct))
-                single_learn.append(self.get_dl_element42(dct))
-                single_learn.append(self.get_dl_element43(dct))
-                single_learn.append(self.get_dl_element44(dct))
-                single_learn.append(self.get_dl_element45(dct))
-                single_learn.append(self.get_dl_element46(dct))
-                single_learn.append(self.get_dl_element47(dct))
-                single_learn.append(self.get_dl_element48(dct))
+                for ptn in json_load["object_list"]:
+                    if ptn["activate"] == "on":
+                        args = ""
+                        for i in range(len(ptn["args"])):
+                            if i != 0:
+                                args = args + ","
+                            args = args + ptn["args"][i]
+                        exec_cmd = "self."+ptn["func"]+"("+args+")"
+                        single_learn.append(eval(exec_cmd))
                 # 本日と過去走のデータリストを作成、障害や出走取り消し等で着順が入っていないデータは双方から除外
                 if (dct["today_rdate"] == self.today_date and not "障害" in dct["today_turf_dirt"]):
                     target.append(single_learn)

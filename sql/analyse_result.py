@@ -74,7 +74,7 @@ class AnalyseResult():
 goal_list = []
 ar = AnalyseResult()
 lst = ar.get_main_data_from_csv()
-learn_lst, ans_lst, hn_lst, target, todayinfo_lst = ar.dotp.make_deeplearning_data(lst)
+learn_lst, ans_lst, hn_lst, target, todayinfo_lst = ar.dotp.make_deeplearning_data(lst,"machine_learning/deep_pattern.json")
 dim = len(learn_lst[0])
 # 着順分類リスト作成
 for i in range(len(learn_lst)):
