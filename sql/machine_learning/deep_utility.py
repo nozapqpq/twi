@@ -33,9 +33,7 @@ class Utility():
             return 0
         if cls in ["500万","1勝"]:
             return 1
-        if cls in ["1000万","2勝","1600万","3勝"]:
-            return 2
-        return 3
+        return 2 
     # 馬場状態インデックスを取得
     def get_condition_index(self, cond):
         if cond[0] == "不":
