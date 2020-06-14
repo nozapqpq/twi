@@ -1,3 +1,4 @@
+# coding: utf-8
 import sql_manipulator
 import csv
 import os

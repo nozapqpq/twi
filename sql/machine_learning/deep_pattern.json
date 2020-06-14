@@ -64,6 +64,7 @@
                 {"func":"get_dl_element61","activate":"on","overview":"過去走スパイラルカーブ","args":["dct"]},
                 {"func":"get_dl_element62","activate":"on","overview":"今回スパイラルカーブ","args":["dct"]},
                 {"func":"get_dl_element63","activate":"on","overview":"過去走西のコース","args":["dct"]},
-                {"func":"get_dl_element64","activate":"on","overview":"今回西のコース","args":["dct"]}
+                {"func":"get_dl_element64","activate":"on","overview":"今回西のコース","args":["dct"]},
+				{"func":"get_dl_element65","activate":"on","overview":"過去走PCIとRPCIの差","args":["dct"]}
 		]
 }

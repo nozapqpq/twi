@@ -1,2 +1,2 @@
 nkf -w --overwrite ../*/*.csv
-python analyse_result.py
+python3 analyse_result.py

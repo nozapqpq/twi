@@ -4,7 +4,6 @@ import machine_learning.deep_one_two_pred
 import machine_learning.deep_utility
 import os
 import csv
-import parse
 from datetime import datetime as dt
 import keras
 from keras.models import Sequential, model_from_json
@@ -39,20 +38,17 @@ class AnalyseResult():
     def deep_learning(self, x_train, y_train, dim, horsename_list, pred_x_np, todayinfo_lst):
         model = Sequential()
         model.add(Dense(dim*2, activation='relu', input_dim=dim))
-        model.add(Dropout(0.3))
+        model.add(Dropout(0.2))
         model.add(BatchNormalization())
-        model.add(Dense(dim*2, activation='relu'))
-        model.add(Dropout(0.3))
-        model.add(BatchNormalization())
-        model.add(Dense(dim*2, activation='relu'))
-        model.add(Dropout(0.3))
+        model.add(Dense(dim*3, activation='relu'))
+        model.add(Dropout(0.2))
         model.add(BatchNormalization())
         model.add(Dense(4, activation='softmax'))
 
         adamax = Adamax()
         model.compile(loss='categorical_crossentropy', optimizer=adamax, metrics=['accuracy'])
 
-        history = model.fit(x_train, y_train, epochs=30, batch_size=5000, validation_split=0.1)
+        history = model.fit(x_train, y_train, epochs=100, batch_size=5000, validation_split=0.1)
         #loss, accuracy = model.evaluate(x_train[29000:],y_train[29000:],verbose=0)
         #print("Accuracy = {:.2f}".format(accuracy))
         

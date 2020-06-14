@@ -338,6 +338,12 @@ class DeepOneTwoPred():
         if dct["today_place"] in self.west_list:
             return 1
         return 0
+    # 過去走PCIとレースPCIの差
+    def get_dl_element65(self, dct):
+        if dct["past_pci"] == 0 or dct["past_rpci"] == 0:
+            return 0.5
+        diff = max(min(dct["past_pci"]-dct["past_rpci"],10),-10)/20+0.5
+        return diff
 
     # [0, 0, 0, 0]の形式、 ３着内率を配当で細分化したものに変換
     def convert_fullgate_goal_list(self, goal, triple):

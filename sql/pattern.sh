@@ -1,2 +1,2 @@
 nkf -wd ../today.csv > ../today_tmp.csv
-python run.py
+python3 run.py
