@@ -10,8 +10,7 @@ class SQLPattern():
         self.util = Utility()
 
     def get_self_data(self, entry):
-        cond = self.util.convert_condition(entry['course_condition'])
-        msg = "horsename='"+entry['horsename']+"' and race_time="+str(entry['race_time'])+" and horse_table.place='"+entry['place']+"' and turf_dirt='"+entry['turf_dirt']+"' and (course_condition='"+cond+"') and distance="+str(entry['distance'])
+        msg = "horsename='"+entry['horsename']+"' and race_table.rdate='"+entry['rdate']+"'"
         ret = self.util.get_sql_data(msg)
         if len(ret) > 0:
             return ret[0]
@@ -19,6 +18,7 @@ class SQLPattern():
             return []
 
     def get_similar_strength_horse_data(self,entry,self_data):
+        return []
         cond = self.util.convert_condition(entry['course_condition'])
         if len(self_data) == 0:
             return []
@@ -31,6 +31,7 @@ class SQLPattern():
             return []
 
     def get_similar_strength_horse_targetrace_data(self,entry,target,self_data):
+        return []
         similar_power_horse = self.get_similar_strength_horse_data(entry,self_data)
         msg = "race_table.place='"+target['place']+"' and turf_dirt='"+target['turf_dirt']+"' and distance="+str(target['distance'])+" and ("
         if len(similar_power_horse) == 0:
@@ -65,11 +66,11 @@ class SQLPattern():
                         all_entry.append(entry)
                         entry = []
                 else:
-                    basic_dict = {"horsenum":row[0],"horsename":row[1],"stallion":row[2],"horse_sex":row[3],"horse_age":row[4],"jockey_name":row[5],"trainer":row[6],"odds":row[7],"jockey_weight":row[8],"zi":row[11],"horseweight":row[13],"weightdiff":self.util.remove_pm_space(row[14]),"span":row[15],"castration":row[16],"transfer":row[17],"color":row[18],"owner":row[19],"broodmaresire":row[20]}
+                    basic_dict = {"horsenum":row[0],"horsename":row[1],"stallion":row[2],"horse_sex":row[3],"horse_age":row[4],"jockey_name":row[5],"trainer":row[6],"odds":row[7],"jockey_weight":row[8],"zi":row[11],"span":row[13],"castration":row[14],"transfer":row[15],"color":row[16],"owner":row[17],"broodmaresire":row[18]}
                     for i in range(5):
                         a = 27*i
-                        if len(row) > 22+a and len(row[22+a]) > 0 and row[29+a] != "----":
-                            single_race_dict = {"rdate":row[21+a].replace('.','-'),"place":row[22+a],"turf_dirt":self.util.convert_turf_dirt(row[24+a]),"distance":row[25+a],"class":row[26+a],"course_condition":row[27+a],"goal_order":row[28+a],"race_time":self.util.convert_race_time(row[29+a]),"time_diff":row[30+a],"past_horsenum":row[31+a],"population":row[32+a],"passorder1":row[33+a],"passorder2":row[34+a],"passorder3":row[35+a],"passorder4":row[36+a],"last3f":row[37+a],"past_odds":row[38+a],"finish":row[39+a],"past_span":row[40+a],"diff3f":row[41+a],"pci":row[42+a],"rpci":row[43+a],"brinker":row[44+a],"course_mark":row[45+a],"horseweight":row[46+a],"weightdiff":self.util.remove_pm_space(row[47+a]),"pastnum":i+1}
+                        if len(row) > 20+a and len(row[20+a]) > 0 and row[27+a] != "----":
+                            single_race_dict = {"rdate":self.util.convert_date_format(row[19+a]),"place":row[20+a],"turf_dirt":self.util.convert_turf_dirt(row[22+a]),"distance":row[23+a],"class":row[24+a],"course_condition":row[25+a],"goal_order":row[26+a],"race_time":self.util.convert_race_time(row[27+a]),"time_diff":row[28+a],"past_horsenum":row[29+a],"population":row[30+a],"passorder1":row[31+a],"passorder2":row[32+a],"passorder3":row[33+a],"passorder4":row[34+a],"last3f":row[35+a],"past_odds":row[36+a],"finish":row[37+a],"past_span":row[38+a],"diff3f":row[39+a],"pci":row[40+a],"rpci":row[41+a],"brinker":row[42+a],"course_mark":row[43+a],"horseweight":row[44+a],"weightdiff":self.util.remove_pm_space(row[45+a]),"pastnum":i+1}
                             single_race_dict.update(basic_dict)
                             entry.append(single_race_dict)
                 row_count = row_count+1
@@ -77,13 +78,7 @@ class SQLPattern():
             all_target.append(target)
         return all_entry,all_target
 
-    def set_single_maindata(self, entry, target, self_data, div_dict, goal, triple):
-        print("target:")
-        print(target)
-        print("entry:")
-        print(entry)
-        print("self_data:")
-        print(self_data)
+    def set_single_maindata(self, entry, target, self_data, div_dict, goal, today_time_diff, triple):
         single_maindata = []
         single_maindata.append(target['rdate'])
         single_maindata.append(target['race'])
@@ -96,8 +91,6 @@ class SQLPattern():
         single_maindata.append(target['course_mark'])
         single_maindata.append(entry['horsenum'])
         single_maindata.append(entry['horsename'])
-        single_maindata.append(entry['horseweight'])
-        single_maindata.append(entry['weightdiff'])
         single_maindata.append(entry['horse_sex'])
         single_maindata.append(entry['horse_age'])
         single_maindata.append(entry['odds'])
@@ -129,18 +122,16 @@ class SQLPattern():
         single_maindata.append(self_data['jockey_weight'])
         single_maindata.append(self_data['course_condition'])
         single_maindata.append(self_data['course_mark'])
-        single_maindata.append(self_data['horseweight'])
-        single_maindata.append(self_data['weightdiff'])
         single_maindata.append(self_data['rap3f'])
         single_maindata.append(self_data['rap5f'])
         single_maindata.append(self_data['diff3f'])
         single_maindata.append(entry['race_time'])
         single_maindata.append(entry['time_diff'])
-        single_maindata.append(div_dict['mean_diff'])
-        single_maindata.append(div_dict['mean_goal'])
-        single_maindata.append(div_dict['diviation'])
-        single_maindata.append(div_dict['sigma'])
-        single_maindata.append(div_dict['total'])
+        #single_maindata.append(div_dict['mean_diff'])
+        #single_maindata.append(div_dict['mean_goal'])
+        #single_maindata.append(div_dict['diviation'])
+        #single_maindata.append(div_dict['sigma'])
+        #single_maindata.append(div_dict['total'])
         single_maindata.append(self_data['passorder1'])
         single_maindata.append(self_data['passorder2'])
         single_maindata.append(self_data['passorder3'])
@@ -154,6 +145,7 @@ class SQLPattern():
         single_maindata.append(self_data['level'])
         single_maindata.append(self_data['last3f_correct'])
         single_maindata.append(goal)
+        single_maindata.append(today_time_diff)
         single_maindata.append(triple)
         return single_maindata
 
@@ -178,71 +170,70 @@ class SQLPattern():
                 main_dict["today_course_mark"] = row[8]
                 main_dict["today_horsenum"] = int(row[9])
                 main_dict["horsename"] = row[10]
-                main_dict["today_horseweight"] = self.util.convert_not_int_to_zero(row[11])
-                main_dict["today_weightdiff"] = self.util.convert_not_int_to_zero(row[12])
-                main_dict["horse_sex"] = row[13]
-                main_dict["horse_age"] = int(row[14])
-                main_dict["today_odds"] = self.util.convert_not_float_to_zero(row[15])
-                main_dict["today_span"] = self.util.convert_span_word(row[16])
-                main_dict["today_jockey_name"] = row[17]
-                main_dict["today_jockey_weight"] = self.util.convert_not_float_to_zero(row[18])
-                main_dict["stallion"] = row[19]
-                main_dict["broodmaresire"] = row[20]
-                main_dict["trainer"] = row[21]
-                main_dict["owner"] = row[22]
-                main_dict["breeder"] = row[23]
-                main_dict["color"] = row[24]
-                main_dict["transfer"] = row[25]
-                main_dict["castration"] = row[26]
-                main_dict["today_zi"] = int(row[27])
+                main_dict["horse_sex"] = row[11]
+                main_dict["horse_age"] = int(row[12])
+                main_dict["today_odds"] = self.util.convert_not_float_to_zero(row[13])
+                main_dict["today_span"] = self.util.convert_span_word(row[14])
+                main_dict["today_jockey_name"] = row[15]
+                main_dict["today_jockey_weight"] = self.util.convert_not_float_to_zero(row[16])
+                main_dict["stallion"] = row[17]
+                main_dict["broodmaresire"] = row[18]
+                main_dict["trainer"] = row[19]
+                main_dict["owner"] = row[20]
+                main_dict["breeder"] = row[21]
+                main_dict["color"] = row[22]
+                main_dict["transfer"] = row[23]
+                main_dict["castration"] = row[24]
+                main_dict["today_zi"] = int(row[25])
 
-                main_dict["pastnum"] = int(row[28])
-                main_dict["past_rdate"] = datetime.datetime.strptime(row[29], '%Y-%m-%d')
-                main_dict["past_race"] = int(row[30])
-                main_dict["past_place"] = row[31]
-                main_dict["past_turf_dirt"] = row[32]
-                main_dict["past_distance"] = int(row[33])
-                main_dict["past_class"] = row[34]
-                main_dict["past_horse_total"] = int(row[35])
-                main_dict["past_horsenum"] = int(row[36])
-                main_dict["past_odds"] = float(row[37])
-                main_dict["past_span"] = int(row[38])
-                main_dict["past_jockey_name"] = row[39]
-                main_dict["past_jockey_weight"] = float(row[40])
-                main_dict["past_course_condition"] = row[41]
-                main_dict["past_course_mark"] = row[42]
-                main_dict["past_horseweight"] = int(row[43])
-                main_dict["past_weightdiff"] = int(row[44])
-                main_dict["past_rap3f"] = float(row[45])
-                main_dict["past_rap5f"] = float(row[46])
-                main_dict["past_diff3f"] = float(row[47])
-                main_dict["past_race_time"] = float(row[48])
-                main_dict["past_time_diff"] = float(row[49])
-                analyse_avail_list = [0,0,0,0]
-                if float(row[52]) > 0:
-                    analyse_avail_list = [float(row[50]),float(row[51]),float(row[52]),float(row[53])]
-                main_dict["past_mean_diff"] = analyse_avail_list[0]
-                main_dict["past_mean_goal"] = analyse_avail_list[1]
-                main_dict["past_diviation"] = analyse_avail_list[2]
-                main_dict["past_sigma"] = analyse_avail_list[3]
-                main_dict["past_total"] = int(row[54])
-                main_dict["past_passorder1"] = int(row[55])
-                main_dict["past_passorder2"] = int(row[56])
-                main_dict["past_passorder3"] = int(row[57])
-                main_dict["past_passorder4"] = int(row[58])
-                main_dict["past_horse_last3f"] = float(row[59])
-                main_dict["past_race_last3f"] = float(row[60])
-                main_dict["past_rpci"] = float(row[61])
-                main_dict["past_pci"] = float(row[62])
-                main_dict["past_triple_dividend"] = int(row[63])
-                main_dict["past_castration"] = row[64]
-                main_dict["past_level"] = int(row[65])
-                main_dict["past_last3f_correct"] = float(row[66])
+                main_dict["pastnum"] = int(row[26])
+                main_dict["past_rdate"] = datetime.datetime.strptime(row[27], '%Y-%m-%d')
+                main_dict["past_race"] = int(row[28])
+                main_dict["past_place"] = row[29]
+                main_dict["past_turf_dirt"] = row[30]
+                main_dict["past_distance"] = int(row[31])
+                main_dict["past_class"] = row[32]
+                main_dict["past_horse_total"] = int(row[33])
+                main_dict["past_horsenum"] = int(row[34])
+                main_dict["past_odds"] = float(row[35])
+                main_dict["past_span"] = int(row[36])
+                main_dict["past_jockey_name"] = row[37]
+                main_dict["past_jockey_weight"] = float(row[38])
+                main_dict["past_course_condition"] = row[39]
+                main_dict["past_course_mark"] = row[40]
+                main_dict["past_rap3f"] = float(row[41])
+                main_dict["past_rap5f"] = float(row[42])
+                main_dict["past_diff3f"] = float(row[43])
+                main_dict["past_race_time"] = float(row[44])
+                main_dict["past_time_diff"] = float(row[45])
+                #if 0 diviation no longer use
+                #analyse_avail_list = [0,0,0,0]
+                #if float(row[52]) > 0:
+                #    analyse_avail_list = [float(row[50]),float(row[51]),float(row[52]),float(row[53])]
+                #main_dict["past_mean_diff"] = analyse_avail_list[0]
+                #main_dict["past_mean_goal"] = analyse_avail_list[1]
+                #main_dict["past_diviation"] = analyse_avail_list[2]
+                #main_dict["past_sigma"] = analyse_avail_list[3]
+                #main_dict["past_total"] = int(row[54])
+                main_dict["past_passorder1"] = int(row[46])
+                main_dict["past_passorder2"] = int(row[47])
+                main_dict["past_passorder3"] = int(row[48])
+                main_dict["past_passorder4"] = int(row[49])
+                main_dict["past_horse_last3f"] = float(row[50])
+                main_dict["past_race_last3f"] = float(row[51])
+                main_dict["past_rpci"] = float(row[52])
+                main_dict["past_pci"] = float(row[53])
+                main_dict["past_triple_dividend"] = int(row[54])
+                main_dict["past_castration"] = row[55]
+                main_dict["past_level"] = int(row[56])
+                main_dict["past_last3f_correct"] = float(row[57])
                 try:
-                    main_dict["today_goal"] = int(row[67])
-                    main_dict["today_triple_dividend"] = int(row[68])
+                    main_dict["today_goal"] = int(row[58])
+                    main_dict["today_time_diff"] = int(row[59])
+                    main_dict["today_triple_dividend"] = int(row[60])
                 except ValueError:
                     main_dict["today_goal"] = 0
+                    main_dict["today_time_diff"] = 0
                     main_dict["today_triple_dividend"] = 0
                 main_dict_list.append(main_dict)
         return main_dict_list
