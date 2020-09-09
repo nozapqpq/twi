@@ -33,27 +33,87 @@ class Utility():
             return 0
         if cls in ["500万","1勝"]:
             return 1
-        return 2 
+        if cls in ["1000万","1600万","2勝","3勝"]:
+            return 2
+        return 3
+    # クラスの序列
+    def get_class_priority(self, cls):
+        if cls in ["未勝利","新馬"]:
+            return 0
+        elif cls in ["500万","1勝"]:
+            return 1
+        elif cls in ["1000万","2勝"]:
+            return 2
+        elif cls in ["1600万","3勝"]:
+            return 3
+        elif cls in ["オープン","OP(L)"]:
+            return 4
+        elif cls in ["重賞"]:
+            return 5
+        elif cls in ["Ｇ３"]:
+            return 6
+        elif cls in ["Ｇ２"]:
+            return 7
+        elif cls in ["Ｇ１"]:
+            return 8
+        else:
+            return 0
     # 馬場状態インデックスを取得
     def get_condition_index(self, cond):
-        if cond[0] == "不":
+        if cond[0] == "良" or cond[0] == "稍":
             return 0
-        if cond[0] == "重":
+        if cond[0] == "重" or cond[0] == "不":
             return 1
-        if cond[0] == "稍":
-            return 2
-        if cond[0] == "良":
-            return 3
-        return 0
+        #if cond[0] == "稍":
+        #    return 2
+        #if cond[0] == "良":
+        #    return 3
+        #return 0
     # 距離インデックスを取得
     def get_distance_index(self, dist):
         dist_list = [1000,1150,1200,1300,1400,1500,1600,1700,1800,1900,2000,2200,2600]
-        if dist < 1000:
+        if dist <= 1400:
+            return 1
+        else:
             return 0
-        for i in range(len(dist_list)):
-            if dist <= dist_list[i]:
+        #if dist < 1000:
+        #    return 0
+        #for i in range(len(dist_list)):
+        #    if dist <= dist_list[i]:
+        #        return i+1
+        #return len(dist_list)+1
+    # 洋芝
+    def is_european_grass(self, place):
+        if place in ["札幌","函館"]:
+            return 1
+        return 0
+    # スパイラルカーブ
+    def is_spiral_curve(self, place):
+        if place in ["札幌","函館","小倉","福島"]:
+            return 1
+        return 0
+    # メイン開催場
+    def is_main_place(self, place):
+        if place in ["中山","東京","京都","阪神"]:
+            return 1
+        return 0
+    def is_upper_class(self, cls1, cls2):
+        if self.get_class_priority(cls2) > self.get_class_priority(cls1):
+            return 1
+        else:
+            return 0
+    # 騎手インデックスを取得
+    def get_jockey_index(self, jockey):
+        jockey_idx_list = [[""], \
+                [""], \
+                ["ルメール","モレイラ","川田将雅","Ｍ．デム","戸崎圭太","福永祐一","アヴドゥ","Ｃ．デム","ホワイト","武豊","北村友一","岩田康成","池添謙一","浜中俊","田辺裕信","","",""], \
+                [""], \
+                [""], \
+                [""]]
+        for i in range(len(jockey_idx_list)):
+            if jockey in jockey_idx_list[i]:
                 return i+1
-        return len(dist_list)+1
+        return 0
     def get_exec_command(self,funcname,arg_list):
         args = ""
         for i in range(len(arg_list)):

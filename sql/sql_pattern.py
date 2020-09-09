@@ -67,12 +67,13 @@ class SQLPattern():
                         entry = []
                 else:
                     basic_dict = {"horsenum":row[0],"horsename":row[1],"stallion":row[2],"horse_sex":row[3],"horse_age":row[4],"jockey_name":row[5],"trainer":row[6],"odds":row[7],"jockey_weight":row[8],"zi":row[11],"span":row[13],"castration":row[14],"transfer":row[15],"color":row[16],"owner":row[17],"broodmaresire":row[18]}
-                    for i in range(5):
-                        a = 27*i
-                        if len(row) > 20+a and len(row[20+a]) > 0 and row[27+a] != "----":
-                            single_race_dict = {"rdate":self.util.convert_date_format(row[19+a]),"place":row[20+a],"turf_dirt":self.util.convert_turf_dirt(row[22+a]),"distance":row[23+a],"class":row[24+a],"course_condition":row[25+a],"goal_order":row[26+a],"race_time":self.util.convert_race_time(row[27+a]),"time_diff":row[28+a],"past_horsenum":row[29+a],"population":row[30+a],"passorder1":row[31+a],"passorder2":row[32+a],"passorder3":row[33+a],"passorder4":row[34+a],"last3f":row[35+a],"past_odds":row[36+a],"finish":row[37+a],"past_span":row[38+a],"diff3f":row[39+a],"pci":row[40+a],"rpci":row[41+a],"brinker":row[42+a],"course_mark":row[43+a],"horseweight":row[44+a],"weightdiff":self.util.remove_pm_space(row[45+a]),"pastnum":i+1}
-                            single_race_dict.update(basic_dict)
-                            entry.append(single_race_dict)
+                    if (len(row)-19)%27 == 0: # オッズ未取得など不完全な状態で出馬表を取得しているときはデータを捨てる
+                        for i in range(5):
+                            a = 27*i
+                            if len(row) > 20+a and len(row[20+a]) > 0 and row[27+a] != "----":
+                                single_race_dict = {"rdate":self.util.convert_date_format(row[19+a]),"place":row[20+a],"turf_dirt":self.util.convert_turf_dirt(row[22+a]),"distance":row[23+a],"class":row[24+a],"course_condition":row[25+a],"goal_order":row[26+a],"race_time":self.util.convert_race_time(row[27+a]),"time_diff":row[28+a],"past_horsenum":row[29+a],"population":row[30+a],"passorder1":row[31+a],"passorder2":row[32+a],"passorder3":row[33+a],"passorder4":row[34+a],"last3f":row[35+a],"past_odds":row[36+a],"finish":row[37+a],"past_span":row[38+a],"diff3f":row[39+a],"pci":row[40+a],"rpci":row[41+a],"brinker":row[42+a],"course_mark":row[43+a],"horseweight":row[44+a],"weightdiff":self.util.remove_pm_space(row[45+a]),"pastnum":i+1}
+                                single_race_dict.update(basic_dict)
+                                entry.append(single_race_dict)
                 row_count = row_count+1
             all_entry.append(entry)
             all_target.append(target)
@@ -229,7 +230,7 @@ class SQLPattern():
                 main_dict["past_last3f_correct"] = float(row[57])
                 try:
                     main_dict["today_goal"] = int(row[58])
-                    main_dict["today_time_diff"] = int(row[59])
+                    main_dict["today_time_diff"] = float(row[59])
                     main_dict["today_triple_dividend"] = int(row[60])
                 except ValueError:
                     main_dict["today_goal"] = 0
