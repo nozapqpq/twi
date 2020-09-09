@@ -1,6 +1,7 @@
 # coding: utf-8
 import sql_manipulator
 import csv
+import re
 
 class Utility():
     def __init__(self):
@@ -232,8 +233,8 @@ class Utility():
 
     ## make parameter
     def get_diviation_value(self,entry,self_data):
-        if len(self_data) == 0:
-            return {"diviation":0,"sigma":0,"total":0,"mean_value":0,"mean_diff":0,"mean_level":0,"mean_goal":0,"diff3f":0,"horse_last3f":0,"class":''}
+        #if len(self_data) == 0:
+        return {"diviation":0,"sigma":0,"total":0,"mean_value":0,"mean_diff":0,"mean_level":0,"mean_goal":0,"diff3f":0,"horse_last3f":0,"class":''}
         class_dict = {"lv1":"未勝利' or class='新馬","lv2":"500万' or class='1勝","lv3":"1000万' or class='2勝","lv4":"1600万' or class='3勝' or class='オープン' or class='OP(L)' or class='Ｇ３' or class='Ｇ２' or class='Ｇ１"}
         ret_dict = {}
         lv = "lv4"
@@ -340,6 +341,11 @@ class Utility():
             return float(num)
         except ValueError:
             return 0
+    def convert_date_format(self, dt):
+        # target format 0000.0.0 -> 0000-00-00
+        lst = re.findall("\d+",dt)
+        ret = lst[0].zfill(4)+"-"+lst[1].zfill(2)+"-"+lst[2].zfill(2)
+        return ret
     def remove_pm_space(self, pm):
         return pm.replace(" ","")
 

@@ -29,7 +29,7 @@ class AnalyseResult():
             csv_list = self.ml_util.get_maincsv_list_from_dir("../"+dl)
             self.dotp.today_date = self.ml_util.get_date_from_dirname(dl)
             for fl in csv_list:
-                print("../"+dl+"."+fl)
+                print("../"+dl+"/"+fl)
                 main_dict = self.pat.get_maindata_dict_from_csv("../"+dl+"/"+fl)
                 entry_horses_list.append(main_dict)
         return entry_horses_list
@@ -40,10 +40,13 @@ class AnalyseResult():
         model.add(Dense(dim*2, activation='relu', input_dim=dim))
         model.add(Dropout(0.2))
         model.add(BatchNormalization())
-        model.add(Dense(dim*3, activation='relu'))
-        model.add(Dropout(0.2))
+        #model.add(Dense(dim*3, activation='relu'))
+        #model.add(Dropout(0.4))
+        #model.add(BatchNormalization())
+        model.add(Dense(dim*2, activation='relu'))
+        model.add(Dropout(0.3))
         model.add(BatchNormalization())
-        model.add(Dense(4, activation='softmax'))
+        model.add(Dense(self.dotp.get_number_of_output_kind(), activation='softmax'))
 
         adamax = Adamax()
         model.compile(loss='categorical_crossentropy', optimizer=adamax, metrics=['accuracy'])
@@ -62,7 +65,7 @@ class AnalyseResult():
 
         with open("../deeplearning_result.csv","w") as f:
             writer = csv.writer(f)
-            writer.writerow(["place","race","horsename","~3rd(~10k)","~3rd(~50k)","~3rd(50k~)","4th~"])
+            writer.writerow(self.dotp.get_output_list_title())
             for i in range(len(pred_x_np)):
                 score = list(model.predict(pred_x_np[i].reshape(1,dim))[0])
                 writer.writerow(todayinfo_lst[i]+score)
@@ -74,7 +77,7 @@ learn_lst, ans_lst, hn_lst, target, todayinfo_lst = ar.dotp.make_deeplearning_da
 dim = len(learn_lst[0])
 # 着順分類リスト作成
 for i in range(len(learn_lst)):
-    gl = ar.dotp.convert_fullgate_goal_list(ans_lst[i][0],ans_lst[i][1])
+    gl = ar.dotp.convert_fullgate_goal_list(ans_lst[i][0],ans_lst[i][1],ans_lst[i][2])
     goal_list.append(gl)
 # 各リストのnumpy化
 x_np = np.array(learn_lst)
