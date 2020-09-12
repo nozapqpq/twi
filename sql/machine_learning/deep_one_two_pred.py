@@ -213,9 +213,13 @@ class DeepOneTwoPred():
             return 1
         return 0
     def get_dl_element45(self, dct):
-        if dct["past_distance"] == dct["today_distance"] and dct["past_turf_dirt"] == dct["today_turf_dirt"] and dct["past_course_condition"] in ["良","稍"]:
+        if dct["past_distance"] == dct["today_distance"] and dct["past_turf_dirt"] == dct["today_turf_dirt"] and (dct["past_course_condition"] == "良" or dct["past_course_condition"] == "稍"):
             if self.sr.whole_race_dict["fastest_time"] != 0 and dct["past_race_time"] <= self.sr.whole_race_dict["fastest_time"]+0.5:
                 return 1
+        return 0
+    def get_dl_element46(self, dct):
+        if self.util.get_class_priority(dct["today_class"]) >= 2:
+            return 1
         return 0
 
     # [0, 0, 0, 0]の形式、 ３着内率を配当で細分化したものに変換

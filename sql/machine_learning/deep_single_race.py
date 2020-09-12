@@ -28,11 +28,9 @@ class DeepSingleRace():
         self.whole_race_dict["horse_total"] = whole_list[-1]["today_horse_total"]
         self.whole_race_dict["top_zi"] = max(whole_list, key=lambda x:x['today_zi'])['today_zi']
         self.whole_race_dict["top_odds"] = min(whole_list, key=lambda x:x['today_odds'])['today_odds']
-        fastest = min(whole_list, key=lambda x:x['past_race_time'] if x["past_distance"]==x["today_distance"] and x["past_race_time"]>=50.0 and x["past_turf_dirt"]==x["today_turf_dirt"] and (x["past_course_condition"]=="良" or x["past_course_condition"]=="稍") else 0)
-        if fastest == 0:
-            self.whole_race_dict["fastest_time"] = fastest
-        else:
-            self.whole_race_dict["fastest_time"] = fastest["past_race_time"]
+        matched = [x for x in whole_list if x["past_distance"]==x["today_distance"] and x["past_turf_dirt"]==x["today_turf_dirt"] and (x["past_course_condition"]=="良" or x["past_course_condition"]=="稍")]
+        if len(matched) > 0:
+            self.whole_race_dict["fastest_time"] =  sorted(matched, key=lambda x:x["past_race_time"])[0]["past_race_time"]
 
     def set_single_horse_dicts(self, whole_list):
         min_index = 0
@@ -83,6 +81,7 @@ class DeepSingleRace():
             single_dict["td_diff_count"] = td_diff_count
             single_dict["aheadlose10_count"] = aheadlose10_count
         return single_dict
+
     def set_whole_race_dict_extra_with_single_dicts(self):
         for shd in self.single_horse_dicts:
             if shd["odds"] <= 5.0 and shd["race_count"] == shd["td_diff_count"]:
