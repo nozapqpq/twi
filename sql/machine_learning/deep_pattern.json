@@ -44,7 +44,7 @@
 				{"func":"get_dl_element42","activate":"on","overview":"レースにオッズ20倍以下が7頭以上いる","args":["dct"]},
 				{"func":"get_dl_element43","activate":"on","overview":"前目につけて1.0s差以上潰れた実績が2度以上あるか","args":["dct"]},
 				{"func":"get_dl_element44","activate":"on","overview":"連闘か","args":["dct"]},
-				{"func":"get_dl_element","activate":"off","overview":"","args":["dct"]},
+				{"func":"get_dl_element45","activate":"on","overview":"同距離良稍馬場の持ちタイムが最速から0.5s以内","args":["dct"]},
 				{"func":"get_dl_element","activate":"off","overview":"","args":["dct"]},
 				{"func":"get_dl_element","activate":"off","overview":"","args":["dct"]},
 				{"func":"get_dl_element","activate":"off","overview":"","args":["dct"]},
