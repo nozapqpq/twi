@@ -7,6 +7,7 @@ from datetime import datetime as dt
 class Utility():
     def __init__(self):
         self.dummy = 0
+        self.sql = sql_manipulator.SQLManipulator()
 
     # ディレクトリ名"yymmdd"から日付を取得
     def get_date_from_dirname(self, dirname):
@@ -82,6 +83,31 @@ class Utility():
         #    if dist <= dist_list[i]:
         #        return i+1
         #return len(dist_list)+1
+    # slow_pace_table固有の仮想クラス表現を取得
+    def get_slow_pace_virtual_class(self, actual_cls):
+        cls_list1 = ["新馬","未勝利"]
+        cls_list2 = ["1勝","500万"]
+        virtual_cls = ""
+        if actual_cls in cls_list1:
+            virtual_cls = actual_cls
+        elif actual_cls in cls_list2:
+            virtual_cls = "1勝"
+        else:
+            virtual_cls = "2勝"
+        return virtual_cls
+    # 特定条件でのスローペースのボーダータイムを取得
+    def get_slow_pace_rap(self, place, distance, cls, cond, td):
+        virtual_cls = self.get_slow_pace_virtual_class(cls)
+        sp = self.sql.sql_manipulator("select * from slow_pace_table where place='"+place+"' and class='"+virtual_cls+"' and turf_dirt='"+td+"' and distance="+str(distance)+" and course_condition='"+cond+"';")
+        if len(sp) == 0:
+            return {"rap3f":37.0,"rap5f":65.0}
+        return {"rap3f":float(sp[0][5]),"rap5f":float(sp[0][6])}
+    def get_slow_pace_all_data(self):
+        ret_list = []
+        sp = self.sql.sql_manipulator("select * from slow_pace_table;")
+        for s in sp:
+            ret_list.append({"place":s[0],"class":s[1],"turf_dirt":s[2],"distance":s[3],"course_condition":s[4],"rap3f":s[5],"rap5f":s[6]})
+        return ret_list
     # 洋芝
     def is_european_grass(self, place):
         if place in ["札幌","函館"]:
