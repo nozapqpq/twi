@@ -232,49 +232,49 @@ class DeepOneTwoPred():
         return 0
     def get_dl_element48(self, dct):
         jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        avr = self.util.get_jockey_score_average(jk,"sturn_turf_short")
+        avr = self.util.get_jockey_score_average(self.jockey,"sturn_turf_short")
         if len(jk) == 0 or jk[0]["sturn_turf_short"] >= avr-5.0:
             return 0
         return 1
     def get_dl_element49(self, dct):
         jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        avr = self.util.get_jockey_score_average(jk,"sturn_turf_middle")
+        avr = self.util.get_jockey_score_average(self.jockey,"sturn_turf_middle")
         if len(jk) == 0 or jk[0]["sturn_turf_middle"] >= avr-5.0:
             return 0
         return 1
     def get_dl_element50(self, dct):
         jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        avr = self.util.get_jockey_score_average(jk,"sturn_dirt_short")
+        avr = self.util.get_jockey_score_average(self.jockey,"sturn_dirt_short")
         if len(jk) == 0 or jk[0]["sturn_dirt_short"] >= avr-5.0:
             return 0
         return 1
     def get_dl_element51(self, dct):
         jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        avr = self.util.get_jockey_score_average(jk,"sturn_dirt_middle")
+        avr = self.util.get_jockey_score_average(self.jockey,"sturn_dirt_middle")
         if len(jk) == 0 or jk[0]["sturn_dirt_middle"] >= avr-5.0:
             return 0
         return 1
     def get_dl_element52(self, dct):
         jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        avr = self.util.get_jockey_score_average(jk,"normal_turf_short")
+        avr = self.util.get_jockey_score_average(self.jockey,"normal_turf_short")
         if len(jk) == 0 or jk[0]["normal_turf_short"] >= avr-5.0:
             return 0
         return 1
     def get_dl_element53(self, dct):
         jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        avr = self.util.get_jockey_score_average(jk,"normal_turf_middle")
+        avr = self.util.get_jockey_score_average(self.jockey,"normal_turf_middle")
         if len(jk) == 0 or jk[0]["normal_turf_middle"] >= avr-5.0:
             return 0
         return 1
     def get_dl_element54(self, dct):
         jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        avr = self.util.get_jockey_score_average(jk,"normal_dirt_short")
+        avr = self.util.get_jockey_score_average(self.jockey,"normal_dirt_short")
         if len(jk) == 0 or jk[0]["normal_dirt_short"] >= avr-5.0:
             return 0
         return 1
     def get_dl_element55(self, dct):
         jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        avr = self.util.get_jockey_score_average(jk,"normal_dirt_middle")
+        avr = self.util.get_jockey_score_average(self.jockey,"normal_dirt_middle")
         if len(jk) == 0 or jk[0]["normal_dirt_middle"] >= avr-5.0:
             return 0
         return 1

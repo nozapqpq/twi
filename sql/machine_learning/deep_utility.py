@@ -118,6 +118,8 @@ class Utility():
         return ret_list
     # 騎手テーブルの任意の列の平均値を取得(0のデータは除外)
     def get_jockey_score_average(self, jk_data, column_name):
+        if len(jk_data) == 0:
+            return 0
         avr = sum(d[column_name] for d in jk_data if d[column_name] != 0)/len(jk_data)
         return avr
     # 洋芝
