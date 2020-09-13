@@ -55,7 +55,7 @@
                 {"func":"get_dl_element53","activate":"on","overview":"騎手成績_大回り芝中距離複勝率平均-5%以下","args":["dct"]},
                 {"func":"get_dl_element54","activate":"on","overview":"騎手成績_大回りダート短距離複勝率平均-5%以下","args":["dct"]},
                 {"func":"get_dl_element55","activate":"on","overview":"騎手成績_大回りダート中距離複勝率平均-5%以下","args":["dct"]},
-				{"func":"get_dl_element","activate":"off","overview":"","args":["dct"]},
+				{"func":"get_dl_element56","activate":"on","overview":"着差_前走","args":["dct"]},
 				{"func":"get_dl_element","activate":"off","overview":"","args":["dct"]},
 				{"func":"get_dl_element","activate":"off","overview":"","args":["dct"]},
 				{"func":"get_dl_element","activate":"off","overview":"","args":["dct"]}

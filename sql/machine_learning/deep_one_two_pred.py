@@ -278,7 +278,9 @@ class DeepOneTwoPred():
         if len(jk) == 0 or jk[0]["normal_dirt_middle"] >= avr-5.0:
             return 0
         return 1
-
+    def get_dl_element56(self, dct):
+        ret = min(dct["past_time_diff"], 2.0)/2.0
+        return ret
 
     # [0, 0, 0, 0]の形式、 ３着内率を配当で細分化したものに変換
     def convert_fullgate_goal_list(self, goal, today_time_diff, triple):
