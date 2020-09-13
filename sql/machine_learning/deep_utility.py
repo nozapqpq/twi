@@ -102,12 +102,24 @@ class Utility():
         if len(sp) == 0:
             return {"rap3f":37.0,"rap5f":65.0}
         return {"rap3f":float(sp[0][5]),"rap5f":float(sp[0][6])}
+    # スローペーステーブルの全データを取得
     def get_slow_pace_all_data(self):
         ret_list = []
         sp = self.sql.sql_manipulator("select * from slow_pace_table;")
         for s in sp:
             ret_list.append({"place":s[0],"class":s[1],"turf_dirt":s[2],"distance":s[3],"course_condition":s[4],"rap3f":s[5],"rap5f":s[6]})
         return ret_list
+    # 騎手テーブルの全データを取得
+    def get_jockey_all_data(self):
+        ret_list = []
+        jk = self.sql.sql_manipulator("select * from jockey_table;")
+        for j in jk:
+            ret_list.append({"name":j[0],"belongs":j[1],"sturn_turf_short":j[2],"sturn_turf_middle":j[3],"sturn_dirt_short":j[4],"sturn_dirt_middle":j[5],"normal_turf_short":j[6],"normal_turf_middle":j[7],"normal_dirt_short":j[8],"normal_dirt_middle":j[9]})
+        return ret_list
+    # 騎手テーブルの任意の列の平均値を取得(0のデータは除外)
+    def get_jockey_score_average(self, jk_data, column_name):
+        avr = sum(d[column_name] for d in jk_data if d[column_name] != 0)/len(jk_data)
+        return avr
     # 洋芝
     def is_european_grass(self, place):
         if place in ["札幌","函館"]:

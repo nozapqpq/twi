@@ -9,6 +9,7 @@ class DeepOneTwoPred():
         self.sr = deep_single_race.DeepSingleRace()
         self.today_date = ""
         self.slow_pace = self.util.get_slow_pace_all_data()
+        self.jockey = self.util.get_jockey_all_data()
         self.european_grass_list = ["札幌","函館"]
         self.spiral_list = ["札幌","函館","小倉","福島"]
         self.main_place_list = ["中山","東京","京都","阪神"]
@@ -221,6 +222,63 @@ class DeepOneTwoPred():
         if self.util.get_class_priority(dct["today_class"]) >= 2:
             return 1
         return 0
+    def get_dl_element47(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        if len(jk) == 0:
+            return 0
+        else:
+            if jk[0]["belongs"] == "栗東":
+                return 1
+        return 0
+    def get_dl_element48(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        avr = self.util.get_jockey_score_average(jk,"sturn_turf_short")
+        if len(jk) == 0 or jk[0]["sturn_turf_short"] >= avr-5.0:
+            return 0
+        return 1
+    def get_dl_element49(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        avr = self.util.get_jockey_score_average(jk,"sturn_turf_middle")
+        if len(jk) == 0 or jk[0]["sturn_turf_middle"] >= avr-5.0:
+            return 0
+        return 1
+    def get_dl_element50(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        avr = self.util.get_jockey_score_average(jk,"sturn_dirt_short")
+        if len(jk) == 0 or jk[0]["sturn_dirt_short"] >= avr-5.0:
+            return 0
+        return 1
+    def get_dl_element51(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        avr = self.util.get_jockey_score_average(jk,"sturn_dirt_middle")
+        if len(jk) == 0 or jk[0]["sturn_dirt_middle"] >= avr-5.0:
+            return 0
+        return 1
+    def get_dl_element52(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        avr = self.util.get_jockey_score_average(jk,"normal_turf_short")
+        if len(jk) == 0 or jk[0]["normal_turf_short"] >= avr-5.0:
+            return 0
+        return 1
+    def get_dl_element53(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        avr = self.util.get_jockey_score_average(jk,"normal_turf_middle")
+        if len(jk) == 0 or jk[0]["normal_turf_middle"] >= avr-5.0:
+            return 0
+        return 1
+    def get_dl_element54(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        avr = self.util.get_jockey_score_average(jk,"normal_dirt_short")
+        if len(jk) == 0 or jk[0]["normal_dirt_short"] >= avr-5.0:
+            return 0
+        return 1
+    def get_dl_element55(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        avr = self.util.get_jockey_score_average(jk,"normal_dirt_middle")
+        if len(jk) == 0 or jk[0]["normal_dirt_middle"] >= avr-5.0:
+            return 0
+        return 1
+
 
     # [0, 0, 0, 0]の形式、 ３着内率を配当で細分化したものに変換
     def convert_fullgate_goal_list(self, goal, today_time_diff, triple):
