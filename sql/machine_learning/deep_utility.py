@@ -122,6 +122,20 @@ class Utility():
             return 0
         avr = sum(d[column_name] for d in jk_data if d[column_name] != 0)/len(jk_data)
         return avr
+    # 種牡馬テーブルの全データを取得
+    def get_stallion_all_data(self):
+        ret_list = []
+        st = self.sql.sql_manipulator("select * from stallion_table;")
+        for s in st:
+            ret_list.append({"name":s[0],"ancestor1":s[1],"ancestor2":s[2],"ancestor3":s[3],"ancestor4":s[4]})
+        return ret_list
+    # 調教師テーブルの全データを取得
+    def get_trainer_all_data(self):
+        ret_list = []
+        tr = self.sql.sql_manipulator("select * from trainer_table;")
+        for t in tr:
+            ret_list.append({"name":t[0],"belongs":t[1]})
+        return ret_list
     # 洋芝
     def is_european_grass(self, place):
         if place in ["札幌","函館"]:

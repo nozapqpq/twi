@@ -10,9 +10,12 @@ class DeepOneTwoPred():
         self.today_date = ""
         self.slow_pace = self.util.get_slow_pace_all_data()
         self.jockey = self.util.get_jockey_all_data()
+        self.stallion = self.util.get_stallion_all_data()
+        self.trainer = self.util.get_trainer_all_data()
         self.european_grass_list = ["札幌","函館"]
         self.spiral_list = ["札幌","函館","小倉","福島"]
         self.main_place_list = ["中山","東京","京都","阪神"]
+        self.stallion_type = ["その他","ロイヤルチャージャー系","ネイティヴダンサー系","ニアークティック系","ナスルーラ系","セントサイモン系","マンノウォー系","トウルビヨン系"]
 
     # input_lst[1レース分][1頭分]
     def make_deeplearning_data(self, input_lst, json_fn=""):
@@ -281,6 +284,127 @@ class DeepOneTwoPred():
     def get_dl_element56(self, dct):
         ret = min(dct["past_time_diff"], 2.0)/2.0
         return ret
+    def get_dl_element57(self, dct):
+        if dct["today_horsenum"] <= 4:
+            return 1
+        return 0
+    def get_dl_element58(self, dct):
+        if dct["today_horsenum"] >= 15:
+            return 1
+        return 0
+    def get_dl_element59(self, dct):
+        if dct["today_horsenum"]%2 == 1:
+            return 1
+        return 0
+    def get_dl_element60(self, dct):
+        if dct["breeder"] == "ノーザンファーム":
+            return 1
+        return 0
+    def get_dl_element61(self, dct):
+        if dct["horse_sex"] == "牝":
+            return 1
+        return 0
+    def get_dl_element62(self, dct):
+        bi = '{:03b}'.format(min(dct["horse_age"]-2,7))
+        return int(bi[0])
+    def get_dl_element63(self, dct):
+        bi = '{:03b}'.format(min(dct["horse_age"]-2,7))
+        return int(bi[1])
+    def get_dl_element64(self, dct):
+        bi = '{:03b}'.format(min(dct["horse_age"]-2,7))
+        return int(bi[2])
+    def get_dl_element65(self, dct):
+        single = [x for x in self.stallion if x['name']==dct['stallion']]
+        if len(single) == 0:
+            return 0
+        else:
+            bi = '{:03b}'.format(self.stallion_type.index(single[0]["ancestor1"]))
+            return int(bi[0])
+    def get_dl_element66(self, dct):
+        single = [x for x in self.stallion if x['name']==dct['stallion']]
+        if len(single) == 0:
+            return 0
+        else:
+            bi = '{:03b}'.format(self.stallion_type.index(single[0]["ancestor1"]))
+            return int(bi[1])
+    def get_dl_element67(self, dct):
+        single = [x for x in self.stallion if x['name']==dct['stallion']]
+        if len(single) == 0:
+            return 0
+        else:
+            bi = '{:03b}'.format(self.stallion_type.index(single[0]["ancestor1"]))
+            return int(bi[2])
+    def get_dl_element68(self, dct):
+        single = [x for x in self.stallion if x['name']==dct['stallion']]
+        if len(single) == 0:
+            return 0
+        else:
+            bi = '{:03b}'.format(self.stallion_type.index(single[0]["ancestor2"]))
+            return int(bi[0])
+    def get_dl_element69(self, dct):
+        single = [x for x in self.stallion if x['name']==dct['stallion']]
+        if len(single) == 0:
+            return 0
+        else:
+            bi = '{:03b}'.format(self.stallion_type.index(single[0]["ancestor2"]))
+            return int(bi[1])
+    def get_dl_element70(self, dct):
+        single = [x for x in self.stallion if x['name']==dct['stallion']]
+        if len(single) == 0:
+            return 0
+        else:
+            bi = '{:03b}'.format(self.stallion_type.index(single[0]["ancestor2"]))
+            return int(bi[2])
+    def get_dl_element71(self, dct):
+        single = [x for x in self.stallion if x['name']==dct['stallion']]
+        if len(single) == 0:
+            return 0
+        else:
+            bi = '{:03b}'.format(self.stallion_type.index(single[0]["ancestor3"]))
+            return int(bi[0])
+    def get_dl_element72(self, dct):
+        single = [x for x in self.stallion if x['name']==dct['stallion']]
+        if len(single) == 0:
+            return 0
+        else:
+            bi = '{:03b}'.format(self.stallion_type.index(single[0]["ancestor3"]))
+            return int(bi[1])
+    def get_dl_element73(self, dct):
+        single = [x for x in self.stallion if x['name']==dct['stallion']]
+        if len(single) == 0:
+            return 0
+        else:
+            bi = '{:03b}'.format(self.stallion_type.index(single[0]["ancestor3"]))
+            return int(bi[2])
+    def get_dl_element74(self, dct):
+        single = [x for x in self.stallion if x['name']==dct['stallion']]
+        if len(single) == 0:
+            return 0
+        else:
+            bi = '{:03b}'.format(self.stallion_type.index(single[0]["ancestor4"]))
+            return int(bi[0])
+    def get_dl_element75(self, dct):
+        single = [x for x in self.stallion if x['name']==dct['stallion']]
+        if len(single) == 0:
+            return 0
+        else:
+            bi = '{:03b}'.format(self.stallion_type.index(single[0]["ancestor4"]))
+            return int(bi[1])
+    def get_dl_element76(self, dct):
+        single = [x for x in self.stallion if x['name']==dct['stallion']]
+        if len(single) == 0:
+            return 0
+        else:
+            bi = '{:03b}'.format(self.stallion_type.index(single[0]["ancestor4"]))
+            return int(bi[2])
+    def get_dl_element77(self, dct):
+        single = [x for x in self.trainer if x['name']==dct['trainer']]
+        if len(single) == 0:
+            return 0
+        else:
+            if single[0]['belongs'] == "栗東":
+                return 1
+            return 0
 
     # [0, 0, 0, 0]の形式、 ３着内率を配当で細分化したものに変換
     def convert_fullgate_goal_list(self, goal, today_time_diff, triple):
