@@ -412,19 +412,17 @@ class DeepOneTwoPred():
         goal_feature = 0
         if today_time_diff <= 0.3: 
             goal_feature = 0
-        elif today_time_diff <= 0.7:
-            goal_feature = 1
         elif today_time_diff <= 1.5:
-            goal_feature = 2
+            goal_feature = 1 
         else:
-            goal_feature = 3
-        for i in range(4):
+            goal_feature = 2
+        for i in range(3):
             if i == goal_feature:
                 goal_list.append(1)
             else:
                 goal_list.append(0)
         return goal_list
     def get_output_list_title(self):
-        return ["place","race","horsename","~0.3s","~0.7s","~1.5s","1.6s~"]
+        return ["place","race","horsename","~0.3s","~1.5s","1.6s~"]
     def get_number_of_output_kind(self):
         return len(self.get_output_list_title())-3
