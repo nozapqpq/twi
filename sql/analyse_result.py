@@ -22,7 +22,7 @@ class AnalyseResult():
         all_files = os.listdir(path='..')
         # 名前が日付になっているフォルダを取得
         dir_list = [f for f in all_files if os.path.isdir(os.path.join('..',f)) and f[0].isdigit()]
-
+        dir_list.sort()
         dir_count = 0
         # フォルダ毎、main.csvを取得していく
         for dl in dir_list:
@@ -37,21 +37,48 @@ class AnalyseResult():
 # deep learning "methods part"
     def deep_learning(self, x_train, y_train, dim, horsename_list, pred_x_np, todayinfo_lst):
         model = Sequential()
-        model.add(Dense(dim*2, activation='relu', input_dim=dim))
-        model.add(Dropout(0.2))
+        model.add(Dense(dim*3, activation='sigmoid', input_dim=dim))
+        model.add(Dropout(0.5))
         model.add(BatchNormalization())
-        #model.add(Dense(dim*3, activation='relu'))
-        #model.add(Dropout(0.4))
-        #model.add(BatchNormalization())
-        model.add(Dense(dim*2, activation='relu'))
-        model.add(Dropout(0.3))
+        model.add(Dense(dim*3, activation='sigmoid'))
+        model.add(Dropout(0.1))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*3, activation='sigmoid'))
+        model.add(Dropout(0.1))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*3, activation='sigmoid'))
+        model.add(Dropout(0.1))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*3, activation='sigmoid'))
+        model.add(Dropout(0.1))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*3, activation='sigmoid'))
+        model.add(Dropout(0.1))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*3, activation='sigmoid'))
+        model.add(Dropout(0.1))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*3, activation='sigmoid'))
+        model.add(Dropout(0.1))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*3, activation='sigmoid'))
+        model.add(Dropout(0.1))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*3, activation='sigmoid'))
+        model.add(Dropout(0.1))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*3, activation='sigmoid'))
+        model.add(Dropout(0.1))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*3, activation='sigmoid'))
+        model.add(Dropout(0.1))
         model.add(BatchNormalization())
         model.add(Dense(self.dotp.get_number_of_output_kind(), activation='softmax'))
 
         adamax = Adamax()
         model.compile(loss='categorical_crossentropy', optimizer=adamax, metrics=['accuracy'])
 
-        history = model.fit(x_train, y_train, epochs=100, batch_size=5000, validation_split=0.1)
+        history = model.fit(x_train, y_train, epochs=50, batch_size=20000, validation_split=0.1)
         #loss, accuracy = model.evaluate(x_train[29000:],y_train[29000:],verbose=0)
         #print("Accuracy = {:.2f}".format(accuracy))
         
