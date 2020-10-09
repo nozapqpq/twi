@@ -16,6 +16,8 @@ class AnalyseResult():
         self.pat = sql_pattern.SQLPattern()
         self.dotp = machine_learning.deep_one_two_pred.DeepOneTwoPred()
         self.ml_util = machine_learning.deep_utility.Utility()
+        self.json_name = "deep_model2.json"
+        self.h5_name = "deep_model2.h5"
 
     def get_main_data_from_csv(self):
         entry_horses_list = []
@@ -28,8 +30,9 @@ class AnalyseResult():
         for dl in dir_list:
             csv_list = self.ml_util.get_maincsv_list_from_dir("../"+dl)
             self.dotp.today_date = self.ml_util.get_date_from_dirname(dl)
+            print(dl)
             for fl in csv_list:
-                print("../"+dl+"/"+fl)
+                #print("../"+dl+"/"+fl)
                 main_dict = self.pat.get_maindata_dict_from_csv("../"+dl+"/"+fl)
                 entry_horses_list.append(main_dict)
         return entry_horses_list
@@ -37,37 +40,32 @@ class AnalyseResult():
 # deep learning "methods part"
     def deep_learning(self, x_train, y_train, dim, horsename_list, pred_x_np, todayinfo_lst):
         model = Sequential()
-        model.add(Dense(dim*3, activation='tanh', input_dim=dim))
-        model.add(Dropout(0.5))
-        model.add(BatchNormalization())
-        model.add(Dense(dim*3, activation='relu'))
+        model.add(Dense(dim*8, activation='tanh', input_dim=dim))
         model.add(Dropout(0.2))
         model.add(BatchNormalization())
-        model.add(Dense(dim*3, activation='relu'))
+        model.add(Dense(dim*8, activation='relu'))
         model.add(Dropout(0.2))
         model.add(BatchNormalization())
-        model.add(Dense(dim*3, activation='relu'))
+        model.add(Dense(dim*8, activation='relu'))
         model.add(Dropout(0.2))
         model.add(BatchNormalization())
-        model.add(Dense(dim*3, activation='relu'))
-        model.add(Dropout(0.2))
-        model.add(BatchNormalization())
+
         model.add(Dense(self.dotp.get_number_of_output_kind(), activation='softmax'))
 
         adamax = Adamax()
         model.compile(loss='categorical_crossentropy', optimizer=adamax, metrics=['accuracy'])
 
-        history = model.fit(x_train, y_train, epochs=100, batch_size=20000, validation_split=0.1)
+        history = model.fit(x_train, y_train, epochs=35, batch_size=10000, validation_split=0.1)
         #loss, accuracy = model.evaluate(x_train[29000:],y_train[29000:],verbose=0)
         #print("Accuracy = {:.2f}".format(accuracy))
         
         # モデル、学習済の重みを保存
-        open('deep_model.json',"w").write(model.to_json())
-        model.save_weights('deep_model.h5')
+        open(self.json_name,"w").write(model.to_json())
+        model.save_weights(self.h5_name)
 
     def output_deeplearning_result_to_csv(self , pred_x_np, todayinfo_lst):
-        model = model_from_json(open('deep_model.json',"r").read())
-        model.load_weights('deep_model.h5')
+        model = model_from_json(open(self.json_name,"r").read())
+        model.load_weights(self.h5_name)
 
         with open("../deeplearning_result.csv","w") as f:
             writer = csv.writer(f)
