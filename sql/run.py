@@ -14,13 +14,25 @@ def make_dpinput_from_racecard(csvfile):
     diviation_list = []
     div_dict = {}
     all_entry, all_target = pat.get_entry_target_data(csvfile)
+    oneday_horsenames = []
+    for race in all_entry:
+        for horse in race:
+            oneday_horsenames.append(horse["horsename"])
+    oneday_horsenames = list(set(oneday_horsenames))
+    all_self_data = pat.get_self_data_oneday(all_target[0]["rdate"],oneday_horsenames)
     for a in range(len(all_entry)):
         jockey_csvout = []
         maindata_sum = []
         ent_count = 0
+        if len(all_entry[a]) > 0: # date,place,racenum output
+            print(str(all_target[a]["rdate"])+" "+all_entry[a][0]["place"]+" "+str((a%12)+1)+"R")
         for ent in all_entry[a]:
             maindata = []
-            self_data = pat.get_self_data(ent)
+            self_data = [x for x in all_self_data if x["horsename"] == ent["horsename"] and str(x["rdate"]) == ent["rdate"]]
+            if len(self_data) > 0:
+                self_data = self_data[0]
+            else:
+                break
             #div_dict = util.get_diviation_value(ent,self_data)
             div_dict = {}
             # get goal_order when analyse past race data.
@@ -36,7 +48,7 @@ def make_dpinput_from_racecard(csvfile):
                 single_maindata = pat.set_single_maindata(ent, all_target[a], self_data, div_dict, main_pastgoal, main_today_time_diff, main_triple)
                 maindata.append(single_maindata)
                 maindata_sum.append(maindata)
-                print(single_maindata)
+                #print(single_maindata)
             ent_count = ent_count + 1
         placename = util.convert_place_to_alpha(all_target[a]['place'])
         str_name_prefix = "_"+placename+all_target[a]['race']

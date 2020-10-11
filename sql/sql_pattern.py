@@ -17,6 +17,18 @@ class SQLPattern():
         else:
             return []
 
+    def get_self_data_oneday(self, today, horsenames):
+        names_str = ""
+        for s in horsenames:
+            names_str = names_str + "'" + s + "',"
+        names_str = names_str[0:-1]
+        msg = "horsename in(" + names_str + ") and race_table.rdate<='"+today+"'"
+        ret = self.util.get_sql_data(msg)
+        if len(ret) > 0:
+            return ret
+        else:
+            return []
+
     def get_similar_strength_horse_data(self,entry,self_data):
         return []
         cond = self.util.convert_condition(entry['course_condition'])
