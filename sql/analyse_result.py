@@ -40,22 +40,39 @@ class AnalyseResult():
 # deep learning "methods part"
     def deep_learning(self, x_train, y_train, dim, horsename_list, pred_x_np, todayinfo_lst):
         model = Sequential()
-        model.add(Dense(dim*8, activation='tanh', input_dim=dim))
-        model.add(Dropout(0.2))
+        model.add(Dense(dim, activation='relu', input_dim=dim))
+        model.add(Dropout(0.4))
         model.add(BatchNormalization())
-        model.add(Dense(dim*8, activation='relu'))
-        model.add(Dropout(0.2))
+        model.add(Dense(dim*10, activation='relu'))
+        model.add(Dropout(0.1))
         model.add(BatchNormalization())
-        model.add(Dense(dim*8, activation='relu'))
-        model.add(Dropout(0.2))
+        model.add(Dense(dim*10, activation='relu'))
+        model.add(Dropout(0.1))
         model.add(BatchNormalization())
+        model.add(Dense(dim*10, activation='relu'))
+        model.add(Dropout(0.1))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*10, activation='relu'))
+        model.add(Dropout(0.1))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*10, activation='relu'))
+        model.add(Dropout(0.1))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*10, activation='relu'))
+        model.add(Dropout(0.1))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*10, activation='relu'))
+        model.add(Dropout(0.1))
+        model.add(BatchNormalization())
+
 
         model.add(Dense(self.dotp.get_number_of_output_kind(), activation='softmax'))
 
         adamax = Adamax()
+        model.summary()
         model.compile(loss='categorical_crossentropy', optimizer=adamax, metrics=['accuracy'])
 
-        history = model.fit(x_train, y_train, epochs=35, batch_size=10000, validation_split=0.1)
+        history = model.fit(x_train, y_train, epochs=30, batch_size=2000, validation_split=0.1)
         #loss, accuracy = model.evaluate(x_train[29000:],y_train[29000:],verbose=0)
         #print("Accuracy = {:.2f}".format(accuracy))
         
@@ -63,7 +80,7 @@ class AnalyseResult():
         open(self.json_name,"w").write(model.to_json())
         model.save_weights(self.h5_name)
 
-    def output_deeplearning_result_to_csv(self , pred_x_np, todayinfo_lst):
+    def output_deeplearning_result_to_csv(self , pred_x_np, todayinfo_lst, dim):
         model = model_from_json(open(self.json_name,"r").read())
         model.load_weights(self.h5_name)
 
@@ -89,4 +106,4 @@ y_np = np.array(goal_list)
 pred_x_np = np.array(target)
 # ディープラーニング, 読み込むだけのときはコメントアウトする
 ar.deep_learning(x_np, y_np, dim, hn_lst, pred_x_np, todayinfo_lst)
-ar.output_deeplearning_result_to_csv(pred_x_np, todayinfo_lst)
+ar.output_deeplearning_result_to_csv(pred_x_np, todayinfo_lst, dim)
