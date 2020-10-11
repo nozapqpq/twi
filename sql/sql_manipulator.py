@@ -60,22 +60,28 @@ class SQLManipulator():
                     read_mode = 1
                 elif row[0] == "入線順位":
                     read_mode = 2
+            # last race horse data append
+            race_detail.append(temp)
+        print("1. make list finished.")
+        all_at_once_msg = ""
         for i in range(len(race_summary)):
-            msg = self.make_race_message(race_summary[i])
-            ret = self.sql_manipulator(msg)
+            all_at_once_msg = all_at_once_msg + self.make_race_message(race_summary[i]) + ","
+        ret = self.sql_manipulator("insert into race_table values "+all_at_once_msg[0:-1])
+        print("2. set data to race_table finished.")
+        all_at_once_msg = ""
         for i in range(len(race_detail)):
             if i%200==0:
                 print("progress : "+str(i)+" / "+str(len(race_detail)))
             for j in range(len(race_detail[i])):
-                msg = self.make_horse_data_message(race_detail[i][j])
-                ret = self.sql_manipulator(msg)
+                all_at_once_msg = all_at_once_msg + self.make_horse_data_message(race_detail[i][j]) + ","
+        ret = self.sql_manipulator("insert into horse_table values "+all_at_once_msg[0:-1])
         print("import "+csvfile+" is finished.")
 
     def make_race_message(self, race_sm):
         out_dict = {"date":race_sm[0]+"-"+race_sm[1]+"-"+race_sm[2],"place":race_sm[3],"race":race_sm[4],"class":race_sm[6],"td":race_sm[7],"distance":race_sm[8],"condition":race_sm[10],"time3f":race_sm[11],"time5f":race_sm[12],"last5f":race_sm[13],"horse_total":race_sm[15],"rpci":race_sm[16],"triple_dividend":self.convert_dividend(race_sm[17]),"course_mark":race_sm[18]}
         # last 2 column(level) is blank
         # last 1 column(last3f_correct) is blank
-        msg = "insert into race_table values('"+out_dict["date"]+"','"+out_dict["place"]+"',"+out_dict["race"]+",'"+out_dict["class"]+"','"+out_dict["td"]+"',"+out_dict["distance"]+",'"+out_dict["condition"]+"',"+out_dict["time3f"]+","+out_dict["time5f"]+","+out_dict["last5f"]+","+out_dict["horse_total"]+","+out_dict["rpci"]+","+out_dict["triple_dividend"]+",'"+out_dict["course_mark"]+"',0,0);"
+        msg = "('"+out_dict["date"]+"','"+out_dict["place"]+"',"+out_dict["race"]+",'"+out_dict["class"]+"','"+out_dict["td"]+"',"+out_dict["distance"]+",'"+out_dict["condition"]+"',"+out_dict["time3f"]+","+out_dict["time5f"]+","+out_dict["last5f"]+","+out_dict["horse_total"]+","+out_dict["rpci"]+","+out_dict["triple_dividend"]+",'"+out_dict["course_mark"]+"',0,0)"
         return msg
 
     def make_horse_data_message(self,race_dt):
@@ -113,7 +119,7 @@ class SQLManipulator():
         out_span = self.convert_blank_number(race_dt[37]).replace("不明","999")
         out_castration = race_dt[38]
         out_pci = self.convert_blank_number(race_dt[39])
-        msg = "insert into horse_table values('"+out_date+"','"+out_place+"',"+out_race+","+out_order+",'"+out_brinker+"',"+out_horsenum+",'"+out_horsename+"','"+out_sex+"',"+out_age+","+out_jockey_weight+",'"+out_jockey_name+"',"+out_time+","+out_time_diff+","+out_passorder1+","+out_passorder2+","+out_passorder3+","+out_passorder4+",'"+out_finish+"',"+out_last3f+","+out_diff3f+","+out_odds_order+","+out_odds+","+out_horseweight+","+out_weightdiff+",'"+out_trainer+"',"+out_carrier+",'"+out_owner+"','"+out_breeder+"','"+out_stallion+"','"+out_broodmaresire+"','"+out_color+"',"+out_span+",'"+out_castration+"',"+out_pci+");"
+        msg = "('"+out_date+"','"+out_place+"',"+out_race+","+out_order+",'"+out_brinker+"',"+out_horsenum+",'"+out_horsename+"','"+out_sex+"',"+out_age+","+out_jockey_weight+",'"+out_jockey_name+"',"+out_time+","+out_time_diff+","+out_passorder1+","+out_passorder2+","+out_passorder3+","+out_passorder4+",'"+out_finish+"',"+out_last3f+","+out_diff3f+","+out_odds_order+","+out_odds+","+out_horseweight+","+out_weightdiff+",'"+out_trainer+"',"+out_carrier+",'"+out_owner+"','"+out_breeder+"','"+out_stallion+"','"+out_broodmaresire+"','"+out_color+"',"+out_span+",'"+out_castration+"',"+out_pci+")"
         return msg
 
     def adjust_jockey_weight_expression(self, weight_str):
