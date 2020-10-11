@@ -70,8 +70,10 @@ class SQLManipulator():
         print("2. set data to race_table finished.")
         all_at_once_msg = ""
         for i in range(len(race_detail)):
-            if i%200==0:
+            if i%1000==0 and i > 0:
                 print("progress : "+str(i)+" / "+str(len(race_detail)))
+                ret = self.sql_manipulator("insert into horse_table values "+all_at_once_msg[0:-1])
+                all_at_once_msg = ""
             for j in range(len(race_detail[i])):
                 all_at_once_msg = all_at_once_msg + self.make_horse_data_message(race_detail[i][j]) + ","
         ret = self.sql_manipulator("insert into horse_table values "+all_at_once_msg[0:-1])
