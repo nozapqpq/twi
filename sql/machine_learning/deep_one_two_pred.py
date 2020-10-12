@@ -23,7 +23,6 @@ class DeepOneTwoPred():
         target = [] # 予想対象
         ans = [] # 学習用正当データ
         horsename_lst = [] # 馬名データ
-        todayinfo_lst = [] # 場所、レース番号、馬名データ
         race_count = 0
         if json_fn != "":
             json_open = open(json_fn,'r')
@@ -43,12 +42,11 @@ class DeepOneTwoPred():
                 # 障害や出走取り消し等で着順が入っていないデータは双方から除外
                 if (dct["today_rdate"] == self.today_date and not "障害" in dct["today_turf_dirt"]):
                     target.append(single_learn)
-                    todayinfo_lst.append([dct["today_place"],dct["today_race"],dct["horsename"]])
                 elif dct["today_goal"] != 0:
                     learn.append(single_learn)
                     ans.append([dct["today_goal"],dct["today_time_diff"],dct["today_triple_dividend"]])
                     horsename_lst.append(dct["horsename"])
-        return learn, ans, horsename_lst, target, todayinfo_lst
+        return learn, ans, horsename_lst, target
 
     def get_dl_element1(self, dct):
         if dct["today_turf_dirt"] == "芝":
