@@ -291,7 +291,7 @@ class Utility():
         win_rate_msg = "勝率："
         double_win_rate_msg = "複勝率："
         win_rate = round(record[0]*100/sum(record),1)
-        double_win_rate = round(sum(record[0:2])*100/sum(record),1)
+        double_win_rate = round(sum(record[0:3])*100/sum(record),1)
         return win_rate_msg+str(win_rate).rjust(5,' ')+"% "+double_win_rate_msg+str(double_win_rate).rjust(5,' ')+"%"
 
     def analyse_class(self, cls):

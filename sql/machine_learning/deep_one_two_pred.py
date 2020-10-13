@@ -408,7 +408,7 @@ class DeepOneTwoPred():
     def convert_fullgate_goal_list(self, goal, today_time_diff, triple):
         goal_list = []
         goal_feature = 0
-        if triple >= 500000:
+        if triple >= 500000 and goal <= 3:
             goal_feature = 0
         elif today_time_diff <= 0.2:
             goal_feature = 1
