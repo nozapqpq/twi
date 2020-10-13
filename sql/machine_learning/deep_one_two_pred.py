@@ -423,6 +423,6 @@ class DeepOneTwoPred():
                 goal_list.append(0)
         return goal_list
     def get_output_list_title(self):
-        return ["place","race","horsename","100000yen~","~0.2s","~3rd","other"]
+        return ["place","race","horsename","500000yen~","~0.2s","~3rd","other","goal","timediff","dividend"]
     def get_number_of_output_kind(self):
-        return len(self.get_output_list_title())-3
+        return len(self.get_output_list_title())-6
