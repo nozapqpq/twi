@@ -285,6 +285,15 @@ class Utility():
             finish_list.append(r['finish'])
         retval = [finish_list.count('逃げ'),finish_list.count('先行'),finish_list.count('中団'),finish_list.count('差し'),finish_list.count('後方'),finish_list.count('追込'),finish_list.count('マクリ')]
         return retval
+
+    # 1,2,3,4,5着と着外のリスト[0,0,0,0,0,0]の形式で引数に与えること
+    def show_win_rate(self, record):
+        win_rate_msg = "勝率："
+        double_win_rate_msg = "複勝率："
+        win_rate = round(record[0]*100/sum(record),1)
+        double_win_rate = round(sum(record[0:2])*100/sum(record),1)
+        return win_rate_msg+str(win_rate).rjust(5,' ')+"% "+double_win_rate_msg+str(double_win_rate).rjust(5,' ')+"%"
+
     def analyse_class(self, cls):
         if cls=="500万" or cls=="1勝":
             return "500万' or class='1勝' or class='1000万"
