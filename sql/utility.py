@@ -287,13 +287,12 @@ class Utility():
         return retval
 
     # 1,2,3,4,5着と着外のリスト[0,0,0,0,0,0]の形式で引数に与えること
-    def show_win_rate(self, record):
-        win_rate_msg = "勝率："
-        double_win_rate_msg = "複勝率："
-        win_rate = round(record[0]*100/sum(record),1)
-        double_win_rate = round(sum(record[0:3])*100/sum(record),1)
-        return win_rate_msg+str(win_rate).rjust(5,' ')+"% "+double_win_rate_msg+str(double_win_rate).rjust(5,' ')+"%"
-
+    def get_win_rate(self, record):
+        win_rate = round(record[0]/sum(record),3)
+        return win_rate
+    def get_double_win_rate(self, record):
+        double_win_rate = round(sum(record[0:3])/sum(record),3)
+        return double_win_rate
     def analyse_class(self, cls):
         if cls=="500万" or cls=="1勝":
             return "500万' or class='1勝' or class='1000万"
