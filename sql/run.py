@@ -32,7 +32,7 @@ def make_dpinput_from_racecard(csvfile):
             if len(self_data) > 0:
                 self_data = self_data[0]
             else:
-                break
+                continue
             #div_dict = util.get_diviation_value(ent,self_data)
             div_dict = {}
             # get goal_order when analyse past race data.

@@ -12,6 +12,7 @@ from keras.layers import Dense, Dropout
 from keras.optimizers import Adamax 
 from keras.layers.normalization import BatchNormalization
 import numpy as np
+research_flg = True
 class AnalyseResult():
     def __init__(self):
         self.pat = sql_pattern.SQLPattern()
@@ -97,7 +98,7 @@ class AnalyseResult():
 
     # deeplearning_result.csvへの出力結果を性能評価し、結果出力
     def get_analyse_result_title(self):
-        return ["date","title","1位の","win","double win","3位以内の","win","double win","最下位の","win","double win","one-two double win","count","dividend sum"]
+        return ["date","title","1位の","win","double win","3位以内の","win","double win","10位以下の","win","double win","one-two double win","count","dividend sum"]
     def get_analyse_result(self, places, out_list, elem_name, direction, target):
         order_analyse_strongest = [0,0,0,0,0,0]
         order_analyse_till_3rd = [0,0,0,0,0,0]
@@ -125,14 +126,14 @@ class AnalyseResult():
                             order_analyse_strongest[single_analyse_list[j][7]-1] = order_analyse_strongest[single_analyse_list[j][7]-1] + 1
                         if j < 3:
                             order_analyse_till_3rd[single_analyse_list[j][7]-1] = order_analyse_till_3rd[single_analyse_list[j][7]-1] + 1
-                        if j == len(single_analyse_list)-1:
+                        if j >= 9:
                             order_analyse_bottom[single_analyse_list[j][7]-1] = order_analyse_bottom[single_analyse_list[j][7]-1] + 1
                     elif single_analyse_list[j][7] >= 6: # 6着以内のデータのリストへの追加
                         if j == 0:
                             order_analyse_strongest[5] = order_analyse_strongest[5] + 1
                         if j < 3:
                             order_analyse_till_3rd[5] = order_analyse_till_3rd[5] + 1
-                        if j == len(single_analyse_list)-1:
+                        if j >= 9:
                             order_analyse_bottom[5] = order_analyse_bottom[5] + 1
                 if single_one_two_count >= 2:
                     one_two_dividend = one_two_dividend + single_analyse_list[0][9]
@@ -173,13 +174,13 @@ class AnalyseResult():
     def deep_learning(self, x_train, y_train, dim, horsename_list, pred_x_np, todayinfo_lst):
         model = Sequential()
         model.add(Dense(dim, activation='relu', input_dim=dim))
-        model.add(Dropout(0.2))
+        model.add(Dropout(0.8))
         model.add(BatchNormalization())
         model.add(Dense(dim*10, activation='relu'))
-        model.add(Dropout(0.2))
+        model.add(Dropout(0.5))
         model.add(BatchNormalization())
         model.add(Dense(dim*5, activation='relu'))
-        model.add(Dropout(0.2))
+        model.add(Dropout(0.5))
         model.add(BatchNormalization())
 
         model.add(Dense(self.dotp.get_number_of_output_kind(), activation='softmax'))
@@ -227,8 +228,7 @@ def process_as_research(ar):
     with open("../deeplearning_research_result.csv","w") as f:
         writer = csv.writer(f)
         writer.writerow(ar.get_analyse_result_title())
-    dir_list = ar.get_csv_dir_list()
-    for tl in ["171001","171007","171008","171009","171014","171021","171022","171028","171029","181002","181006","181007","181008","181013","181014","181020","181021","181027","181028","191005","191006","191012","191013","191014","191015","191019","191020","191021","191026","191027"]:
+    for tl in ["171001","171007","171008","171009","171014","171021","171022","171028","171029","181002","181006","181007","181008","181013","181014","181020","181021","181027","181028","191005","191006","191012","191013","191014","191015","191019","191020","191021","191026","191027","201003","201004","201010","201011"]:
         goal_list = []
         todayinfo_lst, extra_lst = ar.get_todayinfo_list([tl])
         dummy1, dummy2, dummy3, target = ar.dotp.make_deeplearning_data(ar.get_main_data_from_dir_list([tl]),"machine_learning/deep_pattern.json")
@@ -237,7 +237,9 @@ def process_as_research(ar):
         ar.output_deeplearning_result_to_csv(pred_x_np, todayinfo_lst, dim, extra_lst, tl)
 
 ar = AnalyseResult()
-# performance evaluation
-process_as_research(ar)
-# honban
-#process_as_product(ar)
+if research_flg:
+    # performance evaluation
+    process_as_research(ar)
+else:
+    # honban
+    process_as_product(ar)
