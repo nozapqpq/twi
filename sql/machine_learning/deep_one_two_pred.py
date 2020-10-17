@@ -44,7 +44,7 @@ class DeepOneTwoPred():
                     target.append(single_learn)
                 elif dct["today_goal"] != 0:
                     learn.append(single_learn)
-                    ans.append([dct["today_goal"],dct["today_time_diff"],dct["today_triple_dividend"]])
+                    ans.append([dct["today_goal"],dct["today_time_diff"],dct["today_dividend"]])
                     horsename_lst.append(dct["horsename"])
         return learn, ans, horsename_lst, target
 
@@ -405,10 +405,10 @@ class DeepOneTwoPred():
             return 0
 
     # [0, 0, 0, 0]の形式、 ３着内率を配当で細分化したものに変換
-    def convert_fullgate_goal_list(self, goal, today_time_diff, triple):
+    def convert_fullgate_goal_list(self, goal, today_time_diff, dividend):
         goal_list = []
         goal_feature = 0
-        if triple >= 500000 and goal <= 3:
+        if dividend >= 500000 and goal <= 3:
             goal_feature = 0
         elif today_time_diff <= 0.2:
             goal_feature = 1

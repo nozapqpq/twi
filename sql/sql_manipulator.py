@@ -80,10 +80,11 @@ class SQLManipulator():
         print("import "+csvfile+" is finished.")
 
     def make_race_message(self, race_sm):
-        out_dict = {"date":race_sm[0]+"-"+race_sm[1]+"-"+race_sm[2],"place":race_sm[3],"race":race_sm[4],"class":race_sm[6],"td":race_sm[7],"distance":race_sm[8],"condition":race_sm[10],"time3f":race_sm[11],"time5f":race_sm[12],"last5f":race_sm[13],"horse_total":race_sm[15],"rpci":race_sm[16],"triple_dividend":self.convert_dividend(race_sm[17]),"course_mark":race_sm[18]}
+        out_dict = {"date":race_sm[0]+"-"+race_sm[1]+"-"+race_sm[2],"place":race_sm[3],"race":race_sm[4],"class":race_sm[6],"td":race_sm[7],"distance":race_sm[8],"condition":race_sm[10],"time3f":race_sm[11],"time5f":race_sm[12],"last5f":race_sm[13],"horse_total":race_sm[15],"rpci":race_sm[16],"dividend":self.convert_dividend(race_sm[17]),"course_mark":race_sm[18],"early_rap2":race_sm[19],"early_rap3":race_sm[20],"early_rap4":race_sm[21],"last_rap1":self.get_last_rap(race_sm[19:-1],1),"last_rap2":self.get_last_rap(race_sm[19:-1],2),"last_rap3":self.get_last_rap(race_sm[19:-1],3),"last_rap4":self.get_last_rap(race_sm[19:-1],4)}
+        print(out_dict)
         # last 2 column(level) is blank
         # last 1 column(last3f_correct) is blank
-        msg = "('"+out_dict["date"]+"','"+out_dict["place"]+"',"+out_dict["race"]+",'"+out_dict["class"]+"','"+out_dict["td"]+"',"+out_dict["distance"]+",'"+out_dict["condition"]+"',"+out_dict["time3f"]+","+out_dict["time5f"]+","+out_dict["last5f"]+","+out_dict["horse_total"]+","+out_dict["rpci"]+","+out_dict["triple_dividend"]+",'"+out_dict["course_mark"]+"',0,0)"
+        msg = "('"+out_dict["date"]+"','"+out_dict["place"]+"',"+out_dict["race"]+",'"+out_dict["class"]+"','"+out_dict["td"]+"',"+out_dict["distance"]+",'"+out_dict["condition"]+"',"+out_dict["time3f"]+","+out_dict["time5f"]+","+out_dict["last5f"]+","+out_dict["horse_total"]+","+out_dict["rpci"]+","+out_dict["dividend"]+",'"+out_dict["course_mark"]+"',"+out_dict["early_rap2"]+","+out_dict["early_rap3"]+","+out_dict["early_rap4"]+","+out_dict["last_rap1"]+","+out_dict["last_rap2"]+","+out_dict["last_rap3"]+","+out_dict["last_rap4"]+")"
         return msg
 
     def make_horse_data_message(self,race_dt):
@@ -145,3 +146,9 @@ class SQLManipulator():
         if not ret.isdecimal():
             ret = 0
         return ret
+
+    def get_last_rap(self, rap_list, rap_num):
+        rap_list = [x for x in rap_list if x != '']
+        target_rap = rap_num*(-1)
+        return rap_list[target_rap]
+

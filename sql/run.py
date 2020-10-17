@@ -39,13 +39,13 @@ def make_dpinput_from_racecard(csvfile):
             goal = util.get_sql_data("race_table.rdate='"+all_target[a]['rdate']+"' and race_table.place='"+all_target[a]['place']+"' and race_table.race="+all_target[a]['race']+" and horsename='"+ent['horsename']+"'")
             main_pastgoal = ""
             main_today_time_diff = ""
-            main_triple = ""
+            main_dividend = ""
             if len(goal) > 0:
                 main_pastgoal = str(goal[0]['goal_order'])
                 main_today_time_diff = str(goal[0]['time_diff'])
-                main_triple = goal[0]['triple_dividend']
+                main_dividend = goal[0]['dividend']
             if len(self_data) > 0:
-                single_maindata = pat.set_single_maindata(ent, all_target[a], self_data, div_dict, main_pastgoal, main_today_time_diff, main_triple)
+                single_maindata = pat.set_single_maindata(ent, all_target[a], self_data, div_dict, main_pastgoal, main_today_time_diff, main_dividend)
                 maindata.append(single_maindata)
                 maindata_sum.append(maindata)
                 #print(single_maindata)

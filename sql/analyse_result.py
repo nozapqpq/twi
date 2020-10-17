@@ -53,7 +53,7 @@ class AnalyseResult():
         extra_exist_flg = False
         for hdl in horses_data_list:
             todayinfo_list = todayinfo_list + [[x['horsename'],x['today_race'],x['today_place']] for x in hdl]
-            extra_list_add = [[x['today_goal'],x['today_time_diff'],x['today_triple_dividend']] for x in hdl]
+            extra_list_add = [[x['today_goal'],x['today_time_diff'],x['today_dividend']] for x in hdl]
             extra_list = extra_list + extra_list_add
             goal_sum_list = [x[0] for x in extra_list_add]
             if sum(goal_sum_list) > 0:
@@ -116,7 +116,6 @@ class AnalyseResult():
                         horsename_tmplist.append(ol[0])
                 if single_analyse_list == []:
                     continue
-                single_triple_count = 0
                 single_one_two_count = 0
                 for j in range(len(single_analyse_list)):
                     if j < 3 and single_analyse_list[j][7] >= 1 and single_analyse_list[j][7] <= 3:

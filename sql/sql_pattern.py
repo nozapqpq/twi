@@ -91,7 +91,7 @@ class SQLPattern():
             all_target.append(target)
         return all_entry,all_target
 
-    def set_single_maindata(self, entry, target, self_data, div_dict, goal, today_time_diff, triple):
+    def set_single_maindata(self, entry, target, self_data, div_dict, goal, today_time_diff, dividend):
         single_maindata = []
         single_maindata.append(target['rdate'])
         single_maindata.append(target['race'])
@@ -153,13 +153,18 @@ class SQLPattern():
         single_maindata.append(self_data['race_last3f'])
         single_maindata.append(self_data['rpci'])
         single_maindata.append(self_data['pci'])
-        single_maindata.append(self_data['triple_dividend'])
+        single_maindata.append(self_data['dividend'])
         single_maindata.append(self_data['castration'])
-        single_maindata.append(self_data['level'])
-        single_maindata.append(self_data['last3f_correct'])
+        single_maindata.append(self_data['early_rap2'])
+        single_maindata.append(self_data['early_rap3'])
+        single_maindata.append(self_data['early_rap4'])
+        single_maindata.append(self_data['last_rap1'])
+        single_maindata.append(self_data['last_rap2'])
+        single_maindata.append(self_data['last_rap3'])
+        single_maindata.append(self_data['last_rap4'])
         single_maindata.append(goal)
         single_maindata.append(today_time_diff)
-        single_maindata.append(triple)
+        single_maindata.append(dividend)
         return single_maindata
 
     def get_maindata_dict_from_csv(self, csvfile):
@@ -236,18 +241,18 @@ class SQLPattern():
                 main_dict["past_race_last3f"] = float(row[51])
                 main_dict["past_rpci"] = float(row[52])
                 main_dict["past_pci"] = float(row[53])
-                main_dict["past_triple_dividend"] = int(row[54])
+                main_dict["past_dividend"] = int(row[54])
                 main_dict["past_castration"] = row[55]
                 main_dict["past_level"] = int(row[56])
                 main_dict["past_last3f_correct"] = float(row[57])
                 try:
                     main_dict["today_goal"] = int(row[58])
                     main_dict["today_time_diff"] = float(row[59])
-                    main_dict["today_triple_dividend"] = int(row[60])
+                    main_dict["today_dividend"] = int(row[60])
                 except ValueError:
                     main_dict["today_goal"] = 0
                     main_dict["today_time_diff"] = 0
-                    main_dict["today_triple_dividend"] = 0
+                    main_dict["today_dividend"] = 0
                 main_dict_list.append(main_dict)
         return main_dict_list
 
