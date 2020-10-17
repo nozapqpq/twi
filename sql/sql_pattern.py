@@ -243,12 +243,17 @@ class SQLPattern():
                 main_dict["past_pci"] = float(row[53])
                 main_dict["past_dividend"] = int(row[54])
                 main_dict["past_castration"] = row[55]
-                main_dict["past_level"] = int(row[56])
-                main_dict["past_last3f_correct"] = float(row[57])
+                main_dict["past_early_rap2"] = float(row[56])
+                main_dict["past_early_rap3"] = float(row[57])
+                main_dict["past_early_rap4"] = float(row[58])
+                main_dict["past_last_rap1"] = float(row[59])
+                main_dict["past_last_rap2"] = float(row[60])
+                main_dict["past_last_rap3"] = float(row[61])
+                main_dict["past_last_rap4"] = float(row[62])
                 try:
-                    main_dict["today_goal"] = int(row[58])
-                    main_dict["today_time_diff"] = float(row[59])
-                    main_dict["today_dividend"] = int(row[60])
+                    main_dict["today_goal"] = int(row[63])
+                    main_dict["today_time_diff"] = float(row[64])
+                    main_dict["today_dividend"] = int(row[65])
                 except ValueError:
                     main_dict["today_goal"] = 0
                     main_dict["today_time_diff"] = 0
