@@ -291,7 +291,7 @@ class Utility():
         win_rate = round(record[0]/sum(record),3)
         return win_rate
     def get_double_win_rate(self, record):
-        double_win_rate = round(sum(record[0:3])/sum(record),3)
+        double_win_rate = round(sum(record[0:2])/sum(record),3)
         return double_win_rate
     def analyse_class(self, cls):
         if cls=="500万" or cls=="1勝":
