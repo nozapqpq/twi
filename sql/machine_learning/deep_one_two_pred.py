@@ -458,6 +458,72 @@ class DeepOneTwoPred():
         if "[G016]" in dct["past_course_mark"]:
             return 1
         return 0
+    def get_dl_element88(self, dct):
+        if dct["today_turf_dirt"] == "芝" and dct["today_distance"] >= 1300:
+            return 1
+        return 0
+    def get_dl_element89(self, dct):
+        if dct["today_turf_dirt"] == "芝" and dct["today_distance"] >= 1600:
+            return 1
+        return 0
+    def get_dl_element90(self, dct):
+        if dct["today_turf_dirt"] == "芝" and dct["today_distance"] >= 1800:
+            return 1
+        return 0
+    def get_dl_element91(self, dct):
+        if dct["today_turf_dirt"] == "芝" and dct["today_distance"] >= 2400:
+            return 1
+        return 0
+    def get_dl_element92(self, dct):
+        if dct["today_turf_dirt"] != "芝" and dct["today_distance"] >= 1300:
+            return 1
+        return 0
+    def get_dl_element93(self, dct):
+        if dct["today_turf_dirt"] != "芝" and dct["today_distance"] >= 1600:
+            return 1
+        return 0
+    def get_dl_element94(self, dct):
+        if dct["today_turf_dirt"] != "芝" and dct["today_distance"] >= 1800:
+            return 1
+        return 0
+    def get_dl_element95(self, dct):
+        if dct["today_turf_dirt"] != "芝" and dct["today_distance"] >= 2400:
+            return 1
+        return 0
+    def get_dl_element96(self, dct):
+        if dct["past_turf_dirt"] == "芝" and dct["past_distance"] >= 1300:
+            return 1
+        return 0
+    def get_dl_element97(self, dct):
+        if dct["past_turf_dirt"] == "芝" and dct["past_distance"] >= 1600:
+            return 1
+        return 0
+    def get_dl_element98(self, dct):
+        if dct["past_turf_dirt"] == "芝" and dct["past_distance"] >= 1800:
+            return 1
+        return 0
+    def get_dl_element99(self, dct):
+        if dct["past_turf_dirt"] == "芝" and dct["past_distance"] >= 2400:
+            return 1
+        return 0
+    def get_dl_element100(self, dct):
+        if dct["past_turf_dirt"] != "芝" and dct["past_distance"] >= 1300:
+            return 1
+        return 0
+    def get_dl_element101(self, dct):
+        if dct["past_turf_dirt"] != "芝" and dct["past_distance"] >= 1600:
+            return 1
+        return 0
+    def get_dl_element102(self, dct):
+        if dct["past_turf_dirt"] != "芝" and dct["past_distance"] >= 1800:
+            return 1
+        return 0
+    def get_dl_element103(self, dct):
+        if dct["past_turf_dirt"] != "芝" and dct["past_distance"] >= 2400:
+            return 1
+        return 0
+
+
 
     # [0, 0, 0, 0]の形式、 ３着内率を配当で細分化したものに変換
     def convert_fullgate_goal_list(self, goal, today_time_diff, dividend):
