@@ -522,7 +522,146 @@ class DeepOneTwoPred():
         if dct["past_turf_dirt"] != "芝" and dct["past_distance"] >= 2400:
             return 1
         return 0
-
+    def get_dl_element104(self, dct):
+        if dct["past_early_rap2"] >= 11.0:
+            return 1
+        return 0
+    def get_dl_element105(self, dct):
+        if dct["past_early_rap2"] >= 11.5:
+            return 1
+        return 0
+    def get_dl_element106(self, dct):
+        if dct["past_early_rap2"] >= 12.0:
+            return 1
+        return 0
+    def get_dl_element107(self, dct):
+        if dct["past_early_rap2"] >= 12.5:
+            return 1
+        return 0
+    def get_dl_element108(self, dct):
+        if dct["past_early_rap2"] >= 13.0:
+            return 1
+        return 0
+    def get_dl_element109(self, dct):
+        if dct["past_early_rap3"] >= 11.0:
+            return 1
+        return 0
+    def get_dl_element110(self, dct):
+        if dct["past_early_rap3"] >= 11.5:
+            return 1
+        return 0
+    def get_dl_element111(self, dct):
+        if dct["past_early_rap3"] >= 12.0:
+            return 1
+        return 0
+    def get_dl_element112(self, dct):
+        if dct["past_early_rap3"] >= 12.5:
+            return 1
+        return 0
+    def get_dl_element113(self, dct):
+        if dct["past_early_rap3"] >= 13.0:
+            return 1
+        return 0
+    def get_dl_element114(self, dct):
+        if dct["past_early_rap4"] >= 11.0:
+            return 1
+        return 0
+    def get_dl_element115(self, dct):
+        if dct["past_early_rap4"] >= 11.5:
+            return 1
+        return 0
+    def get_dl_element116(self, dct):
+        if dct["past_early_rap4"] >= 12.0:
+            return 1
+        return 0
+    def get_dl_element117(self, dct):
+        if dct["past_early_rap4"] >= 12.5:
+            return 1
+        return 0
+    def get_dl_element118(self, dct):
+        if dct["past_early_rap4"] >= 13.0:
+            return 1
+        return 0
+    def get_dl_element119(self, dct):
+        if dct["past_last_rap1"] >= 11.0:
+            return 1
+        return 0
+    def get_dl_element120(self, dct):
+        if dct["past_last_rap1"] >= 11.5:
+            return 1
+        return 0
+    def get_dl_element121(self, dct):
+        if dct["past_last_rap1"] >= 12.0:
+            return 1
+        return 0
+    def get_dl_element122(self, dct):
+        if dct["past_last_rap1"] >= 12.5:
+            return 1
+        return 0
+    def get_dl_element123(self, dct):
+        if dct["past_last_rap1"] >= 13.0:
+            return 1
+        return 0
+    def get_dl_element124(self, dct):
+        if dct["past_last_rap2"] >= 11.0:
+            return 1
+        return 0
+    def get_dl_element125(self, dct):
+        if dct["past_last_rap2"] >= 11.5:
+            return 1
+        return 0
+    def get_dl_element126(self, dct):
+        if dct["past_last_rap2"] >= 12.0:
+            return 1
+        return 0
+    def get_dl_element127(self, dct):
+        if dct["past_last_rap2"] >= 12.5:
+            return 1
+        return 0
+    def get_dl_element128(self, dct):
+        if dct["past_last_rap2"] >= 13.0:
+            return 1
+        return 0
+    def get_dl_element129(self, dct):
+        if dct["past_last_rap3"] >= 11.0:
+            return 1
+        return 0
+    def get_dl_element130(self, dct):
+        if dct["past_last_rap3"] >= 11.5:
+            return 1
+        return 0
+    def get_dl_element131(self, dct):
+        if dct["past_last_rap3"] >= 12.0:
+            return 1
+        return 0
+    def get_dl_element132(self, dct):
+        if dct["past_last_rap3"] >= 12.5:
+            return 1
+        return 0
+    def get_dl_element133(self, dct):
+        if dct["past_last_rap3"] >= 13.0:
+            return 1
+        return 0
+    def get_dl_element134(self, dct):
+        if dct["past_last_rap4"] >= 11.0:
+            return 1
+        return 0
+    def get_dl_element135(self, dct):
+        if dct["past_last_rap4"] >= 11.5:
+            return 1
+        return 0
+    def get_dl_element136(self, dct):
+        if dct["past_last_rap4"] >= 12.0:
+            return 1
+        return 0
+    def get_dl_element137(self, dct):
+        if dct["past_last_rap4"] >= 12.5:
+            return 1
+        return 0
+    def get_dl_element138(self, dct):
+        if dct["past_last_rap4"] >= 13.0:
+            return 1
+        return 0
 
 
     # [0, 0, 0, 0]の形式、 ３着内率を配当で細分化したものに変換
