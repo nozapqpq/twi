@@ -330,131 +330,131 @@ class DeepOneTwoPred():
             if single[0]['belongs'] == "栗東":
                 return 1
             return 0
-    def get_dl_element(self, dct):
+    def get_dl_element56(self, dct):
         if "[G001]" in dct["today_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element57(self, dct):
         if "[G002]" in dct["today_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element58(self, dct):
         if "[G003]" in dct["today_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element59(self, dct):
         if "[G004]" in dct["today_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element60(self, dct):
         if "[G005]" in dct["today_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element61(self, dct):
         if "[G006]" in dct["today_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element62(self, dct):
         if "[G007]" in dct["today_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element63(self, dct):
         if "[G008]" in dct["today_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element64(self, dct):
         if "[G009]" in dct["today_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element65(self, dct):
         if "[G010]" in dct["today_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element66(self, dct):
         if "[G011]" in dct["today_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element67(self, dct):
         if "[G012]" in dct["today_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element68(self, dct):
         if "[G013]" in dct["today_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element69(self, dct):
         if "[G014]" in dct["today_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element70(self, dct):
         if "[G015]" in dct["today_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element71(self, dct):
         if "[G016]" in dct["today_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element72(self, dct):
         if "[G001]" in dct["past_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element73(self, dct):
         if "[G002]" in dct["past_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element74(self, dct):
         if "[G003]" in dct["past_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element75(self, dct):
         if "[G004]" in dct["past_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element76(self, dct):
         if "[G005]" in dct["past_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element77(self, dct):
         if "[G006]" in dct["past_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element78(self, dct):
         if "[G007]" in dct["past_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element79(self, dct):
         if "[G008]" in dct["past_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element80(self, dct):
         if "[G009]" in dct["past_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element81(self, dct):
         if "[G010]" in dct["past_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element82(self, dct):
         if "[G011]" in dct["past_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element83(self, dct):
         if "[G012]" in dct["past_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element84(self, dct):
         if "[G013]" in dct["past_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element85(self, dct):
         if "[G014]" in dct["past_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element86(self, dct):
         if "[G015]" in dct["past_course_mark"]:
             return 1
         return 0
-    def get_dl_element(self, dct):
+    def get_dl_element87(self, dct):
         if "[G016]" in dct["past_course_mark"]:
             return 1
         return 0
