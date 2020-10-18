@@ -25,7 +25,7 @@ def make_dpinput_from_racecard(csvfile):
         maindata_sum = []
         ent_count = 0
         if len(all_entry[a]) > 0: # date,place,racenum output
-            print(str(all_target[a]["rdate"])+" "+all_entry[a][0]["place"]+" "+str((a%12)+1)+"R")
+            print(str(all_target[a]["rdate"])+" "+all_target[a]["place"]+" "+str((a%12)+1)+"R")
         for ent in all_entry[a]:
             maindata = []
             self_data = [x for x in all_self_data if x["horsename"] == ent["horsename"] and str(x["rdate"]) == ent["rdate"]]
