@@ -66,97 +66,78 @@ class DeepOneTwoPred():
         bi = '{:02b}'.format(self.util.get_class_rank(dct["today_class"]))
         return int(bi[1])
     def get_dl_element7(self, dct):
-        return self.util.is_upper_class(dct["past_class"],dct["today_class"])
+        bi = '{:02b}'.format(self.util.get_class_rank(dct["past_class"]))
+        return int(bi[0])
     def get_dl_element8(self, dct):
-        if dct["past_diff3f"] <= 0.3:
-            return 1
-        return 0
+        bi = '{:02b}'.format(self.util.get_class_rank(dct["past_class"]))
+        return int(bi[1])
     def get_dl_element9(self, dct):
-        if dct["past_diff3f"] >= 1.5:
+        if self.sr.whole_race_dict["top_odds"] <= 1.5:
             return 1
         return 0
     def get_dl_element10(self, dct):
-        virtual_cls = self.util.get_slow_pace_virtual_class(dct["past_class"])
-        rap = [x for x in self.slow_pace if x['place']==dct['past_place'] and x['distance']==dct['past_distance'] and x['course_condition']==dct['past_course_condition'] and x['turf_dirt']==dct['past_turf_dirt'] and x['class']==virtual_cls]
-        if len(rap) == 0:
-            rap = [{"rap3f":37.0,"rap5f":65.0}]
-        if dct["past_distance"] <= 1400 and dct["past_rap3f"] >= rap[0]["rap3f"]:
-            return 1
-        elif dct["past_distance"] > 1400 and dct["past_rap5f"] >= rap[0]["rap5f"]:
-            return 1
-        return 0
-    def get_dl_element11(self, dct):
-        if dct["today_span"] >= 15:
-            return 1
-        return 0
-    def get_dl_element12(self, dct):
         if self.sr.whole_race_dict["top_odds"] <= 2.0:
             return 1
         return 0
+    def get_dl_element11(self, dct):
+        if self.sr.whole_race_dict["top_odds"] <= 3.0:
+            return 1
+        return 0
+    def get_dl_element12(self, dct):
+        if self.sr.single_horse_dicts[dct["today_horsenum"]-1]["zi_diff_from_top"] <= 5:
+            return 1
+        return 0
     def get_dl_element13(self, dct):
-        if self.sr.single_horse_dicts[dct["today_horsenum"]-1]["zi_diff_from_top"] <= 20:
+        if self.sr.single_horse_dicts[dct["today_horsenum"]-1]["zi_diff_from_top"] <= 10:
             return 1
         return 0
     def get_dl_element14(self, dct):
-        if self.sr.single_horse_dicts[dct["today_horsenum"]-1]["diff02_count"] >= 2:
+        if self.sr.single_horse_dicts[dct["today_horsenum"]-1]["zi_diff_from_top"] <= 15:
             return 1
         return 0
     def get_dl_element15(self, dct):
-        if self.sr.single_horse_dicts[dct["today_horsenum"]-1]["diff20_count"] >= 2:
+        if self.sr.single_horse_dicts[dct["today_horsenum"]-1]["zi_diff_from_top"] <= 20:
             return 1
         return 0
     def get_dl_element16(self, dct):
-        if self.sr.whole_race_dict["pop_tddiff"]:
+        if self.sr.single_horse_dicts[dct["today_horsenum"]-1]["zi_diff_from_top"] <= 30:
             return 1
         return 0
     def get_dl_element17(self, dct):
-        if self.sr.single_horse_dicts[dct["today_horsenum"]-1]["highodds05"]:
+        if dct["past_time_diff"] <= -1.0:
             return 1
         return 0
     def get_dl_element18(self, dct):
-        if self.util.get_class_priority(dct["today_class"]) <= self.util.get_class_priority(dct["past_class"]) and dct["past_horse_last3f"] <= dct["past_race_last3f"]-0.5:
+        if dct["past_time_diff"] <= -0.5:
             return 1
         return 0
     def get_dl_element19(self, dct):
-        count = 0
-        for shd in self.sr.single_horse_dicts:
-            if shd["odds"] >= 100.0:
-                count = count + 1
-        if count >= 3:
+        if dct["past_time_diff"] <= 0.0:
             return 1
         return 0
     def get_dl_element20(self, dct):
-        count = 0
-        for shd in self.sr.single_horse_dicts:
-            if shd["odds"] <= 20.0:
-                count = count + 1
-        if count >= 7:
+        if dct["past_time_diff"] <= 0.2:
             return 1
         return 0
     def get_dl_element21(self, dct):
-        if self.sr.single_horse_dicts[dct["today_horsenum"]-1]["aheadlose10"] >= 2:
+        if dct["past_time_diff"] <= 0.5:
             return 1
         return 0
     def get_dl_element22(self, dct):
-        if dct["today_span"] == 1:
+        if dct["past_time_diff"] <= 1.0:
             return 1
         return 0
     def get_dl_element23(self, dct):
-        if dct["past_distance"] == dct["today_distance"] and dct["past_turf_dirt"] == dct["today_turf_dirt"] and (dct["past_course_condition"] == "良" or dct["past_course_condition"] == "稍"):
-            if self.sr.whole_race_dict["fastest_time"] != 0 and dct["past_race_time"] <= self.sr.whole_race_dict["fastest_time"]+0.5:
-                return 1
+        if dct["past_time_diff"] <= 1.5:
+            return 1
         return 0
     def get_dl_element24(self, dct):
-        if self.util.get_class_priority(dct["today_class"]) >= 2:
+        if dct["past_time_diff"] <= 2.0:
             return 1
         return 0
     def get_dl_element25(self, dct):
-        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        if len(jk) == 0:
-            return 0
-        else:
-            if jk[0]["belongs"] == "栗東":
-                return 1
+        if self.sr.whole_race_dict["pop_tddiff"]:
+            return 1
         return 0
     def get_dl_element26(self, dct):
         jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
@@ -207,14 +188,16 @@ class DeepOneTwoPred():
             return 0
         return 1
     def get_dl_element34(self, dct):
-        ret = min(dct["past_time_diff"], 2.0)/2.0
-        return ret
-    def get_dl_element35(self, dct):
-        if dct["today_horsenum"] <= 4:
+        if dct["today_span"] == 1:
             return 1
         return 0
+    def get_dl_element35(self, dct):
+        if dct["past_distance"] == dct["today_distance"] and dct["past_turf_dirt"] == dct["today_turf_dirt"] and (dct["past_course_condition"] == "良" or dct["past_course_condition"] == "稍"):
+            if self.sr.whole_race_dict["fastest_time"] != 0 and dct["past_race_time"] <= self.sr.whole_race_dict["fastest_time"]+0.5:
+                return 1
+        return 0
     def get_dl_element36(self, dct):
-        if dct["today_horsenum"] >= 15:
+        if self.util.get_class_priority(dct["today_class"]) >= 2:
             return 1
         return 0
     def get_dl_element37(self, dct):
@@ -660,6 +643,182 @@ class DeepOneTwoPred():
         return 0
     def get_dl_element138(self, dct):
         if dct["past_last_rap4"] >= 13.0:
+            return 1
+        return 0
+    def get_dl_element139(self, dct):
+        if dct["past_diff3f"] <= 0.1:
+            return 1
+        return 0
+    def get_dl_element140(self, dct):
+        if dct["past_diff3f"] <= 0.3:
+            return 1
+        return 0
+    def get_dl_element141(self, dct):
+        if dct["past_diff3f"] <= 0.5:
+            return 1
+        return 0
+    def get_dl_element142(self, dct):
+        if dct["past_diff3f"] <= 1.0:
+            return 1
+        return 0
+    def get_dl_element143(self, dct):
+        if dct["past_diff3f"] <= 1.5:
+            return 1
+        return 0
+    def get_dl_element144(self, dct):
+        if dct["today_horsenum"] <= 3:
+            return 1
+        return 0
+    def get_dl_element145(self, dct):
+        if dct["today_horsenum"] <= 6:
+            return 1
+        return 0
+    def get_dl_element146(self, dct):
+        if dct["today_horsenum"] <= 9:
+            return 1
+        return 0
+    def get_dl_element147(self, dct):
+        if dct["today_horsenum"] <= 12:
+            return 1
+        return 0
+    def get_dl_element148(self, dct):
+        if dct["today_horsenum"] <= 15:
+            return 1
+        return 0
+    def get_dl_element149(self, dct):
+        if dct["past_odds"] <= 2.0:
+            return 1
+        return 0
+    def get_dl_element150(self, dct):
+        if dct["past_odds"] <= 5.0:
+            return 1
+        return 0
+    def get_dl_element151(self, dct):
+        if dct["past_odds"] <= 10.0:
+            return 1
+        return 0
+    def get_dl_element152(self, dct):
+        if dct["past_odds"] <= 20.0:
+            return 1
+        return 0
+    def get_dl_element153(self, dct):
+        if dct["past_odds"] <= 30.0:
+            return 1
+        return 0
+    def get_dl_element154(self, dct):
+        if dct["past_odds"] <= 50.0:
+            return 1
+        return 0
+    def get_dl_element155(self, dct):
+        if dct["past_odds"] <= 100.0:
+            return 1
+        return 0
+    def get_dl_element156(self, dct):
+        if dct["today_span"] <= 2:
+            return 1
+        return 0
+    def get_dl_element157(self, dct):
+        if dct["today_span"] <= 4:
+            return 1
+        return 0
+    def get_dl_element158(self, dct):
+        if dct["today_span"] <= 8:
+            return 1
+        return 0
+    def get_dl_element159(self, dct):
+        if dct["today_span"] <= 16:
+            return 1
+        return 0
+    def get_dl_element160(self, dct):
+        if dct["today_span"] <= 32:
+            return 1
+        return 0
+    def get_dl_element161(self, dct):
+        if dct["today_span"] <= 48:
+            return 1
+        return 0
+    def get_dl_element162(self, dct):
+        if (dct["today_rdate"]-dct["past_rdate"]).days <= 15:
+            return 1
+        return 0
+    def get_dl_element163(self, dct):
+        if (dct["today_rdate"]-dct["past_rdate"]).days <= 30:
+            return 1
+        return 0
+    def get_dl_element164(self, dct):
+        if (dct["today_rdate"]-dct["past_rdate"]).days <= 60:
+            return 1
+        return 0
+    def get_dl_element165(self, dct):
+        if (dct["today_rdate"]-dct["past_rdate"]).days <= 120:
+            return 1
+        return 0
+    def get_dl_element166(self, dct):
+        if (dct["today_rdate"]-dct["past_rdate"]).days <= 240:
+            return 1
+        return 0
+    def get_dl_element167(self, dct):
+        if (dct["today_rdate"]-dct["past_rdate"]).days <= 360:
+            return 1
+        return 0
+    def get_dl_element168(self, dct):
+        if dct["past_rap5f"] <= 57.0:
+            return 1
+        return 0
+    def get_dl_element169(self, dct):
+        if dct["past_rap5f"] <= 57.5:
+            return 1
+        return 0
+    def get_dl_element170(self, dct):
+        if dct["past_rap5f"] <= 58.0:
+            return 1
+        return 0
+    def get_dl_element171(self, dct):
+        if dct["past_rap5f"] <= 58.5:
+            return 1
+        return 0
+    def get_dl_element172(self, dct):
+        if dct["past_rap5f"] <= 59.0:
+            return 1
+        return 0
+    def get_dl_element173(self, dct):
+        if dct["past_rap5f"] <= 59.5:
+            return 1
+        return 0
+    def get_dl_element174(self, dct):
+        if dct["past_rap5f"] <= 60.0:
+            return 1
+        return 0
+    def get_dl_element175(self, dct):
+        if dct["past_rap5f"] <= 60.5:
+            return 1
+        return 0
+    def get_dl_element176(self, dct):
+        if dct["past_rap5f"] <= 61.0:
+            return 1
+        return 0
+    def get_dl_element177(self, dct):
+        if dct["past_rap5f"] <= 61.5:
+            return 1
+        return 0
+    def get_dl_element178(self, dct):
+        if dct["past_rap5f"] <= 62.0:
+            return 1
+        return 0
+    def get_dl_element179(self, dct):
+        if dct["past_rap5f"] <= 62.5:
+            return 1
+        return 0
+    def get_dl_element180(self, dct):
+        if dct["past_rap5f"] <= 63.0:
+            return 1
+        return 0
+    def get_dl_element181(self, dct):
+        if dct["past_rap5f"] <= 63.5:
+            return 1
+        return 0
+    def get_dl_element182(self, dct):
+        if dct["past_rap5f"] <= 64.0:
             return 1
         return 0
 
