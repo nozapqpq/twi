@@ -12,7 +12,12 @@ from keras.layers import Dense, Dropout
 from keras.optimizers import Adamax 
 from keras.layers.normalization import BatchNormalization
 import numpy as np
+
+# place_listに入っている場所に対するディープラーニングを利用できる
+# ディープラーニングの性能を図りたいときはresearch_flg = True
+place_list = ["東京","京都","新潟"]
 research_flg = True
+
 class AnalyseResult():
     def __init__(self):
         self.pat = sql_pattern.SQLPattern()
@@ -21,6 +26,14 @@ class AnalyseResult():
         self.util = utility.Utility()
         self.json_name = "deep_model.json"
         self.h5_name = "deep_model.h5"
+
+    def set_deep_model_name(self, place_dict):
+        place_list = ["札幌","函館","福島","新潟","中山","東京","中京","京都","阪神","小倉"]
+        td_list = ["芝","ダート"]
+        p_index = place_list.index(place_dict["place"])
+        td_index = td_list.index(place_dict["turf_dirt"])
+        self.json_name = "deep_model"+str(p_index).zfill(2)+str(td_index)+".json"
+        self.h5_name = "deep_model"+str(p_index).zfill(2)+str(td_index)+".h5"
 
     # twiフォルダの名前が日付になっているフォルダを取得
     def get_csv_dir_list(self):
@@ -31,7 +44,7 @@ class AnalyseResult():
         return dir_list
 
     # 与えられたフォルダリスト内のcsvファイルから馬データ取得
-    def get_main_data_from_dir_list(self, dir_list):
+    def get_main_data_from_dir_list(self, dir_list, place_dict_list):
         dir_count = 0
         entry_horses_list = []
         # フォルダ毎、main.csvを取得していく
@@ -42,12 +55,14 @@ class AnalyseResult():
             for fl in csv_list:
                 #print("../"+dl+"/"+fl)
                 main_dict = self.pat.get_maindata_dict_from_csv("../"+dl+"/"+fl)
-                entry_horses_list.append(main_dict)
+                thinned_out_main_dict = [x for x in main_dict if x["today_place"] == place_dict_list["place"] and x["today_turf_dirt"] == place_dict_list["turf_dirt"]]
+                if len(thinned_out_main_dict) > 0:
+                    entry_horses_list.append(thinned_out_main_dict)
         return entry_horses_list
 
     # １日分の馬データからdeeplearning_result.csvへの出力する追加情報を取得
-    def get_todayinfo_list(self, dir_list):
-        horses_data_list = self.get_main_data_from_dir_list(dir_list)
+    def get_todayinfo_list(self, dir_list, place_dict_list):
+        horses_data_list = self.get_main_data_from_dir_list(dir_list, place_dict_list)
         todayinfo_list = []
         extra_list = []
         extra_exist_flg = False
@@ -63,14 +78,13 @@ class AnalyseResult():
         return todayinfo_list, extra_list
 
     # 判定機をjsonから読み出しdeeplearning_result.csvを出力、性能判定も行う
-    def output_deeplearning_result_to_csv(self , pred_x_np, todayinfo_lst, dim, extra_lst, today_date=""):
+    def output_deeplearning_result_to_csv(self , pred_x_np, todayinfo_lst, dim, extra_lst, place_dict, today_date=""):
         model = model_from_json(open(self.json_name,"r").read())
         model.load_weights(self.h5_name)
         out_analyse_list = []
 
-        with open("../deeplearning_result.csv","w") as f:
+        with open("../deeplearning_result.csv","a") as f:
             writer = csv.writer(f)
-            writer.writerow(self.dotp.get_output_list_title())
             for i in range(len(pred_x_np)):
                 score = list(model.predict(pred_x_np[i].reshape(1,dim))[0])
                 extra = []
@@ -79,10 +93,10 @@ class AnalyseResult():
                     out_analyse_list.append(todayinfo_lst[i]+score+extra)
                 writer.writerow(todayinfo_lst[i]+score+extra)
         if today_date != "":
-            self.analyse_deeplearning_output(out_analyse_list,today_date)
+            self.analyse_deeplearning_output(out_analyse_list,today_date, place_dict)
 
     # 性能判定を行い、出力
-    def analyse_deeplearning_output(self, out_list, today_date):
+    def analyse_deeplearning_output(self, out_list, today_date, place_dict):
         if len(out_list) < 10:
             return
         places = list(set([x[2] for x in out_list]))
@@ -90,10 +104,10 @@ class AnalyseResult():
             # １着度高い順に並べ替え
             out_list = sorted(out_list, reverse=True, key=lambda x: x[3])
             writer = csv.writer(f)
-            writer.writerow([today_date]+self.get_analyse_result(places,out_list,"1着度","over",3))
+            writer.writerow([today_date,place_dict["place"],place_dict["turf_dirt"]]+self.get_analyse_result(places,out_list,"1着度","over",3))
             # 着外度低い順に並べ替え
             out_list = sorted(out_list, reverse=False, key=lambda x: x[5])
-            writer.writerow([today_date]+self.get_analyse_result(places,out_list,"着内度","under",5))
+            writer.writerow([today_date,place_dict["place"],place_dict["turf_dirt"]]+self.get_analyse_result(places,out_list,"着内度","under",5))
         print(str(today_date)+" research finished.")
 
     # deeplearning_result.csvへの出力結果を性能評価し、結果出力
@@ -175,10 +189,10 @@ class AnalyseResult():
         model.add(Dense(dim, activation='relu', input_dim=dim))
         model.add(Dropout(0.3))
         model.add(BatchNormalization())
-        model.add(Dense(dim*15, activation='relu'))
+        model.add(Dense(dim*20, activation='relu'))
         model.add(Dropout(0.3))
         model.add(BatchNormalization())
-        model.add(Dense(dim*5, activation='relu'))
+        model.add(Dense(dim*20, activation='relu'))
         model.add(Dropout(0.3))
         model.add(BatchNormalization())
 
@@ -189,7 +203,7 @@ class AnalyseResult():
         model.compile(loss='categorical_crossentropy', optimizer=adamax, metrics=['accuracy'])
 
         history = model.fit(x_train, y_train, epochs=10, batch_size=2000, validation_split=0.1)
-        self.compare_TV(history)
+        #self.compare_TV(history)
         #loss, accuracy = model.evaluate(x_train[29000:],y_train[29000:],verbose=0)
         #print("Accuracy = {:.2f}".format(accuracy))
 
@@ -199,46 +213,65 @@ class AnalyseResult():
 
 # ======class AnalyseResult terminated======
 
-def process_as_product(ar):
-    goal_list = []
-    dir_list = ar.get_csv_dir_list()
-    todayinfo_lst, extra_lst = ar.get_todayinfo_list([str(dir_list[-1])])
-    dummy1, dummy2, dummy3, target = ar.dotp.make_deeplearning_data(ar.get_main_data_from_dir_list([str(dir_list[-1])]),"machine_learning/deep_pattern.json")
-    pred_x_np = np.array(target)
-    dim = len(pred_x_np[0])
+def process_as_product(ar, place_dict_list):
+    with open("../deeplearning_result.csv","w") as f:
+        writer = csv.writer(f)
+        writer.writerow(ar.dotp.get_output_list_title())
+    for pdl in place_dict_list:
+        ar.set_deep_model_name(pdl)
+        goal_list = []
+        dir_list = ar.get_csv_dir_list()
+        todayinfo_lst, extra_lst = ar.get_todayinfo_list([str(dir_list[-1])],pdl)
+        dummy1, dummy2, dummy3, target = ar.dotp.make_deeplearning_data(ar.get_main_data_from_dir_list([str(dir_list[-1])],pdl),"machine_learning/deep_pattern.json")
+        pred_x_np = np.array(target)
+        dim = len(pred_x_np[0])
 
-    # 学習済で結果出力だけのときはこの塊をコメントアウト
-    lst = ar.get_main_data_from_dir_list(dir_list)
-    learn_lst, ans_lst, hn_lst, dummy_target = ar.dotp.make_deeplearning_data(lst,"machine_learning/deep_pattern.json")
-    # 着順分類リスト作成
-    for i in range(len(learn_lst)):
-        gl = ar.dotp.convert_fullgate_goal_list(ans_lst[i][0],ans_lst[i][1],ans_lst[i][2])
-        goal_list.append(gl)
-    # 各リストのnumpy化
-    x_np = np.array(learn_lst)
-    y_np = np.array(goal_list)
-    # ディープラーニング
-    ar.deep_learning(x_np, y_np, dim, hn_lst, pred_x_np, todayinfo_lst)
+        lst = ar.get_main_data_from_dir_list(dir_list,pdl)
+        learn_lst, ans_lst, hn_lst, dummy_target = ar.dotp.make_deeplearning_data(lst,"machine_learning/deep_pattern.json")
+        # 着順分類リスト作成
+        for i in range(len(learn_lst)):
+            gl = ar.dotp.convert_fullgate_goal_list(ans_lst[i][0],ans_lst[i][1],ans_lst[i][2])
+            goal_list.append(gl)
+        # 各リストのnumpy化
+        x_np = np.array(learn_lst)
+        y_np = np.array(goal_list)
+        # ディープラーニング
+        ar.deep_learning(x_np, y_np, dim, hn_lst, pred_x_np, todayinfo_lst)
 
-    # 結果出力
-    ar.output_deeplearning_result_to_csv(pred_x_np, todayinfo_lst, dim, extra_lst)
+        # 結果出力
+        ar.output_deeplearning_result_to_csv(pred_x_np, todayinfo_lst, dim, extra_lst, pdl)
 
-def process_as_research(ar):
+def process_as_research(ar, place_dict_list):
     with open("../deeplearning_research_result.csv","w") as f:
         writer = csv.writer(f)
         writer.writerow(ar.get_analyse_result_title())
-    for tl in ["171014","181020","181027","191012","191013","191026","201010","201011","201017","201018"]:
-        goal_list = []
-        todayinfo_lst, extra_lst = ar.get_todayinfo_list([tl])
-        dummy1, dummy2, dummy3, target = ar.dotp.make_deeplearning_data(ar.get_main_data_from_dir_list([tl]),"machine_learning/deep_pattern.json")
-        pred_x_np = np.array(target)
-        dim = len(pred_x_np[0])
-        ar.output_deeplearning_result_to_csv(pred_x_np, todayinfo_lst, dim, extra_lst, tl)
+    with open("../deeplearning_result.csv","w") as f:
+        writer = csv.writer(f)
+        writer.writerow(ar.dotp.get_output_list_title())
+    for pdl in place_dict_list:
+        ar.set_deep_model_name(pdl)
+        for tl in ["171014","181020","181027","191012","191013","191026","201010","201011","201017","201018"]:
+            goal_list = []
+            todayinfo_lst, extra_lst = ar.get_todayinfo_list([tl],pdl)
+            dummy1, dummy2, dummy3, target = ar.dotp.make_deeplearning_data(ar.get_main_data_from_dir_list([tl],pdl),"machine_learning/deep_pattern.json")
+            pred_x_np = np.array(target)
+            if len(target) == 0:
+                continue
+            dim = len(pred_x_np[0])
+            ar.output_deeplearning_result_to_csv(pred_x_np, todayinfo_lst, dim, extra_lst, pdl, tl)
+
+def make_usedlset_dictlist(place_list):
+    dict_list = []
+    for pl in place_list:
+        dict_list.append({"place":pl,"turf_dirt":"芝"})
+        dict_list.append({"place":pl,"turf_dirt":"ダート"})
+    return dict_list
 
 ar = AnalyseResult()
+place_dict_list = make_usedlset_dictlist(place_list)
 if research_flg:
     # performance evaluation
-    process_as_research(ar)
+    process_as_research(ar,place_dict_list)
 else:
     # honban
-    process_as_product(ar)
+    process_as_product(ar,place_dict_list)
