@@ -227,8 +227,7 @@ def process_as_research(ar):
     with open("../deeplearning_research_result.csv","w") as f:
         writer = csv.writer(f)
         writer.writerow(ar.get_analyse_result_title())
-    for tl in ["191013","191026","201010","201011","201018"]:
-    #for tl in ["171001","171007","171008","171009","171014","171021","171022","171028","171029","181002","181006","181007","181008","181013","181014","181020","181021","181027","181028","191005","191006","191012","191013","191014","191015","191019","191020","191021","191026","191027","201003","201004","201010","201011"]:
+    for tl in ["171014","181020","181027","191012","191013","191026","201010","201011","201017","201018"]:
         goal_list = []
         todayinfo_lst, extra_lst = ar.get_todayinfo_list([tl])
         dummy1, dummy2, dummy3, target = ar.dotp.make_deeplearning_data(ar.get_main_data_from_dir_list([tl]),"machine_learning/deep_pattern.json")
