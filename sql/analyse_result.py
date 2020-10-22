@@ -109,55 +109,61 @@ class AnalyseResult():
             out_list = sorted(out_list, reverse=True, key=lambda x: x[3])
             writer = csv.writer(f)
             writer.writerow([today_date,place_dict["place"],place_dict["turf_dirt"]]+self.get_analyse_result(places,out_list,"1着度","over",3))
-            # 着外度低い順に並べ替え
-            out_list = sorted(out_list, reverse=False, key=lambda x: x[5])
-            writer.writerow([today_date,place_dict["place"],place_dict["turf_dirt"]]+self.get_analyse_result(places,out_list,"着内度","under",5))
-        print(str(today_date)+" research finished.")
 
     # deeplearning_result.csvへの出力結果を性能評価し、結果出力
     def get_analyse_result_title(self):
-        return ["date","title","1位の","win","double win","3位以内の","win","double win","10位以下の","win","double win","one-two double win","count","dividend sum"]
+        return ["date","場所","芝ダ","title","総数","1着","2着","3着","連対率","複勝率","5位以内との連対回数","2〜5位総数","10位以内との連対回数","6〜10位総数","11位以下との連対回数","11位以下総数","的中時平均配当(馬連)"]
     def get_analyse_result(self, places, out_list, elem_name, direction, target):
-        order_analyse_strongest = [0,0,0,0,0,0]
-        order_analyse_till_3rd = [0,0,0,0,0,0]
-        order_analyse_bottom = [0,0,0,0,0,0]
+        count_dict = {"total":0,"1st":0,"2nd":0,"3rd":0,"with_5th":0,"5th_count":0,"with_10th":0,"10th_count":0,"with_11th":0,"11th_count":0}
+        total_dividend = 0
+        
         total_count = 0
         one_two_dividend = 0
         one_two_count = 0
         for p in places:
-            for i in range(12):
+            for i in range(12): # レース数
                 horsename_tmplist = []
                 single_analyse_list = []
+                # 並べ替えてある順に1レース分の馬名をhorsename_tmplistに入れていく
                 for ol in out_list:
                     if ol[1] == (i+1) and ol[2] == p and not ol[0] in horsename_tmplist:
                         single_analyse_list.append(ol)
                         horsename_tmplist.append(ol[0])
-                if single_analyse_list == [] or len(single_analyse_list) < 9:
+                # 着順データが入っていない場合(レース当日使用の場合)、research_result.csvは作らない
+                if single_analyse_list == [] or len(single_analyse_list[0]) < 9:
                     continue
+                # 1位から1頭ずつ見ていく
                 single_one_two_count = 0
                 for j in range(len(single_analyse_list)):
-                    if j == 0 and single_analyse_list[j][6] >= 1 and single_analyse_list[j][6] <= 2:
-                        single_one_two_count = single_one_two_count + 1
-                    if single_analyse_list[j][6] >= 1 and single_analyse_list[j][6] <= 5: # 5着以内のデータのリストへの追加
-                        if j == 0:
-                            order_analyse_strongest[single_analyse_list[j][6]-1] = order_analyse_strongest[single_analyse_list[j][6]-1] + 1
-                        if j < 3:
-                            order_analyse_till_3rd[single_analyse_list[j][6]-1] = order_analyse_till_3rd[single_analyse_list[j][6]-1] + 1
-                        if j >= 9:
-                            order_analyse_bottom[single_analyse_list[j][6]-1] = order_analyse_bottom[single_analyse_list[j][6]-1] + 1
-                    elif single_analyse_list[j][6] >= 6: # 6着以内のデータのリストへの追加
-                        if j == 0:
-                            order_analyse_strongest[5] = order_analyse_strongest[5] + 1
-                        if j < 3:
-                            order_analyse_till_3rd[5] = order_analyse_till_3rd[5] + 1
-                        if j >= 9:
-                            order_analyse_bottom[5] = order_analyse_bottom[5] + 1
-                if single_one_two_count > 0:
-                    one_two_dividend = one_two_dividend + single_analyse_list[0][8]
-                    one_two_count = one_two_count + 1
-                if single_analyse_list[0][8] > 0: # if there is any dividend, count
-                    total_count = total_count + 1
-        return [elem_name,order_analyse_strongest,self.util.get_win_rate(order_analyse_strongest),self.util.get_double_win_rate(order_analyse_strongest),order_analyse_till_3rd,self.util.get_win_rate(order_analyse_till_3rd),self.util.get_double_win_rate(order_analyse_till_3rd),order_analyse_bottom,self.util.get_win_rate(order_analyse_bottom),self.util.get_double_win_rate(order_analyse_bottom),round(one_two_count/total_count,3),one_two_count,one_two_dividend]
+                    # 1位に対する処理
+                    if j == 0:
+                        count_dict["total"] = count_dict["total"] + 1
+                        if single_analyse_list[j][6] == 1:
+                            count_dict["1st"] = count_dict["1st"] + 1
+                            total_dividend = total_dividend + single_analyse_list[j][8]
+                        elif single_analyse_list[j][6] == 2:
+                            count_dict["2nd"] = count_dict["2nd"] + 1
+                            total_dividend = total_dividend + single_analyse_list[j][8]
+                        elif single_analyse_list[j][6] == 3:
+                            count_dict["3rd"] = count_dict["3rd"] + 1
+                    elif j < 5:
+                        count_dict["5th_count"] = count_dict["5th_count"] + 1
+                    elif j < 10:
+                        count_dict["10th_count"] = count_dict["10th_count"] + 1
+                    else:
+                        count_dict["11th_count"] = count_dict["11th_count"] + 1
+                    # 1位が連対した場合にカウント
+                    if j >= 1 and (single_analyse_list[0][6] == 1 or single_analyse_list[0][6] == 2) and (single_analyse_list[j][6] == 1 or single_analyse_list[j][6] == 2):
+                        if j < 5:
+                            count_dict["with_5th"] = count_dict["with_5th"] + 1
+                        elif j < 10:
+                            count_dict["with_10th"] = count_dict["with_10th"] + 1
+                        else:
+                            count_dict["with_11th"] = count_dict["with_11th"] + 1
+        average_dividend = 0
+        if count_dict["total"] > 0:
+            average_dividend = round(total_dividend/count_dict["total"],0)
+        return [elem_name, count_dict["total"], count_dict["1st"], count_dict["2nd"], count_dict["3rd"], self.util.get_quinella_rate(count_dict), self.util.get_double_win_rate(count_dict), count_dict["with_5th"], count_dict["5th_count"], count_dict["with_10th"], count_dict["10th_count"], count_dict["with_11th"], count_dict["11th_count"],average_dividend] 
 
     # matplotでaccuracyとlossをプロットして出力
     def compare_TV(self, history):
