@@ -78,15 +78,19 @@ class AnalyseResult():
         return todayinfo_list, extra_list
 
     # 判定機をjsonから読み出しdeeplearning_result.csvを出力、性能判定も行う
-    def output_deeplearning_result_to_csv(self , pred_x_np, todayinfo_lst, dim, extra_lst, place_dict, today_date=""):
+    def get_deep_model(self):
         model = model_from_json(open(self.json_name,"r").read())
         model.load_weights(self.h5_name)
+        return model
+    def output_deeplearning_result_to_csv(self , model, pred_x_np, todayinfo_lst, dim, extra_lst, place_dict, today_date=""):
         out_analyse_list = []
 
         with open("../deeplearning_result.csv","a") as f:
             writer = csv.writer(f)
+            all_score = model.predict(pred_x_np)
             for i in range(len(pred_x_np)):
-                score = list(model.predict(pred_x_np[i].reshape(1,dim))[0])
+                score = list(all_score[i])
+                #score = list(model.predict(pred_x_np[i].reshape(1,dim))[0])
                 extra = []
                 if extra_lst != []:
                     extra = extra_lst[i]
@@ -239,7 +243,8 @@ def process_as_product(ar, place_dict_list):
         ar.deep_learning(x_np, y_np, dim, hn_lst, pred_x_np, todayinfo_lst)
 
         # 結果出力
-        ar.output_deeplearning_result_to_csv(pred_x_np, todayinfo_lst, dim, extra_lst, pdl)
+        model = ar.get_deep_model()
+        ar.output_deeplearning_result_to_csv(model, pred_x_np, todayinfo_lst, dim, extra_lst, pdl)
 
 def process_as_research(ar, place_dict_list):
     with open("../deeplearning_research_result.csv","w") as f:
@@ -250,7 +255,8 @@ def process_as_research(ar, place_dict_list):
         writer.writerow(ar.dotp.get_output_list_title())
     for pdl in place_dict_list:
         ar.set_deep_model_name(pdl)
-        for tl in ["171014","181020","181027","191012","191013","191026","201010","201011","201017","201018"]:
+        model = ar.get_deep_model()
+        for tl in ["171014","171029","181014","181020","181027","191026","201010","201011","201017","201018"]:
             goal_list = []
             todayinfo_lst, extra_lst = ar.get_todayinfo_list([tl],pdl)
             dummy1, dummy2, dummy3, target = ar.dotp.make_deeplearning_data(ar.get_main_data_from_dir_list([tl],pdl),"machine_learning/deep_pattern.json")
@@ -258,7 +264,7 @@ def process_as_research(ar, place_dict_list):
             if len(target) == 0:
                 continue
             dim = len(pred_x_np[0])
-            ar.output_deeplearning_result_to_csv(pred_x_np, todayinfo_lst, dim, extra_lst, pdl, tl)
+            ar.output_deeplearning_result_to_csv(model, pred_x_np, todayinfo_lst, dim, extra_lst, pdl, tl)
 
 def make_usedlset_dictlist(place_list):
     dict_list = []
