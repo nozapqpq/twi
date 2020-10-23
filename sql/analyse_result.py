@@ -17,6 +17,8 @@ import numpy as np
 # ディープラーニングの性能を図りたいときはresearch_flg = True
 place_list = ["東京","京都","新潟"]
 research_flg = True
+all_place_flg = True
+all_td_flg = True
 
 class AnalyseResult():
     def __init__(self):
@@ -30,8 +32,18 @@ class AnalyseResult():
     def set_deep_model_name(self, place_dict):
         place_list = ["札幌","函館","福島","新潟","中山","東京","中京","京都","阪神","小倉"]
         td_list = ["芝","ダート"]
-        p_index = place_list.index(place_dict["place"])
-        td_index = td_list.index(place_dict["turf_dirt"])
+        if place_dict["place"] == "all" and place_dict["turf_dirt"] == "all":
+            self.json_name = "deep_model6.json"
+            self.h5_name = "deep_model6.h5"
+            return
+        if place_dict["place"] == "all":
+            p_index = 99
+        else:
+            p_index = place_list.index(place_dict["place"])
+        if place_dict["turf_dirt"] == "all":
+            td_index = 9
+        else:
+            td_index = td_list.index(place_dict["turf_dirt"])
         self.json_name = "deep_model"+str(p_index).zfill(2)+str(td_index)+".json"
         self.h5_name = "deep_model"+str(p_index).zfill(2)+str(td_index)+".h5"
 
@@ -55,7 +67,7 @@ class AnalyseResult():
             for fl in csv_list:
                 #print("../"+dl+"/"+fl)
                 main_dict = self.pat.get_maindata_dict_from_csv("../"+dl+"/"+fl)
-                thinned_out_main_dict = [x for x in main_dict if x["today_place"] == place_dict_list["place"] and x["today_turf_dirt"] == place_dict_list["turf_dirt"]]
+                thinned_out_main_dict = [x for x in main_dict if (place_dict_list["place"] == "all" or x["today_place"] == place_dict_list["place"]) and (place_dict_list["turf_dirt"] == "all" or x["today_turf_dirt"] == place_dict_list["turf_dirt"])]
                 if len(thinned_out_main_dict) > 0:
                     entry_horses_list.append(thinned_out_main_dict)
         return entry_horses_list
@@ -212,7 +224,7 @@ class AnalyseResult():
         model.summary()
         model.compile(loss='categorical_crossentropy', optimizer=adamax, metrics=['accuracy'])
 
-        history = model.fit(x_train, y_train, epochs=10, batch_size=2000, validation_split=0.1)
+        history = model.fit(x_train, y_train, epochs=15, batch_size=2000, validation_split=0.1)
         #self.compare_TV(history)
         #loss, accuracy = model.evaluate(x_train[29000:],y_train[29000:],verbose=0)
         #print("Accuracy = {:.2f}".format(accuracy))
@@ -272,15 +284,20 @@ def process_as_research(ar, place_dict_list):
             dim = len(pred_x_np[0])
             ar.output_deeplearning_result_to_csv(model, pred_x_np, todayinfo_lst, dim, extra_lst, pdl, tl)
 
-def make_usedlset_dictlist(place_list):
+def make_usedlset_dictlist(place_list, all_place_flg, all_td_flg):
     dict_list = []
+    if all_place_flg:
+        place_list = ["all"]
     for pl in place_list:
-        dict_list.append({"place":pl,"turf_dirt":"芝"})
-        dict_list.append({"place":pl,"turf_dirt":"ダート"})
+        if all_td_flg:
+            dict_list.append({"place":pl,"turf_dirt":"all"})
+        else:
+            dict_list.append({"place":pl,"turf_dirt":"芝"})
+            dict_list.append({"place":pl,"turf_dirt":"ダート"})
     return dict_list
 
 ar = AnalyseResult()
-place_dict_list = make_usedlset_dictlist(place_list)
+place_dict_list = make_usedlset_dictlist(place_list, all_place_flg, all_td_flg)
 if research_flg:
     # performance evaluation
     process_as_research(ar,place_dict_list)
