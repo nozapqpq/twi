@@ -33,8 +33,8 @@ class AnalyseResult():
         place_list = ["札幌","函館","福島","新潟","中山","東京","中京","京都","阪神","小倉"]
         td_list = ["芝","ダート"]
         if place_dict["place"] == "all" and place_dict["turf_dirt"] == "all":
-            self.json_name = "deep_model6.json"
-            self.h5_name = "deep_model6.h5"
+            self.json_name = "deep_model14.json"
+            self.h5_name = "deep_model14.h5"
             return
         if place_dict["place"] == "all":
             p_index = 99
@@ -93,6 +93,7 @@ class AnalyseResult():
     def get_deep_model(self):
         model = model_from_json(open(self.json_name,"r").read())
         model.load_weights(self.h5_name)
+        print(self.json_name)
         return model
     def output_deeplearning_result_to_csv(self , model, pred_x_np, todayinfo_lst, dim, extra_lst, place_dict, today_date=""):
         out_analyse_list = []
@@ -124,7 +125,7 @@ class AnalyseResult():
 
     # deeplearning_result.csvへの出力結果を性能評価し、結果出力
     def get_analyse_result_title(self):
-        return ["date","場所","芝ダ","title","総数","1着","2着","3着","連対率","複勝率","5位以内との連対回数","2〜5位総数","10位以内との連対回数","6〜10位総数","11位以下との連対回数","11位以下総数","的中時平均配当(馬連)"]
+        return ["date","場所","芝ダ","title","総数","1着","2着","3着","連対率","複勝率","5位以内との連対回数","2〜5位総数","10位以内との連対回数","6〜10位総数","11位以下との連対回数","11位以下総数","total配当(馬連)","平均配当(馬連)"]
     def get_analyse_result(self, places, out_list, elem_name, direction, target):
         count_dict = {"total":0,"1st":0,"2nd":0,"3rd":0,"with_5th":0,"5th_count":0,"with_10th":0,"10th_count":0,"with_11th":0,"11th_count":0}
         total_dividend = 0
@@ -142,13 +143,15 @@ class AnalyseResult():
                         single_analyse_list.append(ol)
                         horsename_tmplist.append(ol[0])
                 # 着順データが入っていない場合(レース当日使用の場合)、research_result.csvは作らない
-                if single_analyse_list == [] or len(single_analyse_list[0]) < 9:
+                # when top horse's goal == 0, skip
+                if single_analyse_list == [] or len(single_analyse_list[0]) < 9 or single_analyse_list[0][6] == 0:
                     continue
                 # 1位から1頭ずつ見ていく
                 single_one_two_count = 0
                 for j in range(len(single_analyse_list)):
                     # 1位に対する処理
                     if j == 0:
+                        print(single_analyse_list[j])
                         count_dict["total"] = count_dict["total"] + 1
                         if single_analyse_list[j][6] == 1:
                             count_dict["1st"] = count_dict["1st"] + 1
@@ -175,7 +178,9 @@ class AnalyseResult():
         average_dividend = 0
         if count_dict["total"] > 0:
             average_dividend = round(total_dividend/count_dict["total"],0)
-        return [elem_name, count_dict["total"], count_dict["1st"], count_dict["2nd"], count_dict["3rd"], self.util.get_quinella_rate(count_dict), self.util.get_double_win_rate(count_dict), count_dict["with_5th"], count_dict["5th_count"], count_dict["with_10th"], count_dict["10th_count"], count_dict["with_11th"], count_dict["11th_count"],average_dividend] 
+        print(average_dividend)
+        print(count_dict)
+        return [elem_name, count_dict["total"], count_dict["1st"], count_dict["2nd"], count_dict["3rd"], self.util.get_quinella_rate(count_dict), self.util.get_double_win_rate(count_dict), count_dict["with_5th"], count_dict["5th_count"], count_dict["with_10th"], count_dict["10th_count"], count_dict["with_11th"], count_dict["11th_count"],total_dividend,average_dividend]
 
     # matplotでaccuracyとlossをプロットして出力
     def compare_TV(self, history):
@@ -211,10 +216,10 @@ class AnalyseResult():
         model.add(Dense(dim, activation='relu', input_dim=dim))
         model.add(Dropout(0.3))
         model.add(BatchNormalization())
-        model.add(Dense(dim*20, activation='relu'))
+        model.add(Dense(dim*40, activation='relu'))
         model.add(Dropout(0.3))
         model.add(BatchNormalization())
-        model.add(Dense(dim*20, activation='relu'))
+        model.add(Dense(dim*40, activation='relu'))
         model.add(Dropout(0.3))
         model.add(BatchNormalization())
 
