@@ -841,12 +841,21 @@ class DeepOneTwoPred():
         jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
         if len(jk) == 0:
             return 0
-        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_front"] >= 15:
+        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_front"] >= 10:
             return 1
-        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_front"] >= 15:
+        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_front"] >= 10:
             return 1
         return 0
     def get_dl_element192(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        if len(jk) == 0:
+            return 0
+        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_front"] >= 20:
+            return 1
+        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_front"] >= 20:
+            return 1
+        return 0
+    def get_dl_element193(self, dct):
         jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
         if len(jk) == 0:
             return 0
@@ -855,34 +864,34 @@ class DeepOneTwoPred():
         if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_front"] >= 30:
             return 1
         return 0
-    def get_dl_element193(self, dct):
-        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        if len(jk) == 0:
-            return 0
-        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_front"] >= 45:
-            return 1
-        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_front"] >= 45:
-            return 1
-        return 0
     def get_dl_element194(self, dct):
         jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
         if len(jk) == 0:
             return 0
-        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_front"] >= 60:
+        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_front"] >= 40:
             return 1
-        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_front"] >= 60:
+        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_front"] >= 40:
             return 1
         return 0
     def get_dl_element195(self, dct):
         jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
         if len(jk) == 0:
             return 0
-        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_stay"] >= 15:
+        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_stay"] >= 10:
             return 1
-        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_stay"] >= 15:
+        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_stay"] >= 10:
             return 1
         return 0
     def get_dl_element196(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        if len(jk) == 0:
+            return 0
+        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_stay"] >= 20:
+            return 1
+        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_stay"] >= 20:
+            return 1
+        return 0
+    def get_dl_element197(self, dct):
         jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
         if len(jk) == 0:
             return 0
@@ -891,22 +900,13 @@ class DeepOneTwoPred():
         if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_stay"] >= 30:
             return 1
         return 0
-    def get_dl_element197(self, dct):
-        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        if len(jk) == 0:
-            return 0
-        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_stay"] >= 45:
-            return 1
-        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_stay"] >= 45:
-            return 1
-        return 0
     def get_dl_element198(self, dct):
         jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
         if len(jk) == 0:
             return 0
-        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_stay"] >= 60:
+        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_stay"] >= 40:
             return 1
-        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_stay"] >= 60:
+        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_stay"] >= 40:
             return 1
         return 0
 
