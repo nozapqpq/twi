@@ -3,6 +3,7 @@ import sql_manipulator
 import csv
 import os
 from datetime import datetime as dt
+from dateutil.relativedelta import relativedelta
 
 class Utility():
     def __init__(self):
@@ -114,14 +115,12 @@ class Utility():
         ret_list = []
         jk = self.sql.sql_manipulator("select * from jockey_table;")
         for j in jk:
-            ret_list.append({"name":j[0],"belongs":j[1],"sturn_turf_short":j[2],"sturn_turf_middle":j[3],"sturn_dirt_short":j[4],"sturn_dirt_middle":j[5],"normal_turf_short":j[6],"normal_turf_middle":j[7],"normal_dirt_short":j[8],"normal_dirt_middle":j[9]})
+            turf_front = (self.convert_few_data_to_20(j[3])+self.convert_few_data_to_20(j[7]))/2
+            turf_stay = (self.convert_few_data_to_20(j[4])+self.convert_few_data_to_20(j[8]))/2
+            dirt_front = (self.convert_few_data_to_20(j[5])+self.convert_few_data_to_20(j[9]))/2
+            dirt_stay = (self.convert_few_data_to_20(j[6])+self.convert_few_data_to_20(j[10]))/2
+            ret_list.append({"name":j[0],"belongs":j[1],"age":self.get_age_from_dateofbirth(dt.strptime(j[2],'%Y-%m-%d')),"turf_front":turf_front,"turf_stay":turf_stay,"dirt_front":dirt_front,"dirt_stay":dirt_stay})
         return ret_list
-    # 騎手テーブルの任意の列の平均値を取得(0のデータは除外)
-    def get_jockey_score_average(self, jk_data, column_name):
-        if len(jk_data) == 0:
-            return 0
-        avr = sum(d[column_name] for d in jk_data if d[column_name] != 0)/len(jk_data)
-        return avr
     # 種牡馬テーブルの全データを取得
     def get_stallion_all_data(self):
         ret_list = []
@@ -136,6 +135,11 @@ class Utility():
         for t in tr:
             ret_list.append({"name":t[0],"belongs":t[1]})
         return ret_list
+    # 日付から年齢を取得
+    def get_age_from_dateofbirth(self, date):
+        delta = relativedelta(dt.now(),date)
+        age = delta.years
+        return age
     # 洋芝
     def is_european_grass(self, place):
         if place in ["札幌","函館"]:
@@ -184,4 +188,10 @@ class Utility():
                 return "0"
         else:
             return target
-
+    # 100%が最大値のデータでdata==100%のとき、データ不足と判断して20%とみなす
+    def convert_few_data_to_20(self, data):
+        if data == 100:
+            data = 20
+        if data == 1:
+            data = 0.2
+        return data

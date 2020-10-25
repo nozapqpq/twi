@@ -3,12 +3,15 @@ import sql_manipulator
 import csv
 import os
 from datetime import datetime as dt
+from . import deep_utility
 
 class DeepSingleRace():
     def __init__(self):
-        self.sql = sql_manipulator.SQLManipulator()
+        self.util = deep_utility.Utility()
         self.single_horse_dicts = []
         self.whole_race_dict = {}
+        self.trainer = self.util.get_trainer_all_data()
+        self.jockey = self.util.get_jockey_all_data()
 
     def set_main_dicts(self, whole_list):
         self.clean()
@@ -19,8 +22,9 @@ class DeepSingleRace():
 
     def clean(self):
         self.single_horse_dicts = []
-        self.whole_race_dict = {"place":"","race":0,"rdate":"","horse_total":"","top_zi":0,"top_odds":0,"fastest_time":0.0,"pop_tddiff":False}
+        self.whole_race_dict = {"place":"","race":0,"rdate":"","horse_total":"","top_zi":0,"top_odds":0,"fastest_time":0.0,"pop_tddiff":False,"stag_count":0,"west_count":0,"younghorse_count":0,"youngjockey_count":0}
 
+    # 1レース分のデータを扱う(栗東率、牡馬率、若手騎手率、2,3歳限定寄りかなど)
     def set_whole_race_dict(self, whole_list):
         self.whole_race_dict["place"] = whole_list[-1]["today_place"]
         self.whole_race_dict["race"] = whole_list[-1]["today_race"]
@@ -28,6 +32,31 @@ class DeepSingleRace():
         self.whole_race_dict["horse_total"] = whole_list[-1]["today_horse_total"]
         self.whole_race_dict["top_zi"] = max(whole_list, key=lambda x:x['today_zi'])['today_zi']
         self.whole_race_dict["top_odds"] = min(whole_list, key=lambda x:x['today_odds'])['today_odds']
+
+        name_list = []
+        west_count = 0
+        stag_count = 0
+        younghorse_count = 0
+        youngjockey_count = 0
+        for wl in whole_list:
+            trainer = [x for x in self.trainer if x['name'] == wl['trainer']]
+            jockey = [x for x in self.jockey if x['name'] == wl['today_jockey_name']]
+            if not wl['horsename'] in name_list:
+            #if len(single) > 0 and not wl['horsename'] in name_list and wl["today_place"] == self.whole_race_dict["place"] and wl["today_race"] == self.whole_race_dict["race"]:
+                if len(trainer) > 0 and trainer[0]['belongs'] == "栗東":
+                    west_count = west_count + 1
+                if wl["horse_sex"] != "牝":
+                    stag_count = stag_count + 1
+                if wl["horse_age"] <= 3:
+                    younghorse_count = younghorse_count + 1
+                if len(jockey) > 0 and jockey[0]['age'] <= 25:
+                    youngjockey_count = youngjockey_count + 1
+                name_list.append(wl['horsename'])
+        self.whole_race_dict["west_count"] = west_count
+        self.whole_race_dict["stag_count"] = stag_count
+        self.whole_race_dict["younghorse_count"] = younghorse_count
+        self.whole_race_dict["youngjockey_count"] = youngjockey_count
+
         matched = [x for x in whole_list if x["past_distance"]==x["today_distance"] and x["past_turf_dirt"]==x["today_turf_dirt"] and (x["past_course_condition"]=="良" or x["past_course_condition"]=="稍")]
         if len(matched) > 0:
             self.whole_race_dict["fastest_time"] =  sorted(matched, key=lambda x:x["past_race_time"])[0]["past_race_time"]
@@ -54,32 +83,16 @@ class DeepSingleRace():
             self.single_horse_dicts.append(self.get_single_horse_data([]))
 
     def get_single_horse_data(self, single_list):
-        single_dict = {"race_count":len(single_list),"td_diff_count":0,"diff02_count":0,"diff20_count":0,"diff20_lasttime":False,"zi_diff_from_top":0,"highodds05":False,"aheadlose10":False,"odds":999}
-        diff02_count = 0
-        diff20_count = 0
+        single_dict = {"race_count":len(single_list),"zi_diff_from_top":0,"td_diff_count":0,"odds":999}
         td_diff_count = 0
-        aheadlose10_count = 0
         if len(single_list) > 0:
             for i in range(len(single_list)):
                 if i == 0:
                     single_dict["odds"] = single_list[i]["today_odds"]
-                    if single_list[i]["past_time_diff"] >= 2.0:
-                        single_dict["diff20_lasttime"] = True
                     single_dict["zi_diff_from_top"] = self.whole_race_dict["top_zi"] - single_list[i]["today_zi"]
-                if single_list[i]["past_time_diff"] >= 2.0:
-                    diff20_count = diff20_count + 1
-                if single_list[i]["past_time_diff"] <= 0.3:
-                    diff02_count = diff02_count + 1
-                if single_list[i]["past_odds"] >= 50.0 and single_list[i]["past_time_diff"] <= 0.5:
-                    single_dict["highodds05"] = True
                 if single_list[i]["today_turf_dirt"] != single_list[i]["past_turf_dirt"]:
                     td_diff_count = td_diff_count + 1
-                if single_list[i]["past_diff3f"] <= 0.3 and single_list[i]["past_time_diff"] >= 1.0:
-                    aheadlose10_count = aheadlose10_count + 1
-            single_dict["diff20_count"] = diff20_count
-            single_dict["diff02_count"] = diff02_count
             single_dict["td_diff_count"] = td_diff_count
-            single_dict["aheadlose10_count"] = aheadlose10_count
         return single_dict
 
     def set_whole_race_dict_extra_with_single_dicts(self):

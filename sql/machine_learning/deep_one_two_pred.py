@@ -140,53 +140,37 @@ class DeepOneTwoPred():
             return 1
         return 0
     def get_dl_element26(self, dct):
-        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        avr = self.util.get_jockey_score_average(self.jockey,"sturn_turf_short")
-        if len(jk) == 0 or jk[0]["sturn_turf_short"] >= avr-5.0:
-            return 0
-        return 1
+        if self.sr.whole_race_dict["west_count"]/self.sr.whole_race_dict["horse_total"] >= 0.01:
+            return 1
+        return 0
     def get_dl_element27(self, dct):
-        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        avr = self.util.get_jockey_score_average(self.jockey,"sturn_turf_middle")
-        if len(jk) == 0 or jk[0]["sturn_turf_middle"] >= avr-5.0:
-            return 0
-        return 1
+        if self.sr.whole_race_dict["west_count"]/self.sr.whole_race_dict["horse_total"] >= 0.30:
+            return 1
+        return 0
     def get_dl_element28(self, dct):
-        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        avr = self.util.get_jockey_score_average(self.jockey,"sturn_dirt_short")
-        if len(jk) == 0 or jk[0]["sturn_dirt_short"] >= avr-5.0:
-            return 0
-        return 1
+        if self.sr.whole_race_dict["west_count"]/self.sr.whole_race_dict["horse_total"] >= 0.60:
+            return 1
+        return 0
     def get_dl_element29(self, dct):
-        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        avr = self.util.get_jockey_score_average(self.jockey,"sturn_dirt_middle")
-        if len(jk) == 0 or jk[0]["sturn_dirt_middle"] >= avr-5.0:
-            return 0
-        return 1
+        if self.sr.whole_race_dict["west_count"]/self.sr.whole_race_dict["horse_total"] == 1:
+            return 1
+        return 0
     def get_dl_element30(self, dct):
-        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        avr = self.util.get_jockey_score_average(self.jockey,"normal_turf_short")
-        if len(jk) == 0 or jk[0]["normal_turf_short"] >= avr-5.0:
-            return 0
-        return 1
+        if self.sr.whole_race_dict["youngjockey_count"]/self.sr.whole_race_dict["horse_total"] >= 0.01:
+            return 1
+        return 0
     def get_dl_element31(self, dct):
-        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        avr = self.util.get_jockey_score_average(self.jockey,"normal_turf_middle")
-        if len(jk) == 0 or jk[0]["normal_turf_middle"] >= avr-5.0:
-            return 0
-        return 1
+        if self.sr.whole_race_dict["youngjockey_count"]/self.sr.whole_race_dict["horse_total"] >= 0.30:
+            return 1
+        return 0
     def get_dl_element32(self, dct):
-        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        avr = self.util.get_jockey_score_average(self.jockey,"normal_dirt_short")
-        if len(jk) == 0 or jk[0]["normal_dirt_short"] >= avr-5.0:
-            return 0
-        return 1
+        if self.sr.whole_race_dict["youngjockey_count"]/self.sr.whole_race_dict["horse_total"] >= 0.60:
+            return 1
+        return 0
     def get_dl_element33(self, dct):
-        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
-        avr = self.util.get_jockey_score_average(self.jockey,"normal_dirt_middle")
-        if len(jk) == 0 or jk[0]["normal_dirt_middle"] >= avr-5.0:
-            return 0
-        return 1
+        if self.sr.whole_race_dict["youngjockey_count"]/self.sr.whole_race_dict["horse_total"] == 1:
+            return 1
+        return 0
     def get_dl_element34(self, dct):
         if dct["today_span"] == 1:
             return 1
@@ -821,6 +805,111 @@ class DeepOneTwoPred():
         if dct["past_rap5f"] <= 64.0:
             return 1
         return 0
+    def get_dl_element183(self, dct):
+        if self.sr.whole_race_dict["younghorse_count"]/self.sr.whole_race_dict["horse_total"] >= 0.01:
+            return 1
+        return 0
+    def get_dl_element184(self, dct):
+        if self.sr.whole_race_dict["younghorse_count"]/self.sr.whole_race_dict["horse_total"] >= 0.3:
+            return 1
+        return 0
+    def get_dl_element185(self, dct):
+        if self.sr.whole_race_dict["younghorse_count"]/self.sr.whole_race_dict["horse_total"] >= 0.6:
+            return 1
+        return 0
+    def get_dl_element186(self, dct):
+        if self.sr.whole_race_dict["younghorse_count"]/self.sr.whole_race_dict["horse_total"] == 1:
+            return 1
+        return 0
+    def get_dl_element187(self, dct):
+        if self.sr.whole_race_dict["stag_count"]/self.sr.whole_race_dict["horse_total"] >= 0.01:
+            return 1
+        return 0
+    def get_dl_element188(self, dct):
+        if self.sr.whole_race_dict["stag_count"]/self.sr.whole_race_dict["horse_total"] >= 0.30:
+            return 1
+        return 0
+    def get_dl_element189(self, dct):
+        if self.sr.whole_race_dict["stag_count"]/self.sr.whole_race_dict["horse_total"] >= 0.60:
+            return 1
+        return 0
+    def get_dl_element190(self, dct):
+        if self.sr.whole_race_dict["stag_count"]/self.sr.whole_race_dict["horse_total"] == 1:
+            return 1
+        return 0
+    def get_dl_element191(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        if len(jk) == 0:
+            return 0
+        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_front"] >= 15:
+            return 1
+        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_front"] >= 15:
+            return 1
+        return 0
+    def get_dl_element192(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        if len(jk) == 0:
+            return 0
+        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_front"] >= 30:
+            return 1
+        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_front"] >= 30:
+            return 1
+        return 0
+    def get_dl_element193(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        if len(jk) == 0:
+            return 0
+        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_front"] >= 45:
+            return 1
+        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_front"] >= 45:
+            return 1
+        return 0
+    def get_dl_element194(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        if len(jk) == 0:
+            return 0
+        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_front"] >= 60:
+            return 1
+        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_front"] >= 60:
+            return 1
+        return 0
+    def get_dl_element195(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        if len(jk) == 0:
+            return 0
+        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_stay"] >= 15:
+            return 1
+        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_stay"] >= 15:
+            return 1
+        return 0
+    def get_dl_element196(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        if len(jk) == 0:
+            return 0
+        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_stay"] >= 30:
+            return 1
+        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_stay"] >= 30:
+            return 1
+        return 0
+    def get_dl_element197(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        if len(jk) == 0:
+            return 0
+        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_stay"] >= 45:
+            return 1
+        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_stay"] >= 45:
+            return 1
+        return 0
+    def get_dl_element198(self, dct):
+        jk = [x for x in self.jockey if x["name"]==dct["today_jockey_name"]]
+        if len(jk) == 0:
+            return 0
+        if dct["today_turf_dirt"] == "芝" and jk[0]["turf_stay"] >= 60:
+            return 1
+        if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_stay"] >= 60:
+            return 1
+        return 0
+
 
 
     # [0, 0, 0, 0]の形式、 ３着内率を配当で細分化したものに変換
