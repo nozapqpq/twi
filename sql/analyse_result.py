@@ -121,20 +121,27 @@ class AnalyseResult():
             # １着度高い順に並べ替え
             out_list = sorted(out_list, reverse=True, key=lambda x: x[3])
             writer = csv.writer(f)
-            writer.writerow([today_date,place_dict["place"],place_dict["turf_dirt"]]+self.get_analyse_result(places,out_list,"1着度","over",3))
+            writer.writerow([today_date,place_dict["place"],place_dict["turf_dirt"]]+self.get_analyse_result(places,out_list,"1着度","over",3,False))
+            writer.writerow([today_date,place_dict["place"],place_dict["turf_dirt"]]+self.get_analyse_result(places,out_list,"1着度","over",3,True))
 
     # deeplearning_result.csvへの出力結果を性能評価し、結果出力
     def get_analyse_result_title(self):
-        return ["date","場所","芝ダ","title","総数","1着","2着","3着","連対率","複勝率","5位以内との連対回数","2〜5位総数","10位以内との連対回数","6〜10位総数","11位以下との連対回数","11位以下総数","total配当(馬連)","平均配当(馬連)"]
-    def get_analyse_result(self, places, out_list, elem_name, direction, target):
+        return ["date","場所","芝ダ","title","午前午後","総数","1着","2着","3着","連対率","複勝率","5位以内との連対回数","2〜5位総数","10位以内との連対回数","6〜10位総数","11位以下との連対回数","11位以下総数","total配当(馬連)","平均配当(馬連)"]
+    def get_analyse_result(self, places, out_list, elem_name, direction, target, afternoon_flg):
         count_dict = {"total":0,"1st":0,"2nd":0,"3rd":0,"with_5th":0,"5th_count":0,"with_10th":0,"10th_count":0,"with_11th":0,"11th_count":0}
         total_dividend = 0
-        
-        total_count = 0
-        one_two_dividend = 0
-        one_two_count = 0
+        # 午前中のレースは4つ
+        target_race_total = 4
+        noon_comment = "午前"
+        if afternoon_flg:
+            target_race_total = 8
+            noon_comment = "午後"
+
         for p in places:
-            for i in range(12): # レース数
+            for count in range(target_race_total): # レース数
+                i = count
+                if afternoon_flg:
+                    i = count + 4
                 horsename_tmplist = []
                 single_analyse_list = []
                 # 並べ替えてある順に1レース分の馬名をhorsename_tmplistに入れていく
@@ -180,7 +187,7 @@ class AnalyseResult():
             average_dividend = round(total_dividend/count_dict["total"],0)
         print(average_dividend)
         print(count_dict)
-        return [elem_name, count_dict["total"], count_dict["1st"], count_dict["2nd"], count_dict["3rd"], self.util.get_quinella_rate(count_dict), self.util.get_double_win_rate(count_dict), count_dict["with_5th"], count_dict["5th_count"], count_dict["with_10th"], count_dict["10th_count"], count_dict["with_11th"], count_dict["11th_count"],total_dividend,average_dividend]
+        return [elem_name, noon_comment, count_dict["total"], count_dict["1st"], count_dict["2nd"], count_dict["3rd"], self.util.get_quinella_rate(count_dict), self.util.get_double_win_rate(count_dict), count_dict["with_5th"], count_dict["5th_count"], count_dict["with_10th"], count_dict["10th_count"], count_dict["with_11th"], count_dict["11th_count"],total_dividend,average_dividend]
 
     # matplotでaccuracyとlossをプロットして出力
     def compare_TV(self, history):
