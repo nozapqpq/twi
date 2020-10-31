@@ -21,7 +21,7 @@ from sklearn.metrics import confusion_matrix
 # place_listに入っている場所に対するディープラーニングを利用できる
 # ディープラーニングの性能を図りたいときはresearch_flg = True
 place_list = ["東京","京都","新潟"]
-research_flg = False
+research_flg = True
 all_place_flg = True
 all_td_flg = True
 
@@ -159,7 +159,7 @@ class AnalyseResult():
                         horsename_tmplist.append(ol[0])
                 # 着順データが入っていない場合(レース当日使用の場合)、research_result.csvは作らない
                 # when top horse's goal == 0, skip
-                if single_analyse_list == [] or len(single_analyse_list[0]) < 9 or single_analyse_list[0][goal_index] == 0:
+                if single_analyse_list == [] or len(single_analyse_list[0]) < 8 or single_analyse_list[0][goal_index] == 0:
                     continue
                 # 1位から1頭ずつ見ていく
                 single_one_two_count = 0
@@ -243,6 +243,8 @@ class AnalyseResult():
         pos = y_sm[0]
         neg = y_sm[1]
         output_bias = keras.initializers.Constant(np.log([pos/neg]))
+        class_weight = {1: (1/neg)*(pos+neg)/2.0, 0: (1/pos)*(pos+neg)/2.0}
+        print(class_weight)
 
         model.add(Dense(dim, activation='relu', input_dim=dim))
         model.add(Dropout(0.3))
@@ -260,7 +262,7 @@ class AnalyseResult():
         model.summary()
         model.compile(loss='categorical_crossentropy', optimizer=adamax, metrics=['accuracy'])
 
-        history = model.fit(x_train, y_train, epochs=15, batch_size=2000, validation_split=0.1)
+        history = model.fit(x_train, y_train, epochs=15, batch_size=2000, validation_split=0.1, class_weight=class_weight)
         #self.compare_TV(history)
         #loss, accuracy = model.evaluate(x_train[29000:],y_train[29000:],verbose=0)
         #print("Accuracy = {:.2f}".format(accuracy))
@@ -299,7 +301,7 @@ def process_as_product(ar, place_dict_list):
 
         # 結果出力
         model = ar.get_deep_model()
-        ar.plot_confusion_matrix(y_np, model.predict(x_np), 0.35)
+        ar.plot_confusion_matrix(y_np, model.predict(x_np), 0.3)
         ar.output_deeplearning_result_to_csv(model, pred_x_np, todayinfo_lst, dim, extra_lst, pdl)
 
 def process_as_research(ar, place_dict_list):
