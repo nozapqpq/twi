@@ -916,19 +916,17 @@ class DeepOneTwoPred():
     def convert_fullgate_goal_list(self, goal, today_time_diff, dividend):
         goal_list = []
         goal_feature = 0
-        if today_time_diff <= 0.2:
+        if today_time_diff <= 0.2 or goal <= 2:
             goal_feature = 0
-        elif goal <= 3:
-            goal_feature = 1
         else:
-            goal_feature = 2
-        for i in range(3):
+            goal_feature = 1
+        for i in range(2):
             if i == goal_feature:
                 goal_list.append(1)
             else:
                 goal_list.append(0)
         return goal_list
     def get_output_list_title(self):
-        return ["place","race","horsename","~0.2s","~3rd","other","goal","timediff","dividend"]
+        return ["place","race","horsename","~0.2s or ~2nd","other","goal","timediff","dividend"]
     def get_number_of_output_kind(self):
         return len(self.get_output_list_title())-6

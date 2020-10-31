@@ -129,6 +129,9 @@ class AnalyseResult():
         return ["date","場所","芝ダ","title","午前午後","総数","1着","2着","3着","連対率","複勝率","5位以内との連対回数","2〜5位総数","10位以内との連対回数","6〜10位総数","11位以下との連対回数","11位以下総数","total配当(馬連)","平均配当(馬連)"]
     def get_analyse_result(self, places, out_list, elem_name, direction, target, afternoon_flg):
         count_dict = {"total":0,"1st":0,"2nd":0,"3rd":0,"with_5th":0,"5th_count":0,"with_10th":0,"10th_count":0,"with_11th":0,"11th_count":0}
+        # goal index in deeplearning_result.csv
+        goal_index = 5
+        dividend_index = 7
         total_dividend = 0
         # 午前中のレースは4つ
         target_race_total = 4
@@ -151,7 +154,7 @@ class AnalyseResult():
                         horsename_tmplist.append(ol[0])
                 # 着順データが入っていない場合(レース当日使用の場合)、research_result.csvは作らない
                 # when top horse's goal == 0, skip
-                if single_analyse_list == [] or len(single_analyse_list[0]) < 9 or single_analyse_list[0][6] == 0:
+                if single_analyse_list == [] or len(single_analyse_list[0]) < 9 or single_analyse_list[0][goal_index] == 0:
                     continue
                 # 1位から1頭ずつ見ていく
                 single_one_two_count = 0
@@ -160,13 +163,13 @@ class AnalyseResult():
                     if j == 0:
                         print(single_analyse_list[j])
                         count_dict["total"] = count_dict["total"] + 1
-                        if single_analyse_list[j][6] == 1:
+                        if single_analyse_list[j][goal_index] == 1:
                             count_dict["1st"] = count_dict["1st"] + 1
-                            total_dividend = total_dividend + single_analyse_list[j][8]
-                        elif single_analyse_list[j][6] == 2:
+                            total_dividend = total_dividend + single_analyse_list[j][dividend_index]
+                        elif single_analyse_list[j][goal_index] == 2:
                             count_dict["2nd"] = count_dict["2nd"] + 1
-                            total_dividend = total_dividend + single_analyse_list[j][8]
-                        elif single_analyse_list[j][6] == 3:
+                            total_dividend = total_dividend + single_analyse_list[j][dividend_index]
+                        elif single_analyse_list[j][goal_index] == 3:
                             count_dict["3rd"] = count_dict["3rd"] + 1
                     elif j < 5:
                         count_dict["5th_count"] = count_dict["5th_count"] + 1
@@ -175,7 +178,7 @@ class AnalyseResult():
                     else:
                         count_dict["11th_count"] = count_dict["11th_count"] + 1
                     # 1位が連対した場合にカウント
-                    if j >= 1 and (single_analyse_list[0][6] == 1 or single_analyse_list[0][6] == 2) and (single_analyse_list[j][6] == 1 or single_analyse_list[j][6] == 2):
+                    if j >= 1 and (single_analyse_list[0][goal_index] == 1 or single_analyse_list[0][goal_index] == 2) and (single_analyse_list[j][goal_index] == 1 or single_analyse_list[j][goal_index] == 2):
                         if j < 5:
                             count_dict["with_5th"] = count_dict["with_5th"] + 1
                         elif j < 10:
