@@ -12,11 +12,16 @@ from keras.layers import Dense, Dropout
 from keras.optimizers import Adamax 
 from keras.layers.normalization import BatchNormalization
 import numpy as np
+import seaborn as sns
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import sklearn
+from sklearn.metrics import confusion_matrix
 
 # place_listに入っている場所に対するディープラーニングを利用できる
 # ディープラーニングの性能を図りたいときはresearch_flg = True
 place_list = ["東京","京都","新潟"]
-research_flg = True
+research_flg = False
 all_place_flg = True
 all_td_flg = True
 
@@ -220,9 +225,25 @@ class AnalyseResult():
 
         plt.show()
 
+    def plot_confusion_matrix(self, labels, predictions, p):
+        matrix_y = np.array([x[0] for x in labels])
+        matrix_pred = np.array([x[0] for x in predictions])
+        cm = confusion_matrix(matrix_y, matrix_pred > p)
+        plt.figure(figsize=(5,5))
+        sns.heatmap(cm, annot=True, fmt="d")
+        plt.title('Confusion matrix @{:.2f}'.format(p))
+        plt.ylabel('Actual label')
+        plt.xlabel('Predicted label')
+        plt.show()
+
     # ディープラーニング本体
     def deep_learning(self, x_train, y_train, dim, horsename_list, pred_x_np, todayinfo_lst):
         model = Sequential()
+        y_sm = y_train.sum(axis=0)
+        pos = y_sm[0]
+        neg = y_sm[1]
+        output_bias = keras.initializers.Constant(np.log([pos/neg]))
+
         model.add(Dense(dim, activation='relu', input_dim=dim))
         model.add(Dropout(0.3))
         model.add(BatchNormalization())
@@ -233,7 +254,7 @@ class AnalyseResult():
         model.add(Dropout(0.3))
         model.add(BatchNormalization())
 
-        model.add(Dense(self.dotp.get_number_of_output_kind(), activation='softmax'))
+        model.add(Dense(self.dotp.get_number_of_output_kind(), activation='softmax', bias_initializer=output_bias))
 
         adamax = Adamax()
         model.summary()
@@ -272,11 +293,13 @@ def process_as_product(ar, place_dict_list):
         # 各リストのnumpy化
         x_np = np.array(learn_lst)
         y_np = np.array(goal_list)
+
         # ディープラーニング
         ar.deep_learning(x_np, y_np, dim, hn_lst, pred_x_np, todayinfo_lst)
 
         # 結果出力
         model = ar.get_deep_model()
+        ar.plot_confusion_matrix(y_np, model.predict(x_np), 0.35)
         ar.output_deeplearning_result_to_csv(model, pred_x_np, todayinfo_lst, dim, extra_lst, pdl)
 
 def process_as_research(ar, place_dict_list):
