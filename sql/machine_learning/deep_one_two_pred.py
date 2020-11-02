@@ -2,6 +2,7 @@
 from . import deep_single_race
 from . import deep_utility
 import json
+import re
 
 class DeepOneTwoPred():
     def __init__(self):
@@ -12,6 +13,7 @@ class DeepOneTwoPred():
         self.jockey = self.util.get_jockey_all_data()
         self.stallion = self.util.get_stallion_all_data()
         self.trainer = self.util.get_trainer_all_data()
+        self.temperature = self.util.get_temperature_from_json("machine_learning/deep_temperature.json")
         self.european_grass_list = ["札幌","函館"]
         self.spiral_list = ["札幌","函館","小倉","福島"]
         self.main_place_list = ["中山","東京","京都","阪神"]
@@ -909,7 +911,16 @@ class DeepOneTwoPred():
         if dct["today_turf_dirt"] == "ダート" and jk[0]["dirt_stay"] >= 40:
             return 1
         return 0
-
+    def get_dl_element199(self, dct):
+        temperature = self.util.get_temperature(self.temperature, dct)
+        if temperature <= 15:
+            return 1
+        return 0
+    def get_dl_element200(self, dct):
+        temperature = self.util.get_temperature(self.temperature, dct)
+        if temperature <= 25:
+            return 1
+        return 0
 
 
     # [0, 0, 0, 0]の形式、 ３着内率を配当で細分化したものに変換

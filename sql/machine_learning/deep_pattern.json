@@ -198,8 +198,8 @@
 			{"func":"get_dl_element196","activate":"on","overview":"騎手_上位人気での差し着差0.3s内率30%〜","args":["dct"]},
 			{"func":"get_dl_element197","activate":"on","overview":"騎手_上位人気での差し着差0.3s内率45%〜","args":["dct"]},
 			{"func":"get_dl_element198","activate":"on","overview":"騎手_上位人気での差し着差0.3s内率60%〜","args":["dct"]},
-			{"func":"get_dl_element","activate":"off","overview":"","args":["dct"]},
-			{"func":"get_dl_element","activate":"off","overview":"","args":["dct"]},
+			{"func":"get_dl_element199","activate":"on","overview":"推定気温_15度以下","args":["dct"]},
+			{"func":"get_dl_element200","activate":"on","overview":"推定気温_25度以下","args":["dct"]},
 			{"func":"get_dl_element","activate":"off","overview":"","args":["dct"]}
 		]
 }

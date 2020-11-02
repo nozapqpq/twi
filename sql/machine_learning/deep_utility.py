@@ -1,7 +1,9 @@
 # coding: utf-8
 import sql_manipulator
 import csv
+import json
 import os
+import re
 from datetime import datetime as dt
 from dateutil.relativedelta import relativedelta
 
@@ -135,6 +137,21 @@ class Utility():
         for t in tr:
             ret_list.append({"name":t[0],"belongs":t[1]})
         return ret_list
+    # 気温データをJSONファイルから取得
+    def get_temperature_from_json(self, json_fn):
+        json_open = open(json_fn,'r')
+        temperature_dict = json.load(json_open)["temperature_dict"]
+        return temperature_dict
+    # 気温データを取得
+    def get_temperature(self, temperature_dict, dct):
+        month = int(re.findall('\d+-(\d+)-\d+ \d+:\d+:\d',str(dct["today_rdate"]))[0])
+        place = dct["today_place"]
+        temperature = temperature_dict[place][month-1]
+        if dct["today_course_condition"] == "稍":
+            temperature = temperature-2
+        elif dct["today_course_condition"] == "重" or dct["today_course_condition"] == "不":
+            temperature = temperature-5
+        return temperature
     # 日付から年齢を取得
     def get_age_from_dateofbirth(self, date):
         delta = relativedelta(dt.now(),date)

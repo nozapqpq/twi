@@ -265,8 +265,9 @@ class AnalyseResult():
         model.add(Dropout(0.3))
         model.add(BatchNormalization())
 
-
         model.add(Dense(self.dotp.get_number_of_output_kind(), activation='softmax', bias_initializer=output_bias))
+        # うまく行かないとき用
+        # model.add(Dense(self.dotp.get_number_of_output_kind(), activation='softmax'))
 
         adamax = Adamax()
         model.summary()
