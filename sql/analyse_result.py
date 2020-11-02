@@ -195,7 +195,6 @@ class AnalyseResult():
                 for bl in box_list:
                     if bl >= 1 and bl <= 3:
                         box_triple = box_triple + 1
-                        count_dict["box_triple_count"] = count_dict["box_triple_count"] + 1
                         if bl <= 2:
                             box_quinella = box_quinella + 1
                 if box_triple >= 2:
@@ -282,25 +281,27 @@ def process_as_product(ar, place_dict_list):
         ar.util.plot_confusion_matrix(y_np, model.predict(x_np), 0.8)
 
 def process_as_research(ar, place_dict_list):
-    with open("../deeplearning_research_result.csv","w") as f:
-        writer = csv.writer(f)
-        writer.writerow(ar.get_analyse_result_title())
-    with open("../deeplearning_result.csv","w") as f:
-        writer = csv.writer(f)
-        writer.writerow(ar.dotp.get_output_list_title())
     for pdl in place_dict_list:
         ar.set_deep_model_name(pdl)
         model = ar.get_deep_model()
         #for tl in ["201107"]:
-        for tl in ["140615","141109","150315","150412","150620","160410","161112","171111","180414","181110","190407","191116","200419"]:
+        #for tl in ["140615","141109","150315","150412","150620","160410","161112","171111","180414","181110","190407","191116","200419"]:
+        for tl in ["160611","160612"]:
             goal_list = []
             todayinfo_lst, extra_lst = ar.get_todayinfo_list([tl],pdl)
             dummy1, dummy2, dummy3, target = ar.dotp.make_deeplearning_data(ar.get_main_data_from_dir_list([tl],pdl),"machine_learning/deep_pattern.json")
             pred_x_np = np.array(target)
             if len(target) == 0:
                 continue
-            dim = len(pred_x_np[0])
             ar.set_deeplearning_result(model.predict(pred_x_np), todayinfo_lst, extra_lst, pdl, tl)
+    with open("../deeplearning_research_result.csv","w") as f:
+        writer = csv.writer(f)
+        writer.writerow(ar.get_analyse_result_title())
+        writer.writerows(ar.research_result_list)
+    with open("../deeplearning_result.csv","w") as f:
+        writer = csv.writer(f)
+        writer.writerow(ar.dotp.get_output_list_title())
+        writer.writerows(ar.result_list)
 
 ar = AnalyseResult()
 place_dict_list = ar.util.make_usedlset_dictlist(place_list, all_place_flg, all_td_flg)
