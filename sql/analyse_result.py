@@ -20,10 +20,10 @@ from sklearn.metrics import confusion_matrix
 
 # place_listに入っている場所に対するディープラーニングを利用できる
 # ディープラーニングの性能を図りたいときはresearch_flg = True
-place_list = ["東京","京都","新潟"]
+place_list = ["東京","京都","福島"]
 research_flg = True
 all_place_flg = True
-all_td_flg = True
+all_td_flg = False
 
 class AnalyseResult():
     def __init__(self):
@@ -38,8 +38,8 @@ class AnalyseResult():
         place_list = ["札幌","函館","福島","新潟","中山","東京","中京","京都","阪神","小倉"]
         td_list = ["芝","ダート"]
         if place_dict["place"] == "all" and place_dict["turf_dirt"] == "all":
-            self.json_name = "deep_model14.json"
-            self.h5_name = "deep_model14.h5"
+            self.json_name = "deep_model1.json"
+            self.h5_name = "deep_model1.h5"
             return
         if place_dict["place"] == "all":
             p_index = 99
@@ -249,12 +249,22 @@ class AnalyseResult():
         model.add(Dense(dim, activation='relu', input_dim=dim))
         model.add(Dropout(0.3))
         model.add(BatchNormalization())
-        model.add(Dense(dim*40, activation='relu'))
+        model.add(Dense(dim*10, activation='relu'))
         model.add(Dropout(0.3))
         model.add(BatchNormalization())
-        model.add(Dense(dim*40, activation='relu'))
+        model.add(Dense(dim*10, activation='relu'))
         model.add(Dropout(0.3))
         model.add(BatchNormalization())
+        model.add(Dense(dim*10, activation='relu'))
+        model.add(Dropout(0.3))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*10, activation='relu'))
+        model.add(Dropout(0.3))
+        model.add(BatchNormalization())
+        model.add(Dense(dim*10, activation='relu'))
+        model.add(Dropout(0.3))
+        model.add(BatchNormalization())
+
 
         model.add(Dense(self.dotp.get_number_of_output_kind(), activation='softmax', bias_initializer=output_bias))
 
@@ -301,7 +311,7 @@ def process_as_product(ar, place_dict_list):
 
         # 結果出力
         model = ar.get_deep_model()
-        ar.plot_confusion_matrix(y_np, model.predict(x_np), 0.3)
+        ar.plot_confusion_matrix(y_np, model.predict(x_np), 0.8)
         ar.output_deeplearning_result_to_csv(model, pred_x_np, todayinfo_lst, dim, extra_lst, pdl)
 
 def process_as_research(ar, place_dict_list):
@@ -314,7 +324,8 @@ def process_as_research(ar, place_dict_list):
     for pdl in place_dict_list:
         ar.set_deep_model_name(pdl)
         model = ar.get_deep_model()
-        for tl in ["171014","171029","181014","181020","181027","191026","201010","201011","201017","201018"]:
+        #for tl in ["201107"]:
+        for tl in ["140615","141109","150315","150412","150620","160410","161112","171111","180414","181110","190407","191116","200419"]:
             goal_list = []
             todayinfo_lst, extra_lst = ar.get_todayinfo_list([tl],pdl)
             dummy1, dummy2, dummy3, target = ar.dotp.make_deeplearning_data(ar.get_main_data_from_dir_list([tl],pdl),"machine_learning/deep_pattern.json")
