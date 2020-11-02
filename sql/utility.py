@@ -1,7 +1,11 @@
 # coding: utf-8
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.metrics import confusion_matrix
 import sql_manipulator
 import csv
 import re
+import seaborn as sns
 
 class Utility():
     def __init__(self):
@@ -195,6 +199,18 @@ class Utility():
                     retlist.append(temp_list+[race_range_list[int(dl_count%len(race_range_list))],class_list[int(dl_count/(len(class_list)-1))]]+dl)
                 dl_count = dl_count + 1
         return retlist
+    # ディープラーニング学習データの出力をフラグに従って変更(一括/芝ダート分け/場所分け)
+    def make_usedlset_dictlist(self, place_list, all_place_flg, all_td_flg):
+        dict_list = []
+        if all_place_flg:
+            place_list = ["all"]
+        for pl in place_list:
+            if all_td_flg:
+                dict_list.append({"place":pl,"turf_dirt":"all"})
+            else:
+                dict_list.append({"place":pl,"turf_dirt":"芝"})
+                dict_list.append({"place":pl,"turf_dirt":"ダート"})
+        return dict_list
     def get_accumulation_list_index(self,l_5f,l_class,t5f,cls):
         t5f_num = 0
         cls_num = len(l_class)-1
@@ -376,3 +392,37 @@ class Utility():
             return True
         return False
 
+    # matplotでaccuracyとlossをプロットして出力
+    def compare_TV(self, history):
+        # Setting Parameters
+        acc = history.history['accuracy']
+        val_acc = history.history['val_accuracy']
+        loss = history.history['loss']
+        val_loss = history.history['val_loss']
+        epochs = range(len(acc))
+
+        # 1) Accracy Plt
+        plt.plot(epochs, acc, 'bo' ,label = 'training acc')
+        plt.plot(epochs, val_acc, 'b' , label= 'validation acc')
+        plt.title('Training and Validation acc')
+        plt.legend()
+        plt.figure()
+
+        # 2) Loss Plt
+        plt.plot(epochs, loss, 'bo' ,label = 'training loss')
+        plt.plot(epochs, val_loss, 'b' , label= 'validation loss')
+        plt.title('Training and Validation loss')
+        plt.legend()
+
+        plt.show()
+    # 正答と予測のconfusion_matrixをプロットして出力
+    def plot_confusion_matrix(self, labels, predictions, p):
+        matrix_y = np.array([x[0] for x in labels])
+        matrix_pred = np.array([x[0] for x in predictions])
+        cm = confusion_matrix(matrix_y, matrix_pred > p)
+        plt.figure(figsize=(5,5))
+        sns.heatmap(cm, annot=True, fmt="d")
+        plt.title('Confusion matrix @{:.2f}'.format(p))
+        plt.ylabel('Actual label')
+        plt.xlabel('Predicted label')
+        plt.show()

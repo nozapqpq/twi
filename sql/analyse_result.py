@@ -14,9 +14,7 @@ from keras.layers.normalization import BatchNormalization
 import numpy as np
 import seaborn as sns
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 import sklearn
-from sklearn.metrics import confusion_matrix
 
 # place_listに入っている場所に対するディープラーニングを利用できる
 # ディープラーニングの性能を図りたいときはresearch_flg = True
@@ -103,13 +101,12 @@ class AnalyseResult():
         model.load_weights(self.h5_name)
         print(self.json_name)
         return model
-    def set_deeplearning_result(self , model, pred_x_np, todayinfo_lst, dim, extra_lst, place_dict, today_date=""):
+    def set_deeplearning_result(self , all_score, todayinfo_lst, extra_lst, place_dict, today_date=""):
         out_analyse_list = []
 
         all_score = model.predict(pred_x_np)
-        for i in range(len(pred_x_np)):
+        for i in range(len(all_score)):
             score = list(all_score[i])
-            #score = list(model.predict(pred_x_np[i].reshape(1,dim))[0])
             extra = []
             if extra_lst != []:
                 extra = extra_lst[i]
@@ -214,44 +211,6 @@ class AnalyseResult():
         print(count_dict)
         return [elem_name, noon_comment, count_dict["total"], count_dict["1st"], count_dict["2nd"], count_dict["3rd"], self.util.get_quinella_rate(count_dict), self.util.get_double_win_rate(count_dict), count_dict["with_5th"], count_dict["5th_count"], count_dict["with_10th"], count_dict["10th_count"], count_dict["with_11th"], count_dict["11th_count"],total_dividend,average_dividend,count_dict["box_quinella_count"],count_dict["box_triple_count"],box_total_dividend]
 
-    # matplotでaccuracyとlossをプロットして出力
-    def compare_TV(self, history):
-        import matplotlib.pyplot as plt
-
-        # Setting Parameters
-        acc = history.history['accuracy']
-        val_acc = history.history['val_accuracy']
-        loss = history.history['loss']
-        val_loss = history.history['val_loss']
-
-        epochs = range(len(acc))
-
-        # 1) Accracy Plt
-        plt.plot(epochs, acc, 'bo' ,label = 'training acc')
-        plt.plot(epochs, val_acc, 'b' , label= 'validation acc')
-        plt.title('Training and Validation acc')
-        plt.legend()
-
-        plt.figure()
-
-        # 2) Loss Plt
-        plt.plot(epochs, loss, 'bo' ,label = 'training loss')
-        plt.plot(epochs, val_loss, 'b' , label= 'validation loss')
-        plt.title('Training and Validation loss')
-        plt.legend()
-
-        plt.show()
-
-    def plot_confusion_matrix(self, labels, predictions, p):
-        matrix_y = np.array([x[0] for x in labels])
-        matrix_pred = np.array([x[0] for x in predictions])
-        cm = confusion_matrix(matrix_y, matrix_pred > p)
-        plt.figure(figsize=(5,5))
-        sns.heatmap(cm, annot=True, fmt="d")
-        plt.title('Confusion matrix @{:.2f}'.format(p))
-        plt.ylabel('Actual label')
-        plt.xlabel('Predicted label')
-        plt.show()
 
     # ディープラーニング本体
     def deep_learning(self, x_train, y_train, dim):
@@ -291,7 +250,7 @@ class AnalyseResult():
         model.compile(loss='categorical_crossentropy', optimizer=adamax, metrics=['accuracy'])
 
         history = model.fit(x_train, y_train, epochs=15, batch_size=2000, validation_split=0.1, class_weight=class_weight)
-        #self.compare_TV(history)
+        #self.util.compare_TV(history)
         #loss, accuracy = model.evaluate(x_train[29000:],y_train[29000:],verbose=0)
         #print("Accuracy = {:.2f}".format(accuracy))
 
@@ -321,7 +280,7 @@ def process_as_product(ar, place_dict_list):
 
         # 精度確認用にconfusion_matrixをプロット
         model = ar.get_deep_model()
-        ar.plot_confusion_matrix(y_np, model.predict(x_np), 0.8)
+        ar.util.plot_confusion_matrix(y_np, model.predict(x_np), 0.8)
 
 def process_as_research(ar, place_dict_list):
     with open("../deeplearning_research_result.csv","w") as f:
@@ -342,22 +301,10 @@ def process_as_research(ar, place_dict_list):
             if len(target) == 0:
                 continue
             dim = len(pred_x_np[0])
-            ar.set_deeplearning_result(model, pred_x_np, todayinfo_lst, dim, extra_lst, pdl, tl)
-
-def make_usedlset_dictlist(place_list, all_place_flg, all_td_flg):
-    dict_list = []
-    if all_place_flg:
-        place_list = ["all"]
-    for pl in place_list:
-        if all_td_flg:
-            dict_list.append({"place":pl,"turf_dirt":"all"})
-        else:
-            dict_list.append({"place":pl,"turf_dirt":"芝"})
-            dict_list.append({"place":pl,"turf_dirt":"ダート"})
-    return dict_list
+            ar.set_deeplearning_result(model.predict(pred_x_np), todayinfo_lst, extra_lst, pdl, tl)
 
 ar = AnalyseResult()
-place_dict_list = make_usedlset_dictlist(place_list, all_place_flg, all_td_flg)
+place_dict_list = ar.util.make_usedlset_dictlist(place_list, all_place_flg, all_td_flg)
 if research_flg:
     # performance evaluation
     process_as_research(ar,place_dict_list)
