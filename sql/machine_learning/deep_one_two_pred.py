@@ -20,11 +20,9 @@ class DeepOneTwoPred():
         self.stallion_type = ["その他","ロイヤルチャージャー系","ネイティヴダンサー系","ニアークティック系","ナスルーラ系","セントサイモン系","マンノウォー系","トウルビヨン系"]
 
     # input_lst[1レース分][1頭分]
-    def make_deeplearning_data(self, input_lst, json_fn=""):
-        learn = [] # 学習用
-        target = [] # 予想対象
-        ans = [] # 学習用正当データ
-        horsename_lst = [] # 馬名データ
+    def make_deeplearning_data(self, input_lst, json_fn="", use_blank=False):
+        dl_input_list = [] # 学習用
+        dl_output_dict_list = [] # 学習用正当データ
         race_count = 0
         if json_fn != "":
             json_open = open(json_fn,'r')
@@ -41,14 +39,11 @@ class DeepOneTwoPred():
                         exec_cmd = self.util.get_exec_command(ptn["func"],ptn["args"])
                         single_learn.append(eval(exec_cmd))
                 # 本日と過去走のデータリストを作成
-                # 障害や出走取り消し等で着順が入っていないデータは双方から除外
-                if (dct["today_rdate"] == self.today_date and not "障害" in dct["today_turf_dirt"]):
-                    target.append(single_learn)
-                elif dct["today_goal"] != 0:
-                    learn.append(single_learn)
-                    ans.append([dct["today_goal"],dct["today_time_diff"],dct["today_dividend"]])
-                    horsename_lst.append(dct["horsename"])
-        return learn, ans, horsename_lst, target
+                if not (use_blank == False and dct["today_goal"] == 0):
+                    dl_input_list.append(single_learn)
+                    dl_output_dict_list.append({"goalorder":dct["today_goal"],"timediff":dct["today_time_diff"],"dividend":dct["today_dividend"]})
+        return dl_input_list, dl_output_dict_list
+
     def get_dl_element1(self, dct):
         return self.util.get_condition_index(dct["today_course_condition"])
     def get_dl_element2(self, dct):
@@ -927,7 +922,7 @@ class DeepOneTwoPred():
     def convert_fullgate_goal_list(self, goal, today_time_diff, dividend):
         goal_list = []
         goal_feature = 0
-        if today_time_diff <= 0.2 or goal <= 2:
+        if today_time_diff <= 0.2 or (goal == 1) or (goal == 2):
             goal_feature = 0
         else:
             goal_feature = 1

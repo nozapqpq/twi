@@ -249,8 +249,6 @@ class AnalyseResult():
 
         history = model.fit(x_train, y_train, epochs=15, batch_size=2000, validation_split=0.1, class_weight=class_weight)
         #self.util.compare_TV(history)
-        #loss, accuracy = model.evaluate(x_train[29000:],y_train[29000:],verbose=0)
-        #print("Accuracy = {:.2f}".format(accuracy))
 
         # モデル、学習済の重みを保存
         open(self.json_name,"w").write(model.to_json())
@@ -264,15 +262,14 @@ def process_as_product(ar, place_dict_list):
         dir_list = ar.get_csv_dir_list()
 
         race_data = ar.get_main_data_from_dir_list(dir_list,pdl)
-        learn_lst, ans_lst, dummy1, target = ar.dotp.make_deeplearning_data(race_data,"machine_learning/deep_pattern.json")
-        dim = len(target[0])
+        dl_input, dl_output_dict = ar.dotp.make_deeplearning_data(race_data,"machine_learning/deep_pattern.json")
         # 着順分類リスト作成
         goal_list = []
-        for i in range(len(learn_lst)):
-            goal_list.append(ar.dotp.convert_fullgate_goal_list(ans_lst[i][0],ans_lst[i][1],ans_lst[i][2]))
+        for i in range(len(dl_input)):
+            goal_list.append(ar.dotp.convert_fullgate_goal_list(dl_output_dict[i]["goalorder"],dl_output_dict[i]["timediff"],dl_output_dict[i]["dividend"]))
 
-        dim = len(target[0])
-        x_np = np.array(learn_lst)
+        dim = len(dl_input[0])
+        x_np = np.array(dl_input)
         y_np = np.array(goal_list)
         ar.deep_learning(x_np, y_np, dim)
 
@@ -284,12 +281,13 @@ def process_as_research(ar, place_dict_list):
     for pdl in place_dict_list:
         ar.set_deep_model_name(pdl)
         model = ar.get_deep_model()
-        #for tl in ["201107"]:
-        #for tl in ["140615","141109","150315","150412","150620","160410","161112","171111","180414","181110","190407","191116","200419"]:
-        for tl in ["160611","160612"]:
+        #for tl in ["201101"]:
+        for tl in ["140615","141109","150315","150412","150620","160410","161112","171111","180414","181110","190407","191116","200419"]:
             goal_list = []
             todayinfo_lst, extra_lst = ar.get_todayinfo_list([tl],pdl)
-            dummy1, dummy2, dummy3, target = ar.dotp.make_deeplearning_data(ar.get_main_data_from_dir_list([tl],pdl),"machine_learning/deep_pattern.json")
+            # 当日データのときuse_blank_flg = Trueとしたい
+            use_blank_flg = False if extra_lst != [] else True
+            target, dummy1 = ar.dotp.make_deeplearning_data(ar.get_main_data_from_dir_list([tl],pdl),"machine_learning/deep_pattern.json", use_blank_flg)
             pred_x_np = np.array(target)
             if len(target) == 0:
                 continue
