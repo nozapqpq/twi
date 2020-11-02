@@ -19,7 +19,7 @@ import sklearn
 # place_listに入っている場所に対するディープラーニングを利用できる
 # ディープラーニングの性能を図りたいときはresearch_flg = True
 place_list = ["東京","京都","福島"]
-research_flg = False
+research_flg = True
 all_place_flg = True
 all_td_flg = False
 
@@ -104,7 +104,6 @@ class AnalyseResult():
     def set_deeplearning_result(self , all_score, todayinfo_lst, extra_lst, place_dict, today_date=""):
         out_analyse_list = []
 
-        all_score = model.predict(pred_x_np)
         for i in range(len(all_score)):
             score = list(all_score[i])
             extra = []
