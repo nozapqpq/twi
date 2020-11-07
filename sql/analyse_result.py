@@ -18,7 +18,7 @@ import sklearn
 
 # place_listに入っている場所に対するディープラーニングを利用できる
 # ディープラーニングの性能を図りたいときはresearch_flg = True
-place_list = ["東京","京都","福島"]
+place_list = ["東京","阪神","福島"]
 research_flg = True
 all_place_flg = True
 all_td_flg = False
@@ -34,6 +34,7 @@ class AnalyseResult():
         # csv出力用
         self.result_list = []
         self.research_result_list = []
+        self.favorite_list = []
 
     def set_deep_model_name(self, place_dict):
         place_list = ["札幌","函館","福島","新潟","中山","東京","中京","京都","阪神","小倉"]
@@ -126,12 +127,13 @@ class AnalyseResult():
 
     # deeplearning_result.csvへの出力結果を性能評価し、結果出力
     def get_analyse_result_title(self):
-        return ["date","場所","芝ダ","title","午前午後","総数","1着","2着","3着","連対率","複勝率","5位以内との連対回数","2〜5位総数","10位以内との連対回数","6〜10位総数","11位以下との連対回数","11位以下総数","total配当(馬連)","平均配当(馬連)","1〜3位ボックス馬連的中回数","1〜3位ボックスワイド的中回数","1〜3位ボックスtotal配当(馬連)"]
+        return ["date","場所","芝ダ","title","午前午後","総数","1着","2着","3着","連対率","複勝率","5位以内との連対回数","2〜5位総数","10位以内との連対回数","6〜10位総数","11位以下との連対回数","11位以下総数","total配当(馬連)","平均配当(馬連)","1〜3位ボックス馬連的中回数","1〜3位ボックスワイド的中回数","1〜3位ボックスtotal配当(馬連)","under_three_count","over_four_count","three_total","four_total","three_dividend","four_dividend"]
     def get_analyse_result(self, places, out_list, elem_name, direction, target, afternoon_flg):
-        count_dict = {"total":0,"1st":0,"2nd":0,"3rd":0,"with_5th":0,"5th_count":0,"with_10th":0,"10th_count":0,"with_11th":0,"11th_count":0,"box_quinella_count":0,"box_triple_count":0}
+        count_dict = {"total":0,"1st":0,"2nd":0,"3rd":0,"with_5th":0,"5th_count":0,"with_10th":0,"10th_count":0,"with_11th":0,"11th_count":0,"box_quinella_count":0,"box_triple_count":0,"three_qui":0,"four_qui":0,"three_total":0,"four_total":0,"three_dividend":0,"four_dividend":0}
         # goal index in deeplearning_result.csv
         goal_index = 5
         dividend_index = 7
+        horsename_index = 0
         total_dividend = 0
         box_total_dividend = 0
         # 午前中のレースは4つ
@@ -150,9 +152,11 @@ class AnalyseResult():
                 single_analyse_list = []
                 # 並べ替えてある順に1レース分の馬名をhorsename_tmplistに入れていく
                 for ol in out_list:
-                    if ol[1] == (i+1) and ol[2] == p and not ol[0] in horsename_tmplist:
-                        single_analyse_list.append(ol)
-                        horsename_tmplist.append(ol[0])
+                    if ol[1] == (i+1) and ol[2] == p:
+                        if not ol[0] in horsename_tmplist:
+                            single_analyse_list.append(ol)
+                            horsename_tmplist.append(ol[0])
+                top_horse = self.get_favorite_horse_data(out_list)
                 # 着順データが入っていない場合(レース当日使用の場合)、research_result.csvは作らない
                 # when top horse's goal == 0, skip
                 if single_analyse_list == [] or len(single_analyse_list[0]) < 8 or single_analyse_list[0][goal_index] == 0:
@@ -186,6 +190,19 @@ class AnalyseResult():
                             count_dict["with_10th"] = count_dict["with_10th"] + 1
                         else:
                             count_dict["with_11th"] = count_dict["with_11th"] + 1
+                    # top horse quinella
+                    if single_analyse_list[j][horsename_index] == top_horse[horsename_index]:
+                        if top_horse[1] <= 3:
+                            count_dict["three_total"] = count_dict["three_total"] + 1
+                        elif top_horse[1] >= 4:
+                            count_dict["four_total"] = count_dict["four_total"] + 1
+                        if single_analyse_list[j][goal_index] == 1 or single_analyse_list[j][goal_index] == 2:
+                            if top_horse[1] <= 3:
+                                count_dict["three_qui"] = count_dict["three_qui"] + 1
+                                count_dict["three_dividend"] = count_dict["three_dividend"] + single_analyse_list[j][dividend_index]
+                            elif top_horse[1] >= 4:
+                                count_dict["four_qui"] = count_dict["four_qui"] + 1
+                                count_dict["four_dividend"] = count_dict["four_dividend"] + single_analyse_list[j][dividend_index]
                     # 上位3頭ボックス
                     if j < 3:
                         box_list[j] = single_analyse_list[j][goal_index]
@@ -206,9 +223,43 @@ class AnalyseResult():
         if count_dict["total"] > 0:
             average_dividend = round(total_dividend/count_dict["total"],0)
         print(average_dividend)
-        print(count_dict)
-        return [elem_name, noon_comment, count_dict["total"], count_dict["1st"], count_dict["2nd"], count_dict["3rd"], self.util.get_quinella_rate(count_dict), self.util.get_double_win_rate(count_dict), count_dict["with_5th"], count_dict["5th_count"], count_dict["with_10th"], count_dict["10th_count"], count_dict["with_11th"], count_dict["11th_count"],total_dividend,average_dividend,count_dict["box_quinella_count"],count_dict["box_triple_count"],box_total_dividend]
+        return [elem_name, noon_comment, count_dict["total"], count_dict["1st"], count_dict["2nd"], count_dict["3rd"], self.util.get_quinella_rate(count_dict), self.util.get_double_win_rate(count_dict), count_dict["with_5th"], count_dict["5th_count"], count_dict["with_10th"], count_dict["10th_count"], count_dict["with_11th"], count_dict["11th_count"],total_dividend,average_dividend,count_dict["box_quinella_count"],count_dict["box_triple_count"],box_total_dividend,count_dict["three_qui"],count_dict["four_qui"],count_dict["three_total"],count_dict["four_total"],count_dict["three_dividend"],count_dict["four_dividend"]]
 
+    # get list [horsename, count(x/5), race, place]
+    def get_favorite_horse_title(self):
+        return ["horsename","fav_count","race","place"]
+    def get_favorite_horse_data(self, top_list):
+        retlist = []
+        top_horse_data = []
+        from collections import Counter
+        all_horse_list = []
+        if len(top_list) == 0:
+            return []
+        if len(top_list) > 5:
+            top_list = top_list[0:5]
+        for tl in top_list:
+            all_horse_list.append(tl[0])
+        counter = Counter(all_horse_list)
+        for tl in top_list:
+            if tl[0] == counter.most_common()[0][0]: # [0][0]:tophorsename [0][1]:tophorsecount
+                retlist = [counter.most_common()[0][0],counter.most_common()[0][1],tl[1],tl[2]]
+                break
+        return retlist
+    def set_favorite_list(self):
+        place_list = list(set([x[2] for x in self.result_list]))
+        race_list = list(set([x[1] for x in self.result_list]))
+        winrate_index = 3
+        fav_count_index = 1
+        for place in place_list:
+            for race in race_list:
+                single_list = []
+                for arrl in self.result_list:
+                    if arrl[1] == race and arrl[2] == place:
+                        single_list.append(arrl)
+                sorted_list = sorted(single_list, reverse=True, key=lambda x: x[winrate_index])
+                favorite = ar.get_favorite_horse_data(sorted_list)
+                if len(favorite) > 0 and favorite[fav_count_index] >= 4:
+                    self.favorite_list.append(favorite)
 
     # ディープラーニング本体
     def deep_learning(self, x_train, y_train, dim):
@@ -223,19 +274,10 @@ class AnalyseResult():
         model.add(Dense(dim, activation='relu', input_dim=dim))
         model.add(Dropout(0.3))
         model.add(BatchNormalization())
-        model.add(Dense(dim*10, activation='relu'))
+        model.add(Dense(dim*80, activation='relu'))
         model.add(Dropout(0.3))
         model.add(BatchNormalization())
-        model.add(Dense(dim*10, activation='relu'))
-        model.add(Dropout(0.3))
-        model.add(BatchNormalization())
-        model.add(Dense(dim*10, activation='relu'))
-        model.add(Dropout(0.3))
-        model.add(BatchNormalization())
-        model.add(Dense(dim*10, activation='relu'))
-        model.add(Dropout(0.3))
-        model.add(BatchNormalization())
-        model.add(Dense(dim*10, activation='relu'))
+        model.add(Dense(dim*80, activation='relu'))
         model.add(Dropout(0.3))
         model.add(BatchNormalization())
 
@@ -281,7 +323,7 @@ def process_as_research(ar, place_dict_list):
     for pdl in place_dict_list:
         ar.set_deep_model_name(pdl)
         model = ar.get_deep_model()
-        #for tl in ["201101"]:
+        #for tl in ["201107"]:
         for tl in ["140615","141109","150315","150412","150620","160410","161112","171111","180414","181110","190407","191116","200419"]:
             goal_list = []
             todayinfo_lst, extra_lst = ar.get_todayinfo_list([tl],pdl)
@@ -300,6 +342,11 @@ def process_as_research(ar, place_dict_list):
         writer = csv.writer(f)
         writer.writerow(ar.dotp.get_output_list_title())
         writer.writerows(ar.result_list)
+    with open("../deeplearning_favorite_horses.csv","w") as f:
+        writer = csv.writer(f)
+        writer.writerow(ar.get_favorite_horse_title())
+        ar.set_favorite_list()
+        writer.writerows(ar.favorite_list)
 
 ar = AnalyseResult()
 place_dict_list = ar.util.make_usedlset_dictlist(place_list, all_place_flg, all_td_flg)
