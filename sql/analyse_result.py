@@ -225,9 +225,9 @@ class AnalyseResult():
         print(average_dividend)
         return [elem_name, noon_comment, count_dict["total"], count_dict["1st"], count_dict["2nd"], count_dict["3rd"], self.util.get_quinella_rate(count_dict), self.util.get_double_win_rate(count_dict), count_dict["with_5th"], count_dict["5th_count"], count_dict["with_10th"], count_dict["10th_count"], count_dict["with_11th"], count_dict["11th_count"],total_dividend,average_dividend,count_dict["box_quinella_count"],count_dict["box_triple_count"],box_total_dividend,count_dict["three_qui"],count_dict["four_qui"],count_dict["three_total"],count_dict["four_total"],count_dict["three_dividend"],count_dict["four_dividend"]]
 
-    # get list [horsename, count(x/5), race, place]
+    # get list [horsename, count(x/5), race, place, win_rate]
     def get_favorite_horse_title(self):
-        return ["horsename","fav_count","race","place"]
+        return ["horsename","fav_count","race","place","win_rate"]
     def get_favorite_horse_data(self, top_list):
         retlist = []
         top_horse_data = []
@@ -242,14 +242,16 @@ class AnalyseResult():
         counter = Counter(all_horse_list)
         for tl in top_list:
             if tl[0] == counter.most_common()[0][0]: # [0][0]:tophorsename [0][1]:tophorsecount
-                retlist = [counter.most_common()[0][0],counter.most_common()[0][1],tl[1],tl[2]]
+                retlist = [counter.most_common()[0][0],counter.most_common()[0][1],tl[1],tl[2],tl[3]]
                 break
         return retlist
     def set_favorite_list(self):
         place_list = list(set([x[2] for x in self.result_list]))
         race_list = list(set([x[1] for x in self.result_list]))
         winrate_index = 3
+        fav_horsename_index = 0
         fav_count_index = 1
+        fav_winrate_index = 3
         for place in place_list:
             for race in race_list:
                 single_list = []
@@ -259,6 +261,11 @@ class AnalyseResult():
                 sorted_list = sorted(single_list, reverse=True, key=lambda x: x[winrate_index])
                 favorite = ar.get_favorite_horse_data(sorted_list)
                 if len(favorite) > 0 and favorite[fav_count_index] >= 4:
+                    # 取捨選択用に全頭の名前とwinrateを与える
+                    for single in sorted_list:
+                        if single[fav_horsename_index] not in favorite:
+                            favorite.append(single[fav_horsename_index])
+                            favorite.append(single[fav_winrate_index])
                     self.favorite_list.append(favorite)
 
     # ディープラーニング本体
