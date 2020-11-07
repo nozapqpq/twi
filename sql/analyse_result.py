@@ -86,7 +86,7 @@ class AnalyseResult():
         extra_list = []
         extra_exist_flg = False
         for hdl in horses_data_list:
-            todayinfo_list = todayinfo_list + [[x['horsename'],x['today_race'],x['today_place']] for x in hdl]
+            todayinfo_list = todayinfo_list + [[x['horsename'],x['today_race'],x['today_place'],x['today_horsenum'],str(x['today_rdate'])] for x in hdl]
             extra_list_add = [[x['today_goal'],x['today_time_diff'],x['today_dividend']] for x in hdl]
             extra_list = extra_list + extra_list_add
             goal_sum_list = [x[0] for x in extra_list_add]
@@ -117,11 +117,12 @@ class AnalyseResult():
 
     # 性能判定を行い、出力
     def analyse_deeplearning_output(self, out_list, today_date, place_dict):
+        winrate_index = 5
         if len(out_list) < 10:
             return
         places = list(set([x[2] for x in out_list]))
         # １着度高い順に並べ替え
-        out_list = sorted(out_list, reverse=True, key=lambda x: x[3])
+        out_list = sorted(out_list, reverse=True, key=lambda x: x[winrate_index])
         self.research_result_list.append([today_date,place_dict["place"],place_dict["turf_dirt"]]+self.get_analyse_result(places,out_list,"1着度","over",3,False))
         self.research_result_list.append([today_date,place_dict["place"],place_dict["turf_dirt"]]+self.get_analyse_result(places,out_list,"1着度","over",3,True))
 
@@ -131,8 +132,8 @@ class AnalyseResult():
     def get_analyse_result(self, places, out_list, elem_name, direction, target, afternoon_flg):
         count_dict = {"total":0,"1st":0,"2nd":0,"3rd":0,"with_5th":0,"5th_count":0,"with_10th":0,"10th_count":0,"with_11th":0,"11th_count":0,"box_quinella_count":0,"box_triple_count":0,"three_qui":0,"four_qui":0,"three_total":0,"four_total":0,"three_dividend":0,"four_dividend":0}
         # goal index in deeplearning_result.csv
-        goal_index = 5
-        dividend_index = 7
+        goal_index = 7
+        dividend_index = 9
         horsename_index = 0
         total_dividend = 0
         box_total_dividend = 0
@@ -159,7 +160,7 @@ class AnalyseResult():
                 top_horse = self.get_favorite_horse_data(out_list)
                 # 着順データが入っていない場合(レース当日使用の場合)、research_result.csvは作らない
                 # when top horse's goal == 0, skip
-                if single_analyse_list == [] or len(single_analyse_list[0]) < 8 or single_analyse_list[0][goal_index] == 0:
+                if single_analyse_list == [] or len(single_analyse_list[0]) < 10 or single_analyse_list[0][goal_index] == 0:
                     continue
                 # 1位から1頭ずつ見ていく
                 box_list = [0, 0, 0]
@@ -227,7 +228,7 @@ class AnalyseResult():
 
     # get list [horsename, count(x/5), race, place, win_rate]
     def get_favorite_horse_title(self):
-        return ["horsename","fav_count","race","place","win_rate"]
+        return ["horsename","fav_count","race","place","horsenum","date","win_rate"]
     def get_favorite_horse_data(self, top_list):
         retlist = []
         top_horse_data = []
@@ -242,16 +243,16 @@ class AnalyseResult():
         counter = Counter(all_horse_list)
         for tl in top_list:
             if tl[0] == counter.most_common()[0][0]: # [0][0]:tophorsename [0][1]:tophorsecount
-                retlist = [counter.most_common()[0][0],counter.most_common()[0][1],tl[1],tl[2],tl[3]]
+                retlist = [counter.most_common()[0][0],counter.most_common()[0][1],tl[1],tl[2],tl[3],tl[4],tl[5]]
                 break
         return retlist
     def set_favorite_list(self):
         place_list = list(set([x[2] for x in self.result_list]))
         race_list = list(set([x[1] for x in self.result_list]))
-        winrate_index = 3
-        fav_horsename_index = 0
+        horsename_index = 0
+        winrate_index = 5
+        horsenum_index = 3
         fav_count_index = 1
-        fav_winrate_index = 3
         for place in place_list:
             for race in race_list:
                 single_list = []
@@ -261,11 +262,12 @@ class AnalyseResult():
                 sorted_list = sorted(single_list, reverse=True, key=lambda x: x[winrate_index])
                 favorite = ar.get_favorite_horse_data(sorted_list)
                 if len(favorite) > 0 and favorite[fav_count_index] >= 4:
-                    # 取捨選択用に全頭の名前とwinrateを与える
+                    # 取捨選択用に全頭の名前、馬番、winrateを与える
                     for single in sorted_list:
-                        if single[fav_horsename_index] not in favorite:
-                            favorite.append(single[fav_horsename_index])
-                            favorite.append(single[fav_winrate_index])
+                        if single[horsename_index] not in favorite:
+                            favorite.append(single[horsename_index])
+                            favorite.append(single[horsenum_index])
+                            favorite.append(single[winrate_index])
                     self.favorite_list.append(favorite)
 
     # ディープラーニング本体
