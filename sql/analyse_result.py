@@ -151,13 +151,15 @@ class AnalyseResult():
                     i = count + 4
                 horsename_tmplist = []
                 single_analyse_list = []
+                singlerace_out_list = []
                 # 並べ替えてある順に1レース分の馬名をhorsename_tmplistに入れていく
                 for ol in out_list:
                     if ol[1] == (i+1) and ol[2] == p:
+                        singlerace_out_list.append(ol)
                         if not ol[0] in horsename_tmplist:
                             single_analyse_list.append(ol)
                             horsename_tmplist.append(ol[0])
-                top_horse = self.get_favorite_horse_data(out_list)
+                top_horse = self.get_favorite_horse_data(singlerace_out_list)
                 # 着順データが入っていない場合(レース当日使用の場合)、research_result.csvは作らない
                 # when top horse's goal == 0, skip
                 if single_analyse_list == [] or len(single_analyse_list[0]) < 10 or single_analyse_list[0][goal_index] == 0:
@@ -255,6 +257,8 @@ class AnalyseResult():
         fav_count_index = 1
         for place in place_list:
             for race in race_list:
+                if race <= 5:
+                    continue
                 single_list = []
                 for arrl in self.result_list:
                     if arrl[1] == race and arrl[2] == place:
@@ -332,7 +336,7 @@ def process_as_research(ar, place_dict_list):
     for pdl in place_dict_list:
         ar.set_deep_model_name(pdl)
         model = ar.get_deep_model()
-        #for tl in ["201107"]:
+        #for tl in ["201108"]:
         for tl in ["140615","141109","150315","150412","150620","160410","161112","171111","180414","181110","190407","191116","200419"]:
             goal_list = []
             todayinfo_lst, extra_lst = ar.get_todayinfo_list([tl],pdl)

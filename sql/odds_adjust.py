@@ -100,27 +100,28 @@ for fav in fav_list:
     place = fav[3]
     race = int(fav[2])
     favorite_horse = int(fav[4])
-    print(place+":"+str(race))
+    print(place+" : "+str(race))
     odds_list = ot.scrape_odds_table(year,place,race,mm,dd)
 
     # 買い目の決定
     exclusion_list = []
     favorite_horse = int(fav[4])
-    total_count = 0
+    total_count = 1
     for i in range(7,len(fav)):
         if (i-7)%3 == 2:
             total_count = total_count + 1
-            if float(fav[i]) <= 0.15:
-                exclusion_list.append(fav[i-1])
+            if float(fav[i]) <= 0.25:
+                exclusion_list.append(int(fav[i-1]))
     if total_count > 18:
         print("1開催日に対して実行してください")
         continue
-    print(total_count)
     buy_list = []
     for t in range(total_count):
         if t+1 != favorite_horse:
             buy_candidate = [x for x in odds_list if x["num1"] == favorite_horse and x["num2"] == t+1][0]
-            if not (t+1 in exclusion_list or buy_candidate["odds"] == 0):
+            if t+1 in exclusion_list or buy_candidate["odds"] == 0.0 or buy_candidate["odds"] <= 5.0:
+                print("exclusion : " + str(buy_candidate))
+            else:
                 buy_list.append(buy_candidate)
     # 合成オッズ計算
     bunbo = 0
