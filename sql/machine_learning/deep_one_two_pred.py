@@ -423,11 +423,11 @@ class DeepOneTwoPred():
             return 1
         return 0
     def get_dl_element88(self, dct):
-        if dct["today_turf_dirt"] == "芝" and dct["today_distance"] >= 1300:
+        if dct["today_turf_dirt"] == "芝" and dct["today_distance"] >= 1000:
             return 1
         return 0
     def get_dl_element89(self, dct):
-        if dct["today_turf_dirt"] == "芝" and dct["today_distance"] >= 1600:
+        if dct["today_turf_dirt"] == "芝" and dct["today_distance"] >= 1400:
             return 1
         return 0
     def get_dl_element90(self, dct):
@@ -439,11 +439,11 @@ class DeepOneTwoPred():
             return 1
         return 0
     def get_dl_element92(self, dct):
-        if dct["today_turf_dirt"] != "芝" and dct["today_distance"] >= 1300:
+        if dct["today_turf_dirt"] != "芝" and dct["today_distance"] >= 1000:
             return 1
         return 0
     def get_dl_element93(self, dct):
-        if dct["today_turf_dirt"] != "芝" and dct["today_distance"] >= 1600:
+        if dct["today_turf_dirt"] != "芝" and dct["today_distance"] >= 1400:
             return 1
         return 0
     def get_dl_element94(self, dct):
@@ -455,11 +455,11 @@ class DeepOneTwoPred():
             return 1
         return 0
     def get_dl_element96(self, dct):
-        if dct["past_turf_dirt"] == "芝" and dct["past_distance"] >= 1300:
+        if dct["past_turf_dirt"] == "芝" and dct["past_distance"] >= 1000:
             return 1
         return 0
     def get_dl_element97(self, dct):
-        if dct["past_turf_dirt"] == "芝" and dct["past_distance"] >= 1600:
+        if dct["past_turf_dirt"] == "芝" and dct["past_distance"] >= 1400:
             return 1
         return 0
     def get_dl_element98(self, dct):
@@ -471,11 +471,11 @@ class DeepOneTwoPred():
             return 1
         return 0
     def get_dl_element100(self, dct):
-        if dct["past_turf_dirt"] != "芝" and dct["past_distance"] >= 1300:
+        if dct["past_turf_dirt"] != "芝" and dct["past_distance"] >= 1000:
             return 1
         return 0
     def get_dl_element101(self, dct):
-        if dct["past_turf_dirt"] != "芝" and dct["past_distance"] >= 1600:
+        if dct["past_turf_dirt"] != "芝" and dct["past_distance"] >= 1400:
             return 1
         return 0
     def get_dl_element102(self, dct):
@@ -922,7 +922,7 @@ class DeepOneTwoPred():
     def convert_fullgate_goal_list(self, goal, today_time_diff, dividend):
         goal_list = []
         goal_feature = 0
-        if today_time_diff <= 0.2 or (goal == 1) or (goal == 2):
+        if today_time_diff <= 0.1:
             goal_feature = 0
         else:
             goal_feature = 1
