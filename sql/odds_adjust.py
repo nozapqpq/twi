@@ -87,20 +87,22 @@ with open("../deeplearning_favorite_horses.csv","r") as f:
             fav_list.append(row)
         count = count + 1
 
-budget = 3000
+budget = 2000
 date_splitted = re.split(r"-|\s", fav_list[0][5])
 print(date_splitted)
 year = int(date_splitted[0])
 mm = int(date_splitted[1])
 dd = int(date_splitted[2])
 ot = OddsTable()
-
+output = []
 for fav in fav_list:
     # オッズテーブルを取得
     place = fav[3]
     race = int(fav[2])
     favorite_horse = int(fav[4])
-    print(place+" : "+str(race))
+    info = {"place":fav[3],"race":fav[2],"horsename":fav[0],"fav_count":fav[1],"win_rate":fav[6]}
+    print(info)
+    output.append(str(info))
     odds_list = ot.scrape_odds_table(year,place,race,mm,dd)
 
     # 買い目の決定
@@ -121,6 +123,7 @@ for fav in fav_list:
             buy_candidate = [x for x in odds_list if x["num1"] == favorite_horse and x["num2"] == t+1][0]
             if t+1 in exclusion_list or buy_candidate["odds"] == 0.0 or buy_candidate["odds"] <= 5.0:
                 print("exclusion : " + str(buy_candidate))
+                output.append("exclusion : " + str(buy_candidate))
             else:
                 buy_list.append(buy_candidate)
     # 合成オッズ計算
@@ -128,9 +131,13 @@ for fav in fav_list:
     for buy in buy_list:
         bunbo = bunbo + 1/buy["odds"]
     sync_odds = round(1/bunbo,2)
-    print("合成オッズ : "+str(sync_odds))
+    output.append("合成オッズ : "+str(sync_odds))
     # 何円買うか
     for buy in buy_list:
         buy["bet"] = int(round(budget*sync_odds/buy["odds"],-1))
-        print(buy)
+        output.append(str(buy))
+with open("../odds_output.txt","w") as f:
+    writer = csv.writer(f)
+    for o in output:
+        f.write(o+"\n")
 
