@@ -305,11 +305,11 @@ class Utility():
     # count_dict={"total","1st","2nd","3rd"}の形式で引数に与えること
     def get_quinella_rate(self, count_dict):
         quinella = count_dict["1st"] + count_dict["2nd"]
-        win_rate = round(quinella/count_dict["total"],3)
+        win_rate = round(quinella/count_dict["total"],3) if count_dict["total"] > 0 else 0
         return win_rate
     def get_double_win_rate(self, count_dict):
         double_win = count_dict["1st"] + count_dict["2nd"] + count_dict["3rd"]
-        double_win_rate = round(double_win/count_dict["total"],3)
+        double_win_rate = round(double_win/count_dict["total"],3) if count_dict["total"] > 0 else 0
         return double_win_rate
     def analyse_class(self, cls):
         if cls=="500万" or cls=="1勝":

@@ -7,10 +7,12 @@ import os
 import csv
 from datetime import datetime as dt
 import keras
+from keras.metrics import Precision, Recall
 from keras.models import Sequential, model_from_json
 from keras.layers import Dense, Dropout
-from keras.optimizers import Adamax 
+from keras.optimizers import Adamax
 from keras.layers.normalization import BatchNormalization
+import keras.backend as K
 import numpy as np
 import seaborn as sns
 import matplotlib as mpl
@@ -74,7 +76,7 @@ class AnalyseResult():
             for fl in csv_list:
                 #print("../"+dl+"/"+fl)
                 main_dict = self.pat.get_maindata_dict_from_csv("../"+dl+"/"+fl)
-                thinned_out_main_dict = [x for x in main_dict if (place_dict_list["place"] == "all" or x["today_place"] == place_dict_list["place"]) and (place_dict_list["turf_dirt"] == "all" or x["today_turf_dirt"] == place_dict_list["turf_dirt"])]
+                thinned_out_main_dict = [x for x in main_dict if x["today_race"] >= 6 and (place_dict_list["place"] == "all" or x["today_place"] == place_dict_list["place"]) and (place_dict_list["turf_dirt"] == "all" or x["today_turf_dirt"] == place_dict_list["turf_dirt"])]
                 if len(thinned_out_main_dict) > 0:
                     entry_horses_list.append(thinned_out_main_dict)
         return entry_horses_list
@@ -224,7 +226,7 @@ class AnalyseResult():
                     box_total_dividend = box_total_dividend + single_analyse_list[0][dividend_index]
         average_dividend = 0
         if count_dict["total"] > 0:
-            average_dividend = round(total_dividend/count_dict["total"],0)
+            average_dividend = round(total_dividend/count_dict["total"],0) if count_dict["total"] > 0 else 0
         print(average_dividend)
         return [elem_name, noon_comment, count_dict["total"], count_dict["1st"], count_dict["2nd"], count_dict["3rd"], self.util.get_quinella_rate(count_dict), self.util.get_double_win_rate(count_dict), count_dict["with_5th"], count_dict["5th_count"], count_dict["with_10th"], count_dict["10th_count"], count_dict["with_11th"], count_dict["11th_count"],total_dividend,average_dividend,count_dict["box_quinella_count"],count_dict["box_triple_count"],box_total_dividend,count_dict["three_qui"],count_dict["four_qui"],count_dict["three_total"],count_dict["four_total"],count_dict["three_dividend"],count_dict["four_dividend"]]
 
@@ -265,7 +267,8 @@ class AnalyseResult():
                         single_list.append(arrl)
                 sorted_list = sorted(single_list, reverse=True, key=lambda x: x[winrate_index])
                 favorite = ar.get_favorite_horse_data(sorted_list)
-                if len(favorite) > 0 and favorite[fav_count_index] >= 4:
+                #if len(favorite) > 0 and favorite[fav_count_index] >= 4:
+                if len(favorite) > 1:
                     # 取捨選択用に全頭の名前、馬番、winrateを与える
                     for single in sorted_list:
                         if single[horsename_index] not in favorite:
@@ -298,11 +301,11 @@ class AnalyseResult():
         # うまく行かないとき用
         # model.add(Dense(self.dotp.get_number_of_output_kind(), activation='softmax'))
 
-        adamax = Adamax()
+        optimizer = Adamax(lr=0.001)
         model.summary()
-        model.compile(loss='categorical_crossentropy', optimizer=adamax, metrics=['accuracy'])
+        model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=["accuracy"])
 
-        history = model.fit(x_train, y_train, epochs=15, batch_size=2000, validation_split=0.1, class_weight=class_weight)
+        history = model.fit(x_train, y_train, epochs=10, batch_size=512, validation_split=0.1, class_weight=class_weight)
         #self.util.compare_TV(history)
 
         # モデル、学習済の重みを保存
@@ -330,7 +333,7 @@ def process_as_product(ar, place_dict_list):
 
         # 精度確認用にconfusion_matrixをプロット
         model = ar.get_deep_model()
-        ar.util.plot_confusion_matrix(y_np, model.predict(x_np), 0.8)
+        ar.util.plot_confusion_matrix(y_np, model.predict(x_np), 0.5)
 
 def process_as_research(ar, place_dict_list):
     for pdl in place_dict_list:
