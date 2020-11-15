@@ -130,15 +130,17 @@ class AnalyseResult():
 
     # deeplearning_result.csvへの出力結果を性能評価し、結果出力
     def get_analyse_result_title(self):
-        return ["date","場所","芝ダ","title","午前午後","総数","1着","2着","3着","連対率","複勝率","5位以内との連対回数","2〜5位総数","10位以内との連対回数","6〜10位総数","11位以下との連対回数","11位以下総数","total配当(馬連)","平均配当(馬連)","1〜3位ボックス馬連的中回数","1〜3位ボックスワイド的中回数","1〜3位ボックスtotal配当(馬連)","under_three_count","over_four_count","three_total","four_total","three_dividend","four_dividend"]
+        return ["date","場所","芝ダ","title","午前午後","総数","1着","2着","3着","合計配当(winrate1位)","平均配当(winrate1位)","under_three_count","over_four_count","three_total","four_total","three_dividend","four_dividend","〜10%勝","〜10%総数","〜20%勝","〜20%総数","〜30%勝","〜30%総数","〜40%勝","〜40%総数","〜50%勝","〜50%総数","〜60%勝","〜60%総数","〜70%勝","〜70%総数","〜80%勝","〜80%総数","〜90%勝","〜90%総数","〜100%勝","〜100%総数"]
     def get_analyse_result(self, places, out_list, elem_name, direction, target, afternoon_flg):
-        count_dict = {"total":0,"1st":0,"2nd":0,"3rd":0,"with_5th":0,"5th_count":0,"with_10th":0,"10th_count":0,"with_11th":0,"11th_count":0,"box_quinella_count":0,"box_triple_count":0,"three_qui":0,"four_qui":0,"three_total":0,"four_total":0,"three_dividend":0,"four_dividend":0}
+        count_dict = {"total":0,"1st":0,"2nd":0,"3rd":0,"total_dividend":0,"three_qui":0,"four_qui":0,"three_total":0,"four_total":0,"three_dividend":0,"four_dividend":0}
+        # winrate10%区切りで勝率を確認
+        winrate_win_list = [0,0,0,0,0,0,0,0,0,0,0]
+        winrate_total_list = [0,0,0,0,0,0,0,0,0,0,0]
         # goal index in deeplearning_result.csv
         goal_index = 7
         dividend_index = 9
+        score_index = 5
         horsename_index = 0
-        total_dividend = 0
-        box_total_dividend = 0
         # 午前中のレースは4つ
         target_race_total = 4
         noon_comment = "午前"
@@ -161,41 +163,27 @@ class AnalyseResult():
                         if not ol[0] in horsename_tmplist:
                             single_analyse_list.append(ol)
                             horsename_tmplist.append(ol[0])
+                # deeplearning_result.csvのwinrate上位5個中最頻出の馬
                 top_horse = self.get_favorite_horse_data(singlerace_out_list)
                 # 着順データが入っていない場合(レース当日使用の場合)、research_result.csvは作らない
                 # when top horse's goal == 0, skip
                 if single_analyse_list == [] or len(single_analyse_list[0]) < 10 or single_analyse_list[0][goal_index] == 0:
                     continue
                 # 1位から1頭ずつ見ていく
-                box_list = [0, 0, 0]
                 for j in range(len(single_analyse_list)):
-                    # 1位に対する処理
+                    # winrate1位の馬に対する処理
                     if j == 0:
                         print(single_analyse_list[j])
                         count_dict["total"] = count_dict["total"] + 1
                         if single_analyse_list[j][goal_index] == 1:
                             count_dict["1st"] = count_dict["1st"] + 1
-                            total_dividend = total_dividend + single_analyse_list[j][dividend_index]
+                            count_dict["total_dividend"] = count_dict["total_dividend"] + single_analyse_list[j][dividend_index]
                         elif single_analyse_list[j][goal_index] == 2:
                             count_dict["2nd"] = count_dict["2nd"] + 1
-                            total_dividend = total_dividend + single_analyse_list[j][dividend_index]
+                            count_dict["total_dividend"] = count_dict["total_dividend"] + single_analyse_list[j][dividend_index]
                         elif single_analyse_list[j][goal_index] == 3:
                             count_dict["3rd"] = count_dict["3rd"] + 1
-                    elif j < 5:
-                        count_dict["5th_count"] = count_dict["5th_count"] + 1
-                    elif j < 10:
-                        count_dict["10th_count"] = count_dict["10th_count"] + 1
-                    else:
-                        count_dict["11th_count"] = count_dict["11th_count"] + 1
-                    # 1位が連対した場合にカウント
-                    if j >= 1 and (single_analyse_list[0][goal_index] == 1 or single_analyse_list[0][goal_index] == 2) and (single_analyse_list[j][goal_index] == 1 or single_analyse_list[j][goal_index] == 2):
-                        if j < 5:
-                            count_dict["with_5th"] = count_dict["with_5th"] + 1
-                        elif j < 10:
-                            count_dict["with_10th"] = count_dict["with_10th"] + 1
-                        else:
-                            count_dict["with_11th"] = count_dict["with_11th"] + 1
-                    # top horse quinella
+                    # top_horseの上位5個中占める数によって連対率が変わるか確認
                     if single_analyse_list[j][horsename_index] == top_horse[horsename_index]:
                         if top_horse[1] <= 3:
                             count_dict["three_total"] = count_dict["three_total"] + 1
@@ -208,27 +196,17 @@ class AnalyseResult():
                             elif top_horse[1] >= 4:
                                 count_dict["four_qui"] = count_dict["four_qui"] + 1
                                 count_dict["four_dividend"] = count_dict["four_dividend"] + single_analyse_list[j][dividend_index]
-                    # 上位3頭ボックス
-                    if j < 3:
-                        box_list[j] = single_analyse_list[j][goal_index]
-                # 上位3頭ボックス処理
-                box_quinella = 0
-                box_triple = 0
-                for bl in box_list:
-                    if bl >= 1 and bl <= 3:
-                        box_triple = box_triple + 1
-                        if bl <= 2:
-                            box_quinella = box_quinella + 1
-                if box_triple >= 2:
-                    count_dict["box_triple_count"] = count_dict["box_triple_count"] + 1
-                if box_quinella >= 2:
-                    count_dict["box_quinella_count"] = count_dict["box_quinella_count"] + 1
-                    box_total_dividend = box_total_dividend + single_analyse_list[0][dividend_index]
+                    # winrate10%区切りでの勝率
+                    for i in range(10):
+                        if single_analyse_list[j][score_index] > i*10*0.01 and single_analyse_list[j][score_index] <= (i+1)*10*0.01:
+                            winrate_total_list[i] = winrate_total_list[i] + 1
+                            if single_analyse_list[j][goal_index] == 1:
+                                winrate_win_list[i] = winrate_win_list[i] + 1
         average_dividend = 0
         if count_dict["total"] > 0:
-            average_dividend = round(total_dividend/count_dict["total"],0) if count_dict["total"] > 0 else 0
+            average_dividend = round(count_dict["total_dividend"]/count_dict["total"],0) if count_dict["total"] > 0 else 0
         print(average_dividend)
-        return [elem_name, noon_comment, count_dict["total"], count_dict["1st"], count_dict["2nd"], count_dict["3rd"], self.util.get_quinella_rate(count_dict), self.util.get_double_win_rate(count_dict), count_dict["with_5th"], count_dict["5th_count"], count_dict["with_10th"], count_dict["10th_count"], count_dict["with_11th"], count_dict["11th_count"],total_dividend,average_dividend,count_dict["box_quinella_count"],count_dict["box_triple_count"],box_total_dividend,count_dict["three_qui"],count_dict["four_qui"],count_dict["three_total"],count_dict["four_total"],count_dict["three_dividend"],count_dict["four_dividend"]]
+        return [elem_name, noon_comment, count_dict["total"], count_dict["1st"], count_dict["2nd"], count_dict["3rd"],count_dict["total_dividend"],average_dividend,count_dict["three_qui"],count_dict["four_qui"],count_dict["three_total"],count_dict["four_total"],count_dict["three_dividend"],count_dict["four_dividend"],winrate_win_list[0],winrate_total_list[0],winrate_win_list[1],winrate_total_list[1],winrate_win_list[2],winrate_total_list[2],winrate_win_list[3],winrate_total_list[3],winrate_win_list[4],winrate_total_list[4],winrate_win_list[5],winrate_total_list[5],winrate_win_list[6],winrate_total_list[6],winrate_win_list[7],winrate_total_list[7],winrate_win_list[8],winrate_total_list[8],winrate_win_list[9],winrate_total_list[9]]
 
     # get list [horsename, count(x/5), race, place, win_rate]
     def get_favorite_horse_title(self):
