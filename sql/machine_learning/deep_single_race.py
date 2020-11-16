@@ -22,7 +22,7 @@ class DeepSingleRace():
 
     def clean(self):
         self.single_horse_dicts = []
-        self.whole_race_dict = {"place":"","race":0,"rdate":"","horse_total":"","top_zi":0,"top_odds":0,"fastest_time":0.0,"pop_tddiff":False,"stag_count":0,"west_count":0,"younghorse_count":0,"youngjockey_count":0}
+        self.whole_race_dict = {"place":"","race":0,"rdate":"","horse_total":"","top_zi":0,"top_odds":0,"fastest_time":0.0,"pop_tddiff":False,"stag_count":0,"west_count":0,"younghorse_count":0,"youngjockey_count":0,"jockey_list":[]}
 
     # 1レース分のデータを扱う(栗東率、牡馬率、若手騎手率、2,3歳限定寄りかなど)
     def set_whole_race_dict(self, whole_list):
@@ -49,8 +49,10 @@ class DeepSingleRace():
                     stag_count = stag_count + 1
                 if wl["horse_age"] <= 3:
                     younghorse_count = younghorse_count + 1
-                if len(jockey) > 0 and jockey[0]['age'] <= 25:
-                    youngjockey_count = youngjockey_count + 1
+                if len(jockey) > 0:
+                    self.whole_race_dict["jockey_list"].append(jockey[0]['name'])
+                    if jockey[0]['age'] <= 25:
+                        youngjockey_count = youngjockey_count + 1
                 name_list.append(wl['horsename'])
         self.whole_race_dict["west_count"] = west_count
         self.whole_race_dict["stag_count"] = stag_count

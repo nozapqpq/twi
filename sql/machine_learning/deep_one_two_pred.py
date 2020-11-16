@@ -916,7 +916,402 @@ class DeepOneTwoPred():
         if temperature <= 25:
             return 1
         return 0
-
+    def get_dl_element201(self, dct):
+        if "武豊" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element202(self, dct):
+        if "松山弘平" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element203(self, dct):
+        if "和田竜二" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element204(self, dct):
+        if "幸英明" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element205(self, dct):
+        if "大野拓弥" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element206(self, dct):
+        if "三浦皇成" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element207(self, dct):
+        if "横山武史" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element208(self, dct):
+        if "松若風馬" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element209(self, dct):
+        if "内田博幸" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element210(self, dct):
+        if "ルメール" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element211(self, dct):
+        if "丹内祐次" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element212(self, dct):
+        if "藤岡康太" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element213(self, dct):
+        if "田辺裕信" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element214(self, dct):
+        if "福永祐一" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element215(self, dct):
+        if "岩田康誠" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element216(self, dct):
+        if "吉田隼人" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element217(self, dct):
+        if "西村淳也" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element218(self, dct):
+        if "岩田望来" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element219(self, dct):
+        if "野中悠太" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element220(self, dct):
+        if "丸山元気" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element221(self, dct):
+        if "藤田菜七" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element222(self, dct):
+        if "斎藤新" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element223(self, dct):
+        if "北村友一" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element224(self, dct):
+        if "木幡巧也" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element225(self, dct):
+        if "団野大成" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element226(self, dct):
+        if "武藤雅" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element227(self, dct):
+        if "柴田大知" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element228(self, dct):
+        if "川田将雅" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element229(self, dct):
+        if "津村明秀" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element230(self, dct):
+        if "坂井瑠星" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element231(self, dct):
+        if "Ｍ．デム" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element232(self, dct):
+        if "戸崎圭太" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element233(self, dct):
+        if "鮫島克駿" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element234(self, dct):
+        if "藤岡佑介" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element235(self, dct):
+        if "池添謙一" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element236(self, dct):
+        if "菅原明良" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element237(self, dct):
+        if "石橋脩" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element238(self, dct):
+        if "江田照男" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element239(self, dct):
+        if "亀田温心" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element240(self, dct):
+        if "菱田裕二" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element241(self, dct):
+        if "酒井学" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element242(self, dct):
+        if "北村宏司" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element243(self, dct):
+        if "木幡育也" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element244(self, dct):
+        if "山田敬士" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element245(self, dct):
+        if "菊沢一樹" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element246(self, dct):
+        if "石川裕紀" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element247(self, dct):
+        if "浜中俊" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element248(self, dct):
+        if "古川吉洋" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element249(self, dct):
+        if "国分恭介" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element250(self, dct):
+        if "川又賢治" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element251(self, dct):
+        if "国分優作" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element252(self, dct):
+        if "横山和生" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element253(self, dct):
+        if "荻野極" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element254(self, dct):
+        if "吉田豊" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element255(self, dct):
+        if "勝浦正樹" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element256(self, dct):
+        if "横山典弘" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element257(self, dct):
+        if "藤井勘一" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element258(self, dct):
+        if "川須栄彦" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element259(self, dct):
+        if "秋山真一" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element260(self, dct):
+        if "柴山雄一" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element261(self, dct):
+        if "太宰啓介" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element262(self, dct):
+        if "丸田恭介" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element263(self, dct):
+        if "武士沢友" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element264(self, dct):
+        if "柴田善臣" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element265(self, dct):
+        if "黛弘人" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element266(self, dct):
+        if "松岡正海" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element267(self, dct):
+        if "田中勝春" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element268(self, dct):
+        if "小牧太" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element269(self, dct):
+        if "小林凌大" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element270(self, dct):
+        if "富田暁" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element271(self, dct):
+        if "松田大作" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element272(self, dct):
+        if "小崎綾也" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element273(self, dct):
+        if "藤懸貴志" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element274(self, dct):
+        if "高倉稜" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element275(self, dct):
+        if "中井裕二" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element276(self, dct):
+        if "杉原誠人" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element277(self, dct):
+        if "泉谷楓真" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element278(self, dct):
+        if "宮崎北斗" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element279(self, dct):
+        if "加藤祥太" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element280(self, dct):
+        if "中谷雄太" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element281(self, dct):
+        if "嘉藤貴行" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element282(self, dct):
+        if "森裕太朗" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element283(self, dct):
+        if "鮫島良太" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element284(self, dct):
+        if "川島信二" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element285(self, dct):
+        if "ミナリク" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element286(self, dct):
+        if "木幡初也" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element287(self, dct):
+        if "西田雄一" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element288(self, dct):
+        if "嶋田純次" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element289(self, dct):
+        if "水口優也" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element290(self, dct):
+        if "田中健" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element291(self, dct):
+        if "レーン" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element292(self, dct):
+        if "和田翼" in self.sr.whole_race_dict["jockey_list"] or "岩崎翼" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element293(self, dct):
+        if "岩部純二" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element294(self, dct):
+        if "マーフィ" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element295(self, dct):
+        if "城戸義政" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element296(self, dct):
+        if "蛯名正義" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element297(self, dct):
+        if "秋山稔樹" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element298(self, dct):
+        if "原優介" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
+    def get_dl_element299(self, dct):
+        if "岡田祥嗣" in self.sr.whole_race_dict["jockey_list"]:
+            return 1
+        return 0
 
     # [0, 0, 0, 0]の形式、 ３着内率を配当で細分化したものに変換
     def convert_fullgate_goal_list(self, goal, today_time_diff, dividend):
