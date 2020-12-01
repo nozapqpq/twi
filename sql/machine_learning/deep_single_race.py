@@ -1,5 +1,6 @@
 # coding: utf-8
 import sql_manipulator
+import utility
 import csv
 import os
 from datetime import datetime as dt
@@ -7,7 +8,9 @@ from . import deep_utility
 
 class DeepSingleRace():
     def __init__(self):
+        self.sm = sql_manipulator.SQLManipulator()
         self.util = deep_utility.Utility()
+        self.parent_util = utility.Utility()
         self.single_horse_dicts = []
         self.whole_race_dict = {}
         self.trainer = self.util.get_trainer_all_data()
@@ -22,7 +25,7 @@ class DeepSingleRace():
 
     def clean(self):
         self.single_horse_dicts = []
-        self.whole_race_dict = {"place":"","race":0,"rdate":"","horse_total":"","top_zi":0,"top_odds":0,"fastest_time":0.0,"pop_tddiff":False,"stag_count":0,"west_count":0,"younghorse_count":0,"youngjockey_count":0,"jockey_list":[]}
+        self.whole_race_dict = {"place":"","race":0,"rdate":"","horse_total":"","top_zi":0,"top_odds":0,"fastest_time":0.0,"pop_tddiff":False,"stag_count":0,"west_count":0,"younghorse_count":0,"youngjockey_count":0,"jockey_list":[],"rap5f":0.0,"last3f":0.0}
 
     # 1レース分のデータを扱う(栗東率、牡馬率、若手騎手率、2,3歳限定寄りかなど)
     def set_whole_race_dict(self, whole_list):
@@ -32,6 +35,13 @@ class DeepSingleRace():
         self.whole_race_dict["horse_total"] = whole_list[-1]["today_horse_total"]
         self.whole_race_dict["top_zi"] = max(whole_list, key=lambda x:x['today_zi'])['today_zi']
         self.whole_race_dict["top_odds"] = min(whole_list, key=lambda x:x['today_odds'])['today_odds']
+        r_tbl_dict = self.parent_util.get_single_race_table_dict(self.whole_race_dict["rdate"].strftime('%Y-%m-%d'), self.whole_race_dict["place"], self.whole_race_dict["race"])
+        if r_tbl_dict != {}:
+            self.whole_race_dict["rap5f"] = r_tbl_dict["rap5f"]
+            self.whole_race_dict["last3f"] = r_tbl_dict["last3f"]
+        else:
+            self.whole_race_dict["rap5f"] = 60.0
+            self.whole_race_dict["last3f"] = 35.0
 
         name_list = []
         west_count = 0
