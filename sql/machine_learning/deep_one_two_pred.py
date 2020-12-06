@@ -1313,171 +1313,91 @@ class DeepOneTwoPred():
             return 1
         return 0
     def get_dl_element300(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 56.0:
+        if self.sr.whole_race_dict["delta_rap5f"] >= -2.5:
             return 1
         return 0
     def get_dl_element301(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 56.5:
+        if self.sr.whole_race_dict["delta_rap5f"] >= -2.0:
             return 1
         return 0
     def get_dl_element302(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 57.0:
+        if self.sr.whole_race_dict["delta_rap5f"] >= -1.5:
             return 1
         return 0
     def get_dl_element303(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 57.5:
+        if self.sr.whole_race_dict["delta_rap5f"] >= -1.0:
             return 1
         return 0
     def get_dl_element304(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 58.0:
+        if self.sr.whole_race_dict["delta_rap5f"] >= -0.5:
             return 1
         return 0
     def get_dl_element305(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 58.5:
+        if self.sr.whole_race_dict["delta_rap5f"] >= 0.0:
             return 1
         return 0
     def get_dl_element306(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 59.0:
+        if self.sr.whole_race_dict["delta_rap5f"] >= 0.5:
             return 1
         return 0
     def get_dl_element307(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 59.5:
+        if self.sr.whole_race_dict["delta_rap5f"] >= 1.0:
             return 1
         return 0
     def get_dl_element308(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 60.0:
+        if self.sr.whole_race_dict["delta_rap5f"] >= 1.5:
             return 1
         return 0
     def get_dl_element309(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 60.5:
+        if self.sr.whole_race_dict["delta_rap5f"] >= 2.0:
             return 1
         return 0
     def get_dl_element310(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 61.0:
+        if self.sr.whole_race_dict["delta_rap5f"] >= 2.5:
             return 1
         return 0
     def get_dl_element311(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 61.5:
+        if self.sr.whole_race_dict["delta_last3f"] >= -2.5:
             return 1
         return 0
     def get_dl_element312(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 62.0:
+        if self.sr.whole_race_dict["delta_last3f"] >= -2.0:
             return 1
         return 0
     def get_dl_element313(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 62.5:
+        if self.sr.whole_race_dict["delta_last3f"] >= -1.5:
             return 1
         return 0
     def get_dl_element314(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 63.0:
+        if self.sr.whole_race_dict["delta_last3f"] >= -1.0:
             return 1
         return 0
     def get_dl_element315(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 63.5:
+        if self.sr.whole_race_dict["delta_last3f"] >= -0.5:
             return 1
         return 0
     def get_dl_element316(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 64.0:
+        if self.sr.whole_race_dict["delta_last3f"] >= 0.0:
             return 1
         return 0
     def get_dl_element317(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 64.5:
+        if self.sr.whole_race_dict["delta_last3f"] >= 0.5:
             return 1
         return 0
     def get_dl_element318(self, dct):
-        if self.sr.whole_race_dict["rap5f"] >= 65.0:
+        if self.sr.whole_race_dict["delta_last3f"] >= 1.0:
             return 1
         return 0
     def get_dl_element319(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 32.0:
+        if self.sr.whole_race_dict["delta_last3f"] >= 1.5:
             return 1
         return 0
     def get_dl_element320(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 32.5:
+        if self.sr.whole_race_dict["delta_last3f"] >= 2.0:
             return 1
         return 0
     def get_dl_element321(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 33.0:
-            return 1
-        return 0
-    def get_dl_element322(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 33.5:
-            return 1
-        return 0
-    def get_dl_element323(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 34.0:
-            return 1
-        return 0
-    def get_dl_element324(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 34.5:
-            return 1
-        return 0
-    def get_dl_element325(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 35.0:
-            return 1
-        return 0
-    def get_dl_element326(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 35.5:
-            return 1
-        return 0
-    def get_dl_element327(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 36.0:
-            return 1
-        return 0
-    def get_dl_element328(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 36.5:
-            return 1
-        return 0
-    def get_dl_element329(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 37.0:
-            return 1
-        return 0
-    def get_dl_element330(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 37.5:
-            return 1
-        return 0
-    def get_dl_element331(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 38.0:
-            return 1
-        return 0
-    def get_dl_element332(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 38.5:
-            return 1
-        return 0
-    def get_dl_element333(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 39.0:
-            return 1
-        return 0
-    def get_dl_element334(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 39.5:
-            return 1
-        return 0
-    def get_dl_element335(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 40.0:
-            return 1
-        return 0
-    def get_dl_element336(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 40.5:
-            return 1
-        return 0
-    def get_dl_element337(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 41.0:
-            return 1
-        return 0
-    def get_dl_element338(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 41.5:
-            return 1
-        return 0
-    def get_dl_element339(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 42.0:
-            return 1
-        return 0
-    def get_dl_element340(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 42.5:
-            return 1
-        return 0
-    def get_dl_element341(self, dct):
-        if self.sr.whole_race_dict["last3f"] >= 43.0:
+        if self.sr.whole_race_dict["delta_last3f"] >= 2.5:
             return 1
         return 0
 

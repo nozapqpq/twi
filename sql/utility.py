@@ -43,18 +43,21 @@ class Utility():
             single_dict = {"rdate":t[0],"place":t[1],"race":t[2],"class":t[3],"turf_dirt":t[4],"distance":t[5],"course_condition":t[6],"rap3f":t[7],"rap5f":t[8],"race_last3f":t[9],"horse_total":t[10],"rpci":t[11],"dividend":t[12],"course_mark":t[13],"early_rap2":t[14],"early_rap3":t[15],"early_rap4":t[16],"last_rap1":t[17],"last_rap2":t[18],"last_rap3":t[19],"last_rap4":t[20],"goal_order":t[21],"brinker":t[22],"horsenum":t[23],"horsename":t[24],"horse_sex":t[25],"age":t[26],"jockey_weight":t[27],"jockey_name":t[28],"race_time":t[29],"time_diff":t[30],"passorder1":t[31],"passorder2":t[32],"passorder3":t[33],"passorder4":t[34],"finish":t[35],"horse_last3f":t[36],"diff3f":t[37],"odds_order":t[38],"odds":t[39],"horseweight":t[40],"weightdiff":t[41],"trainer":t[42],"carrier":t[43],"owner":t[44],"breeder":t[45],"stallion":t[46],"broodmaresire":t[47],"color":t[48],"span":t[49],"castration":t[50],"pci":t[51]}
             retlist.append(single_dict)
         return retlist
-    def get_single_race_table_dict(self, rdate, place, race):
+    def get_race_table(self, msg_condition):
         manipulator = sql_manipulator.SQLManipulator()
         msg_select = "select rdate, place, race, class, turf_dirt, distance, course_condition, rap3f, rap5f, last3f, horse_total, rpci, dividend, course_mark, early_rap2, early_rap3, early_rap4, last_rap1, last_rap2, last_rap3, last_rap4 "
         msg_from = "from race_table "
-        msg = msg_select+msg_from+"where rdate='"+rdate+"' and place='"+place+"' and race="+str(race)+";"
+        msg = msg_select+msg_from+"where "+msg_condition+";"
         tpl = manipulator.sql_manipulator(msg)
         retlist = []
         for t in tpl:
             single_dict = {"rdate":t[0],"place":t[1],"race":t[2],"class":t[3],"turf_dirt":t[4],"distance":t[5],"course_condition":t[6],"rap3f":t[7],"rap5f":t[8],"last3f":t[9],"horse_total":t[10],"rpci":t[11],"dividend":t[12],"course_mark":t[13],"early_rap2":t[14],"early_rap3":t[15],"early_rap4":t[16],"last_rap1":t[17],"last_rap2":t[18],"last_rap3":t[19],"last_rap4":t[20]}
             retlist.append(single_dict)
-        if len(tpl) > 0:
-            return retlist[0]
+        return retlist
+    def get_single_race_table_dict(self, rdate, place, race):
+        tbl = self.get_race_table("rdate='"+rdate+"' and place='"+place+"' and race="+str(race))
+        if len(tbl) > 0:
+            return tbl[0]
         else:
             return {}
     def set_race_level(self):
