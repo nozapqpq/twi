@@ -50,3 +50,13 @@ class SQLManipulator():
             single_dict = {"rdate":t[0],"place":t[1],"race":t[2],"horsenum":t[3],"horsename":t[4],"horse_sex":t[5],"age":t[6],"jockey_weight":t[7],"jockey_name":t[8],"time_diff":t[9],"odds":t[10],"trainer":t[11],"carrier":t[12],"owner":t[13],"breeder":t[14],"stallion":t[15],"broodmaresire":t[16]}
             retlist.append(single_dict)
         return retlist
+    def get_simple_race_data(self, condition_msg):
+        msg_select = "select rdate, place, race, class, turf_dirt, distance, course_condition, rap3f, rap5f, last3f, horse_total, rpci, dividend, course_mark, early_rap2, early_rap3, early_rap4, last_rap1, last_rap2, last_rap3, last_rap4 "
+        msg_from = "from race_table "
+        msg = msg_select+msg_from+"where "+condition_msg+";"
+        tpl = manipulator.sql_manipulator(msg)
+        retlist = []
+        for t in tpl:
+            single_dict = {"rdate":t[0],"place":t[1],"race":t[2],"class":t[3],"turf_dirt":t[4],"distance":t[5],"course_condition":t[6],"rap3f":t[7],"rap5f":t[8],"last3f":t[9],"horse_total":t[10],"rpci":t[11],"dividend":t[12],"course_mark":t[13],"early_rap2":t[14],"early_rap3":t[15],"early_rap4":t[16],"last_rap1":t[17],"last_rap2":t[18],"last_rap3":t[19],"last_rap4":t[20]}
+            retlist.append(single_dict)
+        return retlist
