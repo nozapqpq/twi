@@ -4,30 +4,41 @@ import os
 import csv
 import sys
 import re
+from datetime import datetime
 from .sql_manipulator import SQLManipulator
+from .utility import Utility
 #reload(sys)
 #sys.setdefaultencoding('utf-8')
 print(sys.getdefaultencoding())
 class HorseRace():
     def __init__(self, setting_flg=False):
         self.manipulator = SQLManipulator()
+        self.utility = Utility()
+        self.horse_race_dict_list = []
         if setting_flg:
-            self.horse_race_dict_list = self.get_horse_race_dict_list_from_db()
+            # self.horse_race_dict_list = self.get_horse_race_dict_list_from_db()
             self.race_dict_list = self.get_race_dict_list_from_db()
             self.horse_dict_list = self.get_horse_dict_list_from_db()
 
-    # ***** horse race data list get processes (users could use this 4 methods in external files) *****
+    # ***** horse race data list get processes (users could use this 5 methods in external files) *****
+    def get_history_single_horse_list_without_newer_day(self, horsename, today):
+        converted_today = datetime.strptime(today, '%Y-%m-%d').date()
+        history = [x for x in self.horse_race_dict_list if x['horsename'] == horsename and x['rdate'] < converted_today]
+        return history
+
     def get_single_horse_list(self, horsename):
         return [x for x in self.horse_race_dict_list if x['horsename'] == horsename]
                       
     def get_today_horses_list(self, today, horsenames):
-        return [x for x in self.horse_race_dict_list if x['horsename'] in horsenames and self.compare_two_date(today,x['rdate'])]
+        converted_today = self.convert_date_str_to_date(today)
+        return [x for x in self.horse_race_dict_list if converted_today == x['rdate'] and x['horsename'] in horsenames]
                       
     def get_single_race_and_horse_race_list(self, rdate, place, race):
-        race_list = [x for x in self.race_dict_list if self.compare_two_date(rdate,x['rdate']) and place == x['place'] and race == x['race']]
-        horse_race_list = [x for x in self.horse_race_dict_list if self.compare_two_date(rdate,x['rdate']) and place == x['place'] and race == x['race']]
+        converted_rdate = self.convert_date_str_to_date(rdate)
+        race_list = [x for x in self.race_dict_list if converted_rdate == x['rdate'] and place == x['place'] and race == x['race']]
+        horse_race_list = [x for x in self.horse_race_dict_list if converted_rdate == x['rdate'] and place == x['place'] and race == x['race']]
         return race_list, horse_race_list    
-                                                                                                                                                                                                           
+
     def get_jvtarget_oneday_past_and_today_list(self, csvfile):
         row_count = 0                                  
         all_past = [] 
@@ -39,24 +50,25 @@ class HorseRace():
             for row in reader:       
                 # 1列目が1980を超えているならレースデータ（年月日）と判定
                 if int(row[0]) >= 1980:                
-                    cls = self.util.analyse_class(row[5])
+                    cls = self.utility.analyse_class(row[5])
                     today_list={"rdate":row[0]+"-"+row[1]+"-"+row[2],"place":row[3],"turf_dirt":row[7],"distance":row[8],"class":row[5],"class_condition":cls,"race":row[4],"horse_total":row[9],"course_mark":row[11],"course_condition":row[12]}
-                    all_today.append(target)           
+                    all_today.append(today_list)
                     if row_count > 0:
                         all_past.append(past_list)
-                        entry = []   
+                        past_list = []
                 else: 
                     basic_dict = {"horsenum":row[0],"horsename":row[1],"stallion":row[2],"horse_sex":row[3],"horse_age":row[4],"jockey_name":row[5],"trainer":row[6],"odds":row[7],"jockey_weight":row[8],"zi":row[11],"span":row[13],"castration":row[14],"transfer":row[15],"color":row[16],"owner":row[17],"broodmaresire":row[18]}
                     if (len(row)-19)%27 == 0: # オッズ未取得など不完全な状態で出馬表を取得しているときはデータを捨てる
+                        past_single_list = []
                         for i in range(5):        
                             a = 27*i 
                             if len(row) > 20+a and len(row[20+a]) > 0 and row[27+a] != "----":
-                                single_race_dict = {"rdate":self.util.convert_date_format(row[19+a]),"place":row[20+a],"turf_dirt":self.util.convert_turf_dirt(row[22+a]),"distance":row[23+a],"class":row[24+a],"course_condition":row[25+a],"goal_order":row[26+a],"race_time":self.util.convert_race_time(row[27+a]),"time_diff":row[28+a],"past_horsenum":row[29+a],"population":row[30+a],"passorder1":row[31+a],"passorder2":row[32+a],"passorder3":row[33+a],"passorder4":row[34+a],"last3f":row[35+a],"past_odds":row[36+a],"finish":row[37+a],"past_span":row[38+a],"diff3f":row[39+a],"pci":row[40+a],"rpci":row[41+a],"brinker":row[42+a],"course_mark":row[43+a],"horseweight":row[44+a],"weightdiff":self.util.remove_pm_space(row[45+a]),"pastnum":i+1}
+                                single_race_dict = {"rdate":self.utility.convert_date_format(row[19+a]),"place":row[20+a],"turf_dirt":self.utility.convert_turf_dirt(row[22+a]),"distance":row[23+a],"class":row[24+a],"course_condition":row[25+a],"goal_order":row[26+a],"race_time":self.utility.convert_race_time(row[27+a]),"time_diff":row[28+a],"past_horsenum":row[29+a],"population":row[30+a],"passorder1":row[31+a],"passorder2":row[32+a],"passorder3":row[33+a],"passorder4":row[34+a],"last3f":row[35+a],"past_odds":row[36+a],"finish":row[37+a],"past_span":row[38+a],"diff3f":row[39+a],"pci":row[40+a],"rpci":row[41+a],"brinker":row[42+a],"course_mark":row[43+a],"horseweight":row[44+a],"weightdiff":self.utility.remove_pm_space(row[45+a]),"pastnum":i+1}
                                 single_race_dict.update(basic_dict)
-                                past_list.append(single_race_dict)
+                                past_single_list.append(single_race_dict)
+                        past_list.append(past_single_list)
                 row_count = row_count+1           
-            all_past.append(past_list)       
-            all_today.append(today_list)     
+            all_past.append(past_list)
         return all_past,all_today
 
     # ** utilities **
@@ -85,6 +97,9 @@ class HorseRace():
 
     def get_horse_race_data(self):
         return self.horse_race_dict_list
+
+    def set_horse_race_dict_list(self, condition_msg="1=1"):
+        self.horse_race_dict_list = self.get_horse_race_dict_list_from_db(condition_msg)
 
     def get_horse_race_dict_list_from_db(self, condition_msg="1=1"):
         msg_select = "select race_table.rdate,race_table.place,race_table.race,class,turf_dirt,distance,course_condition,rap3f,rap5f,race_table.last3f,race_table.horse_total,race_table.rpci,race_table    .dividend,race_table.course_mark,race_table.early_rap2,race_table.early_rap3,race_table.early_rap4,race_table.last_rap1,race_table.last_rap2,race_table.last_rap3,race_table.last_rap4,goal_order,brinker,horsenum,horsename,horse_sex,age,jockey_weight,jockey_name,race_time,time_diff,passorder1,passorder2,passorder3,passorder4,finish,horse_table.last3f,diff3f,odds_order,odds,horseweight,weightdiff,trainer,carrier,owner,breeder,stallion,broodmaresire,color,span,castration,pci "
@@ -254,173 +269,5 @@ class HorseRace():
         rap_list = [x for x in rap_list if x != '']
         target_rap = rap_num*(-1)
         return rap_list[target_rap]
-# ** utilities end **
+    # ** utilities end **
     # ***** race_table and horse_table setting end *****
-
-    # 捨てて良い状態にしたい
-    def set_single_maindata(self, today_list, past_list, jv_self_list):
-        single_maindata = []
-        single_maindata.append(today_list['rdate'])
-        single_maindata.append(today_list['race'])
-        single_maindata.append(today_list['place'])
-        single_maindata.append(today_list['turf_dirt'])
-        single_maindata.append(today_list['distance'])
-        single_maindata.append(today_list['class'])
-        single_maindata.append(today_list['horse_total'])
-        single_maindata.append(today_list['course_condition'])
-        single_maindata.append(today_list['course_mark'])
-        single_maindata.append(past_list['horsenum'])
-        single_maindata.append(past_list['horsename'])
-        single_maindata.append(past_list['horse_sex'])
-        single_maindata.append(past_list['horse_age'])
-        single_maindata.append(past_list['odds'])
-        single_maindata.append(past_list['span'])
-        single_maindata.append(past_list['jockey_name'])
-        single_maindata.append(past_list['jockey_weight'])
-        single_maindata.append(past_list['stallion'])
-        single_maindata.append(past_list['broodmaresire'])
-        single_maindata.append(past_list['trainer'])
-        single_maindata.append(past_list['owner'])
-        single_maindata.append(jv_self_list['breeder'])
-        single_maindata.append(past_list['color'])
-        single_maindata.append(past_list['transfer'])
-        single_maindata.append(past_list['castration'])
-        single_maindata.append(past_list['zi'])
-
-        single_maindata.append(past_list['pastnum'])
-        single_maindata.append(past_list['rdate'])
-        single_maindata.append(jv_self_list['race'])
-        single_maindata.append(jv_self_list['place'])
-        single_maindata.append(jv_self_list['turf_dirt'])
-        single_maindata.append(jv_self_list['distance'])
-        single_maindata.append(jv_self_list['class'])
-        single_maindata.append(jv_self_list['horse_total'])
-        single_maindata.append(jv_self_list['horsenum'])
-        single_maindata.append(jv_self_list['odds'])
-        single_maindata.append(jv_self_list['span'])
-        single_maindata.append(jv_self_list['jockey_name'])
-        single_maindata.append(jv_self_list['jockey_weight'])
-        single_maindata.append(jv_self_list['course_condition'])
-        single_maindata.append(jv_self_list['course_mark'])
-        single_maindata.append(jv_self_list['rap3f'])
-        single_maindata.append(jv_self_list['rap5f'])
-        single_maindata.append(jv_self_list['diff3f'])
-        single_maindata.append(past_list['race_time'])
-        single_maindata.append(past_list['time_diff'])
-        single_maindata.append(jv_self_list['passorder1'])
-        single_maindata.append(jv_self_list['passorder2'])
-        single_maindata.append(jv_self_list['passorder3'])
-        single_maindata.append(jv_self_list['passorder4'])
-        single_maindata.append(jv_self_list['horse_last3f'])
-        single_maindata.append(jv_self_list['race_last3f'])
-        single_maindata.append(jv_self_list['rpci'])
-        single_maindata.append(jv_self_list['pci'])
-        single_maindata.append(jv_self_list['dividend'])
-        single_maindata.append(jv_self_list['castration'])
-        single_maindata.append(jv_self_list['early_rap2'])
-        single_maindata.append(jv_self_list['early_rap3'])
-        single_maindata.append(jv_self_list['early_rap4'])
-        single_maindata.append(jv_self_list['last_rap1'])
-        single_maindata.append(jv_self_list['last_rap2'])
-        single_maindata.append(jv_self_list['last_rap3'])
-        single_maindata.append(jv_self_list['last_rap4'])
-        single_maindata.append(jv_self_list['goal_order'])
-        single_maindata.append(jv_self_list['time_diff'])
-        single_maindata.append(jv_self_list['dividend'])
-        return single_maindata
-
-    # 捨てて良い状態にしたい
-    def get_maindata_dict_from_csv(self, csvfile):
-        main_dict_list = []
-        with open(csvfile, 'r') as f:
-            reader = csv.reader(f)
-            header_flg = 0
-            for row in reader:
-                if header_flg == 0:
-                    header_flg = 1
-                    continue
-                main_dict = {}
-                main_dict["today_rdate"] = datetime.datetime.strptime(row[0], '%Y-%m-%d')
-                main_dict["today_race"] = int(row[1])
-                main_dict["today_place"] = row[2]
-                main_dict["today_turf_dirt"] = row[3]
-                main_dict["today_distance"] = int(row[4])
-                main_dict["today_class"] = row[5]
-                main_dict["today_horse_total"] = int(row[6])
-                main_dict["today_course_condition"] = row[7]
-                main_dict["today_course_mark"] = row[8]
-                main_dict["today_horsenum"] = int(row[9])
-                main_dict["horsename"] = row[10]
-                main_dict["horse_sex"] = row[11]
-                main_dict["horse_age"] = int(row[12])
-                main_dict["today_odds"] = self.util.convert_not_float_to_zero(row[13])
-                main_dict["today_span"] = self.util.convert_span_word(row[14])
-                main_dict["today_jockey_name"] = row[15]
-                main_dict["today_jockey_weight"] = self.util.convert_not_float_to_zero(row[16])
-                main_dict["stallion"] = row[17]
-                main_dict["broodmaresire"] = row[18]
-                main_dict["trainer"] = row[19]
-                main_dict["owner"] = row[20]
-                main_dict["breeder"] = row[21]
-                main_dict["color"] = row[22]
-                main_dict["transfer"] = row[23]
-                main_dict["castration"] = row[24]
-                main_dict["today_zi"] = int(row[25])
-
-                main_dict["pastnum"] = int(row[26])
-                main_dict["past_rdate"] = datetime.datetime.strptime(row[27], '%Y-%m-%d')
-                main_dict["past_race"] = int(row[28])
-                main_dict["past_place"] = row[29]
-                main_dict["past_turf_dirt"] = row[30]
-                main_dict["past_distance"] = int(row[31])
-                main_dict["past_class"] = row[32]
-                main_dict["past_horse_total"] = int(row[33])
-                main_dict["past_horsenum"] = int(row[34])
-                main_dict["past_odds"] = float(row[35])
-                main_dict["past_span"] = int(row[36])
-                main_dict["past_jockey_name"] = row[37]
-                main_dict["past_jockey_weight"] = float(row[38])
-                main_dict["past_course_condition"] = row[39]
-                main_dict["past_course_mark"] = row[40]
-                main_dict["past_rap3f"] = float(row[41])
-                main_dict["past_rap5f"] = float(row[42])
-                main_dict["past_diff3f"] = float(row[43])
-                main_dict["past_race_time"] = float(row[44])
-                main_dict["past_time_diff"] = float(row[45])
-                #if 0 diviation no longer use
-                #analyse_avail_list = [0,0,0,0]
-                #if float(row[52]) > 0:
-                #    analyse_avail_list = [float(row[50]),float(row[51]),float(row[52]),float(row[53])]
-                #main_dict["past_mean_diff"] = analyse_avail_list[0]
-                #main_dict["past_mean_goal"] = analyse_avail_list[1]
-                #main_dict["past_diviation"] = analyse_avail_list[2]
-                #main_dict["past_sigma"] = analyse_avail_list[3]
-                #main_dict["past_total"] = int(row[54])
-                main_dict["past_passorder1"] = int(row[46])
-                main_dict["past_passorder2"] = int(row[47])
-                main_dict["past_passorder3"] = int(row[48])
-                main_dict["past_passorder4"] = int(row[49])
-                main_dict["past_horse_last3f"] = float(row[50])
-                main_dict["past_race_last3f"] = float(row[51])
-                main_dict["past_rpci"] = float(row[52])
-                main_dict["past_pci"] = float(row[53])
-                main_dict["past_dividend"] = int(row[54])
-                main_dict["past_castration"] = row[55]
-                main_dict["past_early_rap2"] = float(row[56])
-                main_dict["past_early_rap3"] = float(row[57])
-                main_dict["past_early_rap4"] = float(row[58])
-                main_dict["past_last_rap1"] = float(row[59])
-                main_dict["past_last_rap2"] = float(row[60])
-                main_dict["past_last_rap3"] = float(row[61])
-                main_dict["past_last_rap4"] = float(row[62])
-                try:
-                    main_dict["today_goal"] = int(row[63])
-                    main_dict["today_time_diff"] = float(row[64])
-                    main_dict["today_dividend"] = int(row[65])
-                except ValueError:
-                    main_dict["today_goal"] = 0
-                    main_dict["today_time_diff"] = 0
-                    main_dict["today_dividend"] = 0
-                main_dict_list.append(main_dict)
-        return main_dict_list
-    # ***** horse race data related processes end ***** 
