@@ -6,7 +6,7 @@ from machine_learning import model
 from output_tools import output
 import utility
 
-def main():
+def predict():
     util = utility.Utility()
     output_tools = output.Output()
     model_name = util.get_deep_model_name(output_tools.json_import("settings.json")["settings"])
@@ -20,4 +20,4 @@ def main():
     output_tools.json_export(model_name+"_predict.json",{"predict":predicted})
 
 if __name__ == "__main__":
-    main()
+    predict()

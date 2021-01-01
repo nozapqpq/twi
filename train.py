@@ -5,7 +5,7 @@ from machine_learning import model
 from output_tools import output
 import utility
 
-def main():
+def train():
     util = utility.Utility()
     output_tools = output.Output()
     model_name = util.get_deep_model_name(output_tools.json_import("settings.json")["settings"])
@@ -18,4 +18,4 @@ def main():
     dl_model.save(model_name)
 
 if __name__ == "__main__":
-    main()
+    train()

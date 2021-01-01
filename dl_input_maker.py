@@ -6,7 +6,7 @@ from machine_learning import model_inout_data
 from output_tools import output
 import utility
 
-def main():
+def make_deeplearning_input_file():
     export_dict = {"input":[],"output":[],"rdate":[],"place":[],"race":[],"horsenum":[],"horsename":[]}
     output_tools = output.Output()
     util = utility.Utility()
@@ -67,4 +67,4 @@ def check_adoptability_settings_and_source(settings, source):
     return True
 
 if __name__ == "__main__":
-    main()
+    make_deeplearning_input_file()
