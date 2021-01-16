@@ -57,6 +57,7 @@ class model():
         self.model = model
 
     def train(self):
+        # jvのcsvファイル読み込み元のディレクトリがマウントされていない場合にはここでエラー
         self.model.fit(self.x_np, self.y_np, epochs=30, batch_size=256, validation_split=0.1, class_weight=self.class_weight)
 
     def save(self, name):

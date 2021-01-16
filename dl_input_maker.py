@@ -2,6 +2,7 @@
 import os
 import re
 from db import horse_race
+from db import stallion
 from machine_learning import model_inout_data
 from output_tools import output
 import utility
@@ -14,12 +15,14 @@ def make_deeplearning_input_file():
     model_name = util.get_deep_model_name(settings)
     hr = horse_race.HorseRace(True)
     dl_model_inout = model_inout_data.ModelInOutData()
+    dl_model_inout.set_stallion_table(stallion.Stallion().get_stallion_dict_list())
     output_tools = output.Output()
 
     source_list = get_source_data_list(hr, settings)
     for sl in source_list:
         for i in range(len(sl)):
             if check_adoptability_settings_and_source(settings,sl[i]):
+                sl[i]["all_horse_past"] = [x["past_list"] for x in sl]
                 single_in, single_out = dl_model_inout.make_model_in_out_list(sl[i])
                 if len(single_in) > 0 and len(single_out) > 0:
                     export_dict["input"].append(single_in)

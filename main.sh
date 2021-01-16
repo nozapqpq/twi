@@ -14,7 +14,7 @@ if [ $1 = "jv_target" ]; then
 elif [ $1 = "train" ]; then
     rm -rf /home/noza/keiba/twi/1*.csv*
     rm -rf /home/noza/keiba/twi/2*.csv*
-    cp -rf /media/noza/UBUNTU/product/1306*.csv /home/noza/keiba/twi/
+    cp -rf /media/noza/UBUNTU/product/1*.csv /home/noza/keiba/twi/
     for f in ./[0-9]*.csv;
         do nkf -wd $f > ${f}_tmp;
     done

@@ -57,13 +57,13 @@ class HorseRace():
                         all_past.append(past_list)
                         past_list = []
                 else: 
-                    basic_dict = {"horsenum":row[0],"horsename":row[1],"stallion":row[2],"horse_sex":row[3],"horse_age":row[4],"jockey_name":row[5],"trainer":row[6],"odds":row[7],"jockey_weight":row[8],"zi":row[11],"span":row[13],"castration":row[14],"transfer":row[15],"color":row[16],"owner":row[17],"broodmaresire":row[18]}
+                    basic_dict = {"horsenum":self.convert_to_int_or_blank(row[0]),"horsename":row[1],"stallion":row[2],"horse_sex":row[3],"horse_age":row[4],"jockey_name":row[5],"trainer":row[6],"odds":self.convert_odds(row[7]),"jockey_weight":row[8],"zi":row[11],"span":self.convert_span(row[13]),"castration":row[14],"transfer":row[15],"color":row[16],"owner":row[17],"broodmaresire":row[18]}
                     if (len(row)-19)%27 == 0: # オッズ未取得など不完全な状態で出馬表を取得しているときはデータを捨てる
                         past_single_list = []
                         for i in range(5):        
                             a = 27*i 
                             if len(row) > 20+a and len(row[20+a]) > 0 and row[27+a] != "----":
-                                single_race_dict = {"rdate":self.utility.convert_date_format(row[19+a]),"place":row[20+a],"turf_dirt":self.utility.convert_turf_dirt(row[22+a]),"distance":row[23+a],"class":row[24+a],"course_condition":row[25+a],"goal_order":row[26+a],"race_time":self.utility.convert_race_time(row[27+a]),"time_diff":row[28+a],"past_horsenum":row[29+a],"population":row[30+a],"passorder1":row[31+a],"passorder2":row[32+a],"passorder3":row[33+a],"passorder4":row[34+a],"last3f":row[35+a],"past_odds":row[36+a],"finish":row[37+a],"past_span":row[38+a],"diff3f":row[39+a],"pci":row[40+a],"rpci":row[41+a],"brinker":row[42+a],"course_mark":row[43+a],"horseweight":row[44+a],"weightdiff":self.utility.remove_pm_space(row[45+a]),"pastnum":i+1}
+                                single_race_dict = {"rdate":self.utility.convert_date_format(row[19+a]),"place":row[20+a],"turf_dirt":self.utility.convert_turf_dirt(row[22+a]),"distance":row[23+a],"class":row[24+a],"course_condition":row[25+a],"goal_order":row[26+a],"race_time":self.utility.convert_race_time(row[27+a]),"time_diff":self.convert_time(row[28+a]),"past_horsenum":self.convert_to_int_or_blank(row[29+a]),"population":row[30+a],"passorder1":row[31+a],"passorder2":row[32+a],"passorder3":row[33+a],"passorder4":row[34+a],"last3f":self.convert_time(row[35+a]),"past_odds":self.convert_odds(row[36+a]),"finish":row[37+a],"past_span":self.convert_span(row[38+a]),"diff3f":self.convert_time(row[39+a]),"pci":row[40+a],"rpci":row[41+a],"brinker":row[42+a],"course_mark":row[43+a],"horseweight":row[44+a],"weightdiff":self.utility.remove_pm_space(row[45+a]),"pastnum":i+1}
                                 single_race_dict.update(basic_dict)
                                 past_single_list.append(single_race_dict)
                         past_list.append(past_single_list)
@@ -85,6 +85,26 @@ class HorseRace():
         else:
             ret_date = input_date
         return ret_date
+    def convert_time(self, t):
+        if t == "" or "----" in t:
+            return ""
+        return float(t)
+    def convert_odds(self, odds):
+        if odds == "" or "取消" in odds:
+            return ""
+        return float(odds)
+    def convert_span(self, span):
+        if "連" in span:
+            return 1
+        elif "初" in span:
+            return 0
+        else:
+            return int(span)
+    def convert_to_int_or_blank(self, i):
+        if i == "":
+            return ""
+        else:
+            return int(i)
     # ** utilities end **
     # ***** horse race data list get processes end *****
 
@@ -109,7 +129,7 @@ class HorseRace():
         tpl = self.manipulator.sql_manipulator(msg)
         retlist = []
         for t in tpl:
-            single_dict = {"rdate":t[0],"place":t[1],"race":t[2],"class":t[3],"turf_dirt":t[4],"distance":t[5],"course_condition":t[6],"rap3f":t[7],"rap5f":t[8],"race_last3f":t[9],"horse_total":t[10],"rpci":t[11],"dividend":t[12],"course_mark":t[13],"early_rap2":t[14],"early_rap3":t[15],"early_rap4":t[16],"last_rap1":t[17],"last_rap2":t[18],"last_rap3":t[19],"last_rap4":t[20],"goal_order":t[21],"brinker":t[22],"horsenum":t[23],"horsename":t[24],"horse_sex":t[25],"age":t[26],"jockey_weight":t[27],"jockey_name":t[28],"race_time":t[29],"time_diff":t[30],"passorder1":t[31],"passorder2":t[32],"passorder3":t[33],"passorder4":t[34],"finish":t[35],"horse_last3f":t[36],"diff3f":t[37],"odds_order":t[38],"odds":t[39],"horseweight":t[40],"weightdiff":t[41],"trainer":t[42],"carrier":t[43],"owner":t[44],"breeder":t[45],"stallion":t[46],"broodmaresire":t[47],"color":t[48],"span":t[49],"castration":t[50],"pci":t[51]}
+            single_dict = {"rdate":t[0],"place":t[1],"race":t[2],"class":t[3],"turf_dirt":t[4],"distance":t[5],"course_condition":t[6],"rap3f":t[7],"rap5f":t[8],"race_last3f":t[9],"horse_total":t[10],"rpci":t[11],"dividend":t[12],"course_mark":t[13],"early_rap2":t[14],"early_rap3":t[15],"early_rap4":t[16],"last_rap1":t[17],"last_rap2":t[18],"last_rap3":t[19],"last_rap4":t[20],"goal_order":t[21],"brinker":t[22],"horsenum":int(t[23]),"horsename":t[24],"horse_sex":t[25],"age":t[26],"jockey_weight":t[27],"jockey_name":t[28],"race_time":t[29],"time_diff":t[30],"passorder1":t[31],"passorder2":t[32],"passorder3":t[33],"passorder4":t[34],"finish":t[35],"horse_last3f":t[36],"diff3f":t[37],"odds_order":t[38],"odds":t[39],"horseweight":t[40],"weightdiff":t[41],"trainer":t[42],"carrier":t[43],"owner":t[44],"breeder":t[45],"stallion":t[46],"broodmaresire":t[47],"color":t[48],"span":t[49],"castration":t[50],"pci":t[51]}
             retlist.append(single_dict)
         return retlist
  
@@ -120,7 +140,7 @@ class HorseRace():
         tpl = self.manipulator.sql_manipulator(msg)
         retlist = []                 
         for t in tpl:                
-            single_dict = {"rdate":t[0],"place":t[1],"race":t[2],"horsenum":t[3],"horsename":t[4],"horse_sex":t[5],"age":t[6],"jockey_weight":t[7],"jockey_name":t[8],"time_diff":t[9],"odds":t[10],"trainer":t[11],"carrier":t[12],"owner":t[13],"breeder":t[14],"stallion":t[15],"broodmaresire":t[16],"race_time":t[17],"last3f":t[18],"diff3f":t[19],"goal_order":t[20]}
+            single_dict = {"rdate":t[0],"place":t[1],"race":t[2],"horsenum":int(t[3]),"horsename":t[4],"horse_sex":t[5],"age":t[6],"jockey_weight":t[7],"jockey_name":t[8],"time_diff":t[9],"odds":t[10],"trainer":t[11],"carrier":t[12],"owner":t[13],"breeder":t[14],"stallion":t[15],"broodmaresire":t[16],"race_time":t[17],"last3f":t[18],"diff3f":t[19],"goal_order":t[20]}
             retlist.append(single_dict)
         return retlist                                                                                                                                                                     
  
