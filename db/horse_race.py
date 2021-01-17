@@ -49,7 +49,7 @@ class HorseRace():
             reader = csv.reader(f)   
             for row in reader:       
                 # 1列目が1980を超えているならレースデータ（年月日）と判定
-                if int(row[0]) >= 1980:                
+                if int(row[0]) >= 1980:
                     cls = self.utility.analyse_class(row[5])
                     today_list={"rdate":row[0]+"-"+row[1]+"-"+row[2],"place":row[3],"turf_dirt":row[7],"distance":row[8],"class":row[5],"class_condition":cls,"race":row[4],"horse_total":row[9],"course_mark":row[11],"course_condition":row[12]}
                     all_today.append(today_list)
@@ -61,7 +61,7 @@ class HorseRace():
                     if (len(row)-19)%27 == 0: # オッズ未取得など不完全な状態で出馬表を取得しているときはデータを捨てる
                         past_single_list = []
                         for i in range(5):        
-                            a = 27*i 
+                            a = 27*i
                             if len(row) > 20+a and len(row[20+a]) > 0 and row[27+a] != "----":
                                 single_race_dict = {"rdate":self.utility.convert_date_format(row[19+a]),"place":row[20+a],"turf_dirt":self.utility.convert_turf_dirt(row[22+a]),"distance":row[23+a],"class":row[24+a],"course_condition":row[25+a],"goal_order":row[26+a],"race_time":self.utility.convert_race_time(row[27+a]),"time_diff":self.convert_time(row[28+a]),"past_horsenum":self.convert_to_int_or_blank(row[29+a]),"population":row[30+a],"passorder1":row[31+a],"passorder2":row[32+a],"passorder3":row[33+a],"passorder4":row[34+a],"last3f":self.convert_time(row[35+a]),"past_odds":self.convert_odds(row[36+a]),"finish":row[37+a],"past_span":self.convert_span(row[38+a]),"diff3f":self.convert_time(row[39+a]),"pci":row[40+a],"rpci":row[41+a],"brinker":row[42+a],"course_mark":row[43+a],"horseweight":row[44+a],"weightdiff":self.utility.remove_pm_space(row[45+a]),"pastnum":i+1}
                                 single_race_dict.update(basic_dict)
@@ -96,7 +96,7 @@ class HorseRace():
     def convert_span(self, span):
         if "連" in span:
             return 1
-        elif "初" in span:
+        elif "初" in span or span == "":
             return 0
         else:
             return int(span)
@@ -159,7 +159,7 @@ class HorseRace():
     # ***** race_table and horse_table setting start *****
     # use this method to setup using jv_target 
     def set_race_and_horse_data_from_jvtarget(self, csvfile):
-        racedata, horsedata = self.get_race_and_horse_data_from_csv(csvfile)
+        racedata, horsedata = self.get_race_and_horse_list_from_csv(csvfile)
         self.set_race_data_to_db(racedata)
         self.set_horse_data_to_db(horsedata)
         print("import "+csvfile+" is finished.")
@@ -167,8 +167,8 @@ class HorseRace():
     def get_race_and_horse_list_from_csv(self, csvfile):
         read_mode = 0
         horse_count = 0
-        race_summary = []
-        race_detail = []
+        race_list = []
+        horse_list = []
         temp =[]
         temp_yyyymmdd = '0000-00-00'
         temp_place = ''
@@ -208,12 +208,12 @@ class HorseRace():
 
     def set_horse_data_to_db(self, horsedata):
         all_at_once_msg = ""
-        for i in range(len(horse_data)):
+        for i in range(len(horsedata)):
             if i%1000==0 and i > 0:
                 print("progress : "+str(i)+" / "+str(len(horsedata)))
                 ret = self.manipulator.sql_manipulator("insert into horse_table values "+all_at_once_msg[0:-1])
                 all_at_once_msg = ""
-            for j in range(len(race_detail[i])):
+            for j in range(len(horsedata[i])):
                 all_at_once_msg = all_at_once_msg + self.make_horse_data_message(horsedata[i][j]) + ","
         ret = self.manipulator.sql_manipulator("insert into horse_table values "+all_at_once_msg[0:-1])
 

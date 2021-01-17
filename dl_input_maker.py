@@ -8,7 +8,8 @@ from output_tools import output
 import utility
 
 def make_deeplearning_input_file():
-    export_dict = {"input":[],"output":[],"rdate":[],"place":[],"race":[],"horsenum":[],"horsename":[]}
+    export_dict = {"input":[],"output":[],"rdate":[],"place":[],"race":[],"horsenum":[],"horsename":[],"goal_order":[]}
+    no_output_flg = True
     output_tools = output.Output()
     util = utility.Utility()
     settings = output_tools.json_import("settings.json")["settings"]
@@ -19,14 +20,26 @@ def make_deeplearning_input_file():
     output_tools = output.Output()
 
     source_list = get_source_data_list(hr, settings)
+    print(len(source_list))
+    # 解析(全件アウトプット無)か学習かの判断用フラグno_output_flgをセット
+    for sl in source_list:
+        for i in range(len(sl)):
+            if len(sl[i]["horse_race_list"]) > 0:
+                no_output_flg = False
+                break
     for sl in source_list:
         for i in range(len(sl)):
             if check_adoptability_settings_and_source(settings,sl[i]):
                 sl[i]["all_horse_past"] = [x["past_list"] for x in sl]
                 single_in, single_out = dl_model_inout.make_model_in_out_list(sl[i])
-                if len(single_in) > 0 and len(single_out) > 0:
+                if len(single_in) > 0 and (len(single_out) > 0 and not no_output_flg or no_output_flg):
                     export_dict["input"].append(single_in)
-                    export_dict["output"].append(single_out)
+                    if not no_output_flg:
+                        export_dict["output"].append(single_out[0])
+                        if len(sl[i]["horse_race_list"]) > 0:
+                            gl_order = [x for x in sl[i]["horse_race_list"] if x["horsenum"] == i+1]
+                            if len(gl_order) > 0:
+                                export_dict["goal_order"].append(gl_order[0]["goal_order"])
                     export_dict["rdate"].append(sl[i]["rdate"])
                     export_dict["place"].append(sl[i]["place"])
                     export_dict["race"].append(sl[i]["race"])
