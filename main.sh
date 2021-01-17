@@ -9,7 +9,7 @@ if [ $# -ne 1 ]; then
 fi
 
 if [ $1 = "jv_target" ]; then
-    nkf -wd ../jv_target.csv > ../jv_target_tmp.csv
+    nkf -wd ./jv_target.csv > ./jv_target_tmp.csv
     python3 set_jvtarget_to_db.py
 elif [ $1 = "train" ]; then
     rm -rf /home/noza/keiba/twi/1*.csv*
@@ -20,10 +20,14 @@ elif [ $1 = "train" ]; then
     done
     python3 dl_input_maker.py
     python3 train.py
-elif [ $1 = "predict" ]; then
+elif [ $1 = "predict" -o $1 = "honban" ]; then
     rm -rf /home/noza/keiba/twi/1*.csv* 
     rm -rf /home/noza/keiba/twi/2*.csv*
-    cp -rf /media/noza/UBUNTU/research/*.csv /home/noza/keiba/twi/
+    if [ $1 = "predict" ]; then
+        cp -rf /media/noza/UBUNTU/research/*.csv /home/noza/keiba/twi/
+    elif [ $1 = "honban" ]; then
+        cp -rf /media/noza/UBUNTU/honban/*.csv /home/noza/keiba/twi/
+    fi
     for f in ./[0-9]*.csv;   
         do nkf -wd $f > ${f}_tmp;
     done            

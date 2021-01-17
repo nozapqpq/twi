@@ -29,7 +29,9 @@ class ModelInOutData():
             if ptn["activate"] == "on":
                 exec_cmd = self.utility.get_exec_command(ptn["func"],ptn["args"])
                 input_list.append(eval(exec_cmd))
-        if not (use_blank == False and (target_hrl == {} or target_hrl["goal_order"] == 0)):
+        if target_hrl != {} and (target_hrl["goal_order"] == 0 or use_blank):
+            return input_list, "x"
+        if target_hrl != {}:
             output_list = self.make_output_list(source_data)
         return input_list, output_list
 
@@ -465,29 +467,40 @@ class ModelInOutData():
     def get_dl_element104(self, source_data):
         return min(max(self.sr.whole_race_dict["delta_last3f"],-2.5),2.5)/2.5
     def get_dl_element105(self, source_data):
-        # TODO:このhorsenumが過去走のhorsenumでないか、last_rap4が後ろから４番目のラップタイムでないか要確認
-        rap4 = [x["last_rap4"] for x in source_data["horse_race_list"] if x["horsenum"] == source_data["horsenum"]]
+        # 実際の予測ではラストから4ハロン目は12.5s程度と仮定
+        rap4 = [12.5]
+        if source_data["horse_race_list"] != {}:
+            rap4 = [x["last_rap4"] for x in source_data["horse_race_list"] if x["horsenum"] == source_data["horsenum"]]
         if len(rap4) == 0:
             return 1
         return (min(max(rap4[0],10),13)-10)/3
     def get_dl_element106(self, source_data):
-        rap3 = [x["last_rap3"] for x in source_data["horse_race_list"] if x["horsenum"] == source_data["horsenum"]]
+        # 実際の予測ではラストから3ハロン目は12.0s程度と仮定
+        rap3 = [12.0]
+        if source_data["horse_race_list"] != {}:
+            rap3 = [x["last_rap3"] for x in source_data["horse_race_list"] if x["horsenum"] == source_data["horsenum"]]
         if len(rap3) == 0:
             return 1
         return (min(max(rap3[0],10),13)-10)/3
     def get_dl_element107(self, source_data):
+        # 実際の予測ではラストから2ハロン目ですでにバテているラップはないと仮定
+        if source_data["horse_race_list"] == {}:
+            return 1
         # 取り消し馬がいてhorse_race_listのデータ数が出走頭数分と合わない場合にも対応可
         rap_base = [x["last_rap3"] for x in source_data["horse_race_list"] if x["horsenum"] == source_data["horsenum"]]
         rap_no3 = [x["last_rap2"] for x in source_data["horse_race_list"] if x["horsenum"] == source_data["horsenum"]]
         if len(rap_base) == 0 or len(rap_no3) == 0:
             return 0
-        return rap_no3[0] <= rap_base[0]+0.5
+        return 1 if rap_no3[0] <= rap_base[0]+0.5 else 0
     def get_dl_element108(self, source_data):
+        # 実際の予測ではラスト1ハロンはバテていると仮定
+        if source_data["horse_race_list"] == {}:
+            return 0
         rap_base = [x["last_rap3"] for x in source_data["horse_race_list"] if x["horsenum"] == source_data["horsenum"]]
         rap_no4 = [x["last_rap1"] for x in source_data["horse_race_list"] if x["horsenum"] == source_data["horsenum"]]
         if len(rap_base) == 0 or len(rap_no4) == 0:
             return 0
-        return rap_no4[0] <= rap_base[0]+0.5
+        return 1 if rap_no4[0] <= rap_base[0]+0.5 else 0
     def get_dl_element109(self, source_data):
         if len(source_data["all_horse_past"]) == 0:
             return 0
@@ -495,8 +508,9 @@ class ModelInOutData():
         return max(len(odds_under10),5)/5
     def get_dl_element110(self, source_data):
         odds = source_data["past_list"][0]["odds"]
-        return odds != "" and odds <= 10 and odds > 0
+        return 1 if odds != "" and odds <= 10 and odds > 0 else 0
     def get_dl_element111(self, source_data):
+        # 本番では必ずoffにする。着差がわかっているならこの予測は無意味なので。
         time_diff = [x["time_diff"] for x in source_data["horse_race_list"] if x["horsenum"] == source_data["horsenum"]]
         if len(time_diff) == 0:
             return 1
@@ -518,22 +532,3 @@ class ModelInOutData():
                 ret_target = hrl
                 break
         return ret_target
-
-    # [0, 0, 0, 0]の形式、 ３着内率を配当で細分化したものに変換
-    def convert_fullgate_goal_list(self, goal, today_time_diff, dividend):
-        goal_list = []
-        goal_feature = 0
-        if today_time_diff <= 0.1:
-            goal_feature = 0
-        else:
-            goal_feature = 1
-        for i in range(2):
-            if i == goal_feature:
-                goal_list.append(1)
-            else:
-                goal_list.append(0)
-        return goal_list
-    def get_output_list_title(self):
-        return ["place","race","horsename","horsenum","date","~0.1s","other","goal","timediff","dividend"]
-    def get_number_of_output_kind(self):
-        return len(self.get_output_list_title())-8
