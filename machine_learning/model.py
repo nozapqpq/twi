@@ -11,12 +11,13 @@ from keras.layers.normalization import BatchNormalization
 
 import sklearn_json as skljson
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 class model():
     def __init__(self, input_list=[], output_list=[], model_flg=False):
         self.x_np = np.array(input_list)
         self.y_np = np.array(output_list)
-        self.model_mode = 1 # 0:MLP, 1:勾配ブースティング木
+        self.model_mode = 2 # 0:MLP, 1:勾配ブースティング木, 2:ランダムフォレスト
         if len(self.x_np) > 0 and len(self.y_np) > 0:
             self.set_parameters()
             if model_flg:
@@ -71,6 +72,17 @@ class model():
             m_dict["max_features"] = model_dict["max_features"] if "max_features" in model_dict else 'sqrt'
             m_dict["subsample"] = model_dict["subsample"] if "subsample" in model_dict else 1.0
             self.model = GradientBoostingClassifier(random_state=m_dict["random_state"], learning_rate=m_dict["learning_rate"], min_samples_split=m_dict["min_samples_split"], max_depth=m_dict["max_depth"], max_features=m_dict["max_features"], subsample=m_dict["subsample"])
+        elif self.model_mode == 2:
+            m_dict = {}
+            m_dict["n_estimators"] = model_dict["n_estimators"] if "n_estimators" in model_dict else 100
+            m_dict["criterion"] = model_dict["criterion"] if "criterion" in model_dict else "gini"
+            m_dict["max_depth"] = model_dict["max_depth"] if "max_depth" in model_dict else 2
+            m_dict["bootstrap"] = model_dict["bootstrap"] if "bootstrap" in model_dict else True
+            m_dict["oob_score"] = model_dict["oob_score"] if "oob_score" in model_dict else False
+            m_dict["warm_start"] = model_dict["warm_start"] if "warm_start" in model_dict else False
+            m_dict["class_weight"] = model_dict["class_weight"] if "class_weight" in model_dict else 'balanced'
+            self.model = RandomForestClassifier(n_estimators=m_dict["n_estimators"], criterion=m_dict["criterion"], max_depth=m_dict["max_depth"], bootstrap=m_dict["bootstrap"], oob_score=m_dict["oob_score"], warm_start=m_dict["warm_start"], class_weight=m_dict["class_weight"])
+
 
     def gradientboost_train(self):
         for max_features in ["sqrt"]: #["sqrt","log2"]:
@@ -84,11 +96,35 @@ class model():
                                 self.set_model(model_dict)
                                 self.train()
 
+    def randomforest_train(self, import_list=[]):
+        for n_estimators in [100]:
+            for criterion in ["gini"]:
+                for max_depth in [19]: # 15,17でもいいのかもしれない？(19が過学習気味ならば。)
+                    for bootstrap in [True]:
+                        for oob_score in [True]:
+                            for warm_start in [False]:
+                                model_dict = {"n_estimators":n_estimators,"criterion":criterion,"max_depth":max_depth,"bootstrap":bootstrap or oob_score,"oob_score":oob_score,"warm_start":warm_start}
+                                print(model_dict)
+                                self.set_model(model_dict)
+                                self.train()
+                                # 内部データでの予測精度を一応確認
+                                if len(import_list) > 0:
+                                    predicted = self.model.predict(self.x_np).tolist()
+                                    count = [0, 0]
+                                    for i in range(len(predicted)):
+                                        if predicted[i] == 1:
+                                            if len(import_list["goal_order"]) > 0:
+                                                if import_list["goal_order"][i] <= 3:
+                                                    count[0] = count[0] + 1
+                                                else:
+                                                    count[1] = count[1] + 1
+                                    print(count)
+
     def train(self):
         # jvのcsvファイル読み込み元のディレクトリがマウントされていない場合にはここでエラー
         if self.model_mode == 0:
             self.model.fit(self.x_np, self.y_np, epochs=30, batch_size=256, validation_split=0.1, class_weight=self.class_weight)
-        elif self.model_mode == 1:
+        elif self.model_mode >= 1:
             self.model.fit(self.x_np, self.y_np)
             print("Training score: {:.3f}".format(self.model.score(self.x_np, self.y_np)))
 
@@ -99,7 +135,7 @@ class model():
             json_file = open(json_name,"w")
             json_file.write(self.model.to_json())
             self.model.save_weights(h5_name)
-        elif self.model_mode == 1:
+        elif self.model_mode >= 1:
             skljson.to_json(self.model, json_name)
 
     def load(self, name):
@@ -109,7 +145,7 @@ class model():
             model = model_from_json(open(json_name,"r").read())
             model.load_weights(h5_name)
             self.model = model
-        elif self.model_mode == 1:
+        elif self.model_mode >= 1:
             self.model = skljson.from_json(json_name)
 
     def predict(self, x):
