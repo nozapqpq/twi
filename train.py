@@ -14,7 +14,7 @@ def train():
     dl_output = import_list["output"]
 
     dl_model = model.model(dl_input, dl_output)
-    dl_model.train()
+    dl_model.gradientboost_train()
     dl_model.save(model_name)
 
 if __name__ == "__main__":

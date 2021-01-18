@@ -13,13 +13,14 @@ import sklearn_json as skljson
 from sklearn.ensemble import GradientBoostingClassifier
 
 class model():
-    def __init__(self, input_list=[], output_list=[]):
+    def __init__(self, input_list=[], output_list=[], model_flg=False):
         self.x_np = np.array(input_list)
         self.y_np = np.array(output_list)
         self.model_mode = 1 # 0:MLP, 1:勾配ブースティング木
         if len(self.x_np) > 0 and len(self.y_np) > 0:
             self.set_parameters()
-            self.set_model()
+            if model_flg:
+                self.set_model(model_dict)
 
     def set_parameters(self):
         if self.model_mode == 0:
@@ -29,7 +30,7 @@ class model():
             self.output_bias = keras.initializers.Constant(np.log([pos/neg]))
             self.class_weight = {1: (1/neg)*(pos+neg)/2.0, 0: (1/pos)*(pos+neg)/2.0}
 
-    def set_model(self):
+    def set_model(self, model_dict):
         if self.model_mode == 0:
             input_dim = len(self.x_np[0])
             output_dim = len(self.y_np[0])
@@ -62,7 +63,26 @@ class model():
             model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=["accuracy"])
             self.model = model
         elif self.model_mode == 1:
-            self.model = GradientBoostingClassifier(random_state=1, learning_rate=0.1, min_samples_split=10, max_depth=8, max_features='sqrt', subsample=1.0, n_estimators=120)
+            m_dict = {}
+            m_dict["random_state"] = model_dict["random_state"] if "random_state" in model_dict else 1
+            m_dict["learning_rate"] = model_dict["learning_late"] if "learning_late" in model_dict else 0.1
+            m_dict["min_samples_split"] = model_dict["min_samples_split"] if "min_samples_split" in model_dict else 10
+            m_dict["max_depth"] = model_dict["max_depth"] if "max_depth" in model_dict else 8
+            m_dict["max_features"] = model_dict["max_features"] if "max_features" in model_dict else 'sqrt'
+            m_dict["subsample"] = model_dict["subsample"] if "subsample" in model_dict else 1.0
+            self.model = GradientBoostingClassifier(random_state=m_dict["random_state"], learning_rate=m_dict["learning_rate"], min_samples_split=m_dict["min_samples_split"], max_depth=m_dict["max_depth"], max_features=m_dict["max_features"], subsample=m_dict["subsample"])
+
+    def gradientboost_train(self):
+        for max_features in ["sqrt"]: #["sqrt","log2"]:
+            for random_state in [1]:
+                for learning_rate in [0.1]:
+                    for min_samples_split in [3]:
+                        for max_depth in [12]: #[3,5,7,8,9,10]:
+                            for subsample in [0.7]: #[0.3, 0.5, 0.7, 0.9, 1.0]:
+                                model_dict = {"max_features":max_features, "random_state":random_state, "learning_rate":learning_rate, "min_samples_split":min_samples_split, "max_depth":max_depth, "subsample":subsample}
+                                print(model_dict)
+                                self.set_model(model_dict)
+                                self.train()
 
     def train(self):
         # jvのcsvファイル読み込み元のディレクトリがマウントされていない場合にはここでエラー
