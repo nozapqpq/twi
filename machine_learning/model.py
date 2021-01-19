@@ -10,6 +10,7 @@ from keras.optimizers import Adamax
 from keras.layers.normalization import BatchNormalization
 
 import sklearn_json as skljson
+import joblib
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -157,20 +158,26 @@ class model():
     def save(self, name):
         json_name = "machine_learning/" + name + ".json"
         h5_name = "machine_learning/" + name + ".h5"
+        joblib_name = "machine_learning/" + name + ".joblib"
         if self.model_mode == 0:
             json_file = open(json_name,"w")
             json_file.write(self.model.to_json())
             self.model.save_weights(h5_name)
+        elif self.model_mode == 3:
+            joblib.dump(self.model, joblib_name)
         elif self.model_mode >= 1:
             skljson.to_json(self.model, json_name)
 
     def load(self, name):
         json_name = "machine_learning/" + name + ".json"
         h5_name = "machine_learning/" + name + ".h5"
+        joblib_name = "machine_learning/" + name + ".joblib"
         if self.model_mode == 0:
             model = model_from_json(open(json_name,"r").read())
             model.load_weights(h5_name)
             self.model = model
+        elif self.model_mode == 3:
+            self.model = joblib.load(joblib_name)
         elif self.model_mode >= 1:
             self.model = skljson.from_json(json_name)
 
