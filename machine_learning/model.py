@@ -12,12 +12,13 @@ from keras.layers.normalization import BatchNormalization
 import sklearn_json as skljson
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
 
 class model():
     def __init__(self, input_list=[], output_list=[], model_flg=False):
         self.x_np = np.array(input_list)
         self.y_np = np.array(output_list)
-        self.model_mode = 2 # 0:MLP, 1:勾配ブースティング木, 2:ランダムフォレスト
+        self.model_mode = 3 # 0:MLP, 1:勾配ブースティング木, 2:ランダムフォレスト 3:k近傍法
         if len(self.x_np) > 0 and len(self.y_np) > 0:
             self.set_parameters()
             if model_flg:
@@ -82,7 +83,13 @@ class model():
             m_dict["warm_start"] = model_dict["warm_start"] if "warm_start" in model_dict else False
             m_dict["class_weight"] = model_dict["class_weight"] if "class_weight" in model_dict else 'balanced'
             self.model = RandomForestClassifier(n_estimators=m_dict["n_estimators"], criterion=m_dict["criterion"], max_depth=m_dict["max_depth"], bootstrap=m_dict["bootstrap"], oob_score=m_dict["oob_score"], warm_start=m_dict["warm_start"], class_weight=m_dict["class_weight"])
-
+        elif self.model_mode == 3:
+            m_dict = {}
+            m_dict["n_neighbors"] = model_dict["n_neighbors"] if "n_neighbors" in model_dict else 5
+            m_dict["weights"] = model_dict["weights"] if "weights" in model_dict else 'uniform'
+            m_dict["leaf_size"] = model_dict["leaf_size"] if "leaf_size" in model_dict else 30
+            m_dict["p"] = model_dict["p"] if "p" in model_dict else 2
+            self.model = KNeighborsClassifier(n_neighbors=m_dict["n_neighbors"], weights=m_dict["weights"], leaf_size=m_dict["leaf_size"], p=m_dict["p"])
 
     def gradientboost_train(self):
         for max_features in ["sqrt"]: #["sqrt","log2"]:
@@ -119,6 +126,25 @@ class model():
                                                 else:
                                                     count[1] = count[1] + 1
                                     print(count)
+
+    def knn_train(self, import_list=[]):
+        for weights in ['distance']:
+            model_dict = {"weights":weights}
+            print(model_dict)
+            self.set_model(model_dict)
+            self.train()
+            # 内部データでの予測精度を一応確認
+            if len(import_list) > 0:
+                predicted = self.model.predict(self.x_np).tolist()
+                count = [0, 0]
+                for i in range(len(predicted)):
+                    if predicted[i] == 1:
+                        if len(import_list["goal_order"]) > 0:
+                            if import_list["goal_order"][i] <= 3:
+                                count[0] = count[0] + 1
+                            else:
+                                count[1] = count[1] + 1
+                print(count)
 
     def train(self):
         # jvのcsvファイル読み込み元のディレクトリがマウントされていない場合にはここでエラー
