@@ -14,12 +14,13 @@ import joblib
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
 
 class model():
     def __init__(self, input_list=[], output_list=[], model_flg=False):
         self.x_np = np.array(input_list)
         self.y_np = np.array(output_list)
-        self.model_mode = 3 # 0:MLP, 1:勾配ブースティング木, 2:ランダムフォレスト 3:k近傍法
+        self.model_mode = 4 # 0:MLP, 1:勾配ブースティング木, 2:ランダムフォレスト 3:k近傍法 4:SVM
         if len(self.x_np) > 0 and len(self.y_np) > 0:
             self.set_parameters()
             if model_flg:
@@ -91,8 +92,15 @@ class model():
             m_dict["leaf_size"] = model_dict["leaf_size"] if "leaf_size" in model_dict else 30
             m_dict["p"] = model_dict["p"] if "p" in model_dict else 2
             self.model = KNeighborsClassifier(n_neighbors=m_dict["n_neighbors"], weights=m_dict["weights"], leaf_size=m_dict["leaf_size"], p=m_dict["p"])
+        elif self.model_mode == 4:
+            m_dict = {}
+            m_dict["kernel"] = model_dict["kernel"] if "kernel" in model_dict else "rbf"
+            m_dict["shrinking"] = model_dict["shrinking"] if "shrinking" in model_dict else True
+            m_dict["class_weight"] = model_dict["class_weight"] if "class_weight" in model_dict else None
+            self.model = SVC(kernel=m_dict["kernel"], shrinking=m_dict["shrinking"], class_weight=m_dict["class_weight"])
 
     def gradientboost_train(self):
+        self.model_mode = 1
         for max_features in ["sqrt"]: #["sqrt","log2"]:
             for random_state in [1]:
                 for learning_rate in [0.1]:
@@ -105,6 +113,7 @@ class model():
                                 self.train()
 
     def randomforest_train(self, import_list=[]):
+        self.model_mode = 2
         for n_estimators in [100]:
             for criterion in ["gini"]:
                 for max_depth in [19]: # 15,17でもいいのかもしれない？(19が過学習気味ならば。)
@@ -129,6 +138,7 @@ class model():
                                     print(count)
 
     def knn_train(self, import_list=[]):
+        self.model_mode = 3
         for weights in ['distance']:
             model_dict = {"weights":weights}
             print(model_dict)
@@ -147,6 +157,27 @@ class model():
                                 count[1] = count[1] + 1
                 print(count)
 
+    def svm_train(self, import_list=[]):
+        self.model_mode = 4
+        for kernel in ["poly"]:
+            for class_weight in [{0:1,1:3}]:
+                model_dict = {"kernel":kernel, "class_weight":class_weight}
+                print(model_dict)
+                self.set_model(model_dict)
+                self.train()
+                # 内部データでの予測精度を一応確認
+                if len(import_list) > 0:
+                    predicted = self.model.predict(self.x_np).tolist()
+                    count = [0, 0]
+                    for i in range(len(predicted)):
+                        if predicted[i] == 1:
+                            if len(import_list["goal_order"]) > 0:
+                                if import_list["goal_order"][i] <= 3:
+                                    count[0] = count[0] + 1
+                                else:
+                                    count[1] = count[1] + 1
+                    print(count)
+
     def train(self):
         # jvのcsvファイル読み込み元のディレクトリがマウントされていない場合にはここでエラー
         if self.model_mode == 0:
@@ -163,7 +194,7 @@ class model():
             json_file = open(json_name,"w")
             json_file.write(self.model.to_json())
             self.model.save_weights(h5_name)
-        elif self.model_mode == 3:
+        elif self.model_mode in [3,4]:
             joblib.dump(self.model, joblib_name)
         elif self.model_mode >= 1:
             skljson.to_json(self.model, json_name)
@@ -176,7 +207,7 @@ class model():
             model = model_from_json(open(json_name,"r").read())
             model.load_weights(h5_name)
             self.model = model
-        elif self.model_mode == 3:
+        elif self.model_mode in [3,4]:
             self.model = joblib.load(joblib_name)
         elif self.model_mode >= 1:
             self.model = skljson.from_json(json_name)

@@ -14,7 +14,7 @@ def train():
     dl_output = import_list["output"]
 
     dl_model = model.model(dl_input, dl_output)
-    dl_model.knn_train(import_list)
+    dl_model.svm_train(import_list)
     dl_model.save(model_name)
 
 if __name__ == "__main__":
