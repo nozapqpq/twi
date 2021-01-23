@@ -122,14 +122,14 @@ class HorseRace():
         self.horse_race_dict_list = self.get_horse_race_dict_list_from_db(condition_msg)
 
     def get_horse_race_dict_list_from_db(self, condition_msg="1=1"):
-        msg_select = "select race_table.rdate,race_table.place,race_table.race,class,turf_dirt,distance,course_condition,rap3f,rap5f,race_table.last3f,race_table.horse_total,race_table.rpci,race_table    .dividend,race_table.course_mark,race_table.early_rap2,race_table.early_rap3,race_table.early_rap4,race_table.last_rap1,race_table.last_rap2,race_table.last_rap3,race_table.last_rap4,goal_order,brinker,horsenum,horsename,horse_sex,age,jockey_weight,jockey_name,race_time,time_diff,passorder1,passorder2,passorder3,passorder4,finish,horse_table.last3f,diff3f,odds_order,odds,horseweight,weightdiff,trainer,carrier,owner,breeder,stallion,broodmaresire,color,span,castration,pci "
+        msg_select = "select race_table.rdate,race_table.place,race_table.race,class,turf_dirt,distance,course_condition,rap3f,rap5f,race_table.last3f,race_table.horse_total,race_table.rpci,race_table    .dividend,race_table.course_mark,race_table.early_rap2,race_table.early_rap3,race_table.early_rap4,race_table.last_rap1,race_table.last_rap2,race_table.last_rap3,race_table.last_rap4,goal_order,brinker,horsenum,horsename,horse_sex,age,jockey_weight,jockey_name,race_time,time_diff,passorder1,passorder2,passorder3,passorder4,finish,horse_table.last3f,diff3f,odds_order,odds,horseweight,weightdiff,trainer,carrier,owner,breeder,stallion,broodmaresire,color,span,castration,pci,birthday "
         msg_from = "from horse_table "
         msg_join = "inner join race_table on horse_table.rdate = race_table.rdate and horse_table.place = race_table.place and horse_table.race = race_table.race "
         msg = msg_select+msg_from+msg_join+"where race_time != 0 and "+condition_msg+";"
         tpl = self.manipulator.sql_manipulator(msg)
         retlist = []
         for t in tpl:
-            single_dict = {"rdate":t[0],"place":t[1],"race":t[2],"class":t[3],"turf_dirt":t[4],"distance":t[5],"course_condition":t[6],"rap3f":t[7],"rap5f":t[8],"race_last3f":t[9],"horse_total":t[10],"rpci":t[11],"dividend":t[12],"course_mark":t[13],"early_rap2":t[14],"early_rap3":t[15],"early_rap4":t[16],"last_rap1":t[17],"last_rap2":t[18],"last_rap3":t[19],"last_rap4":t[20],"goal_order":t[21],"brinker":t[22],"horsenum":int(t[23]),"horsename":t[24],"horse_sex":t[25],"age":t[26],"jockey_weight":t[27],"jockey_name":t[28],"race_time":t[29],"time_diff":t[30],"passorder1":t[31],"passorder2":t[32],"passorder3":t[33],"passorder4":t[34],"finish":t[35],"horse_last3f":t[36],"diff3f":t[37],"odds_order":t[38],"odds":t[39],"horseweight":t[40],"weightdiff":t[41],"trainer":t[42],"carrier":t[43],"owner":t[44],"breeder":t[45],"stallion":t[46],"broodmaresire":t[47],"color":t[48],"span":t[49],"castration":t[50],"pci":t[51]}
+            single_dict = {"rdate":t[0],"place":t[1],"race":t[2],"class":t[3],"turf_dirt":t[4],"distance":t[5],"course_condition":t[6],"rap3f":t[7],"rap5f":t[8],"race_last3f":t[9],"horse_total":t[10],"rpci":t[11],"dividend":t[12],"course_mark":t[13],"early_rap2":t[14],"early_rap3":t[15],"early_rap4":t[16],"last_rap1":t[17],"last_rap2":t[18],"last_rap3":t[19],"last_rap4":t[20],"goal_order":t[21],"brinker":t[22],"horsenum":int(t[23]),"horsename":t[24],"horse_sex":t[25],"age":t[26],"jockey_weight":t[27],"jockey_name":t[28],"race_time":t[29],"time_diff":t[30],"passorder1":t[31],"passorder2":t[32],"passorder3":t[33],"passorder4":t[34],"finish":t[35],"horse_last3f":t[36],"diff3f":t[37],"odds_order":t[38],"odds":t[39],"horseweight":t[40],"weightdiff":t[41],"trainer":t[42],"carrier":t[43],"owner":t[44],"breeder":t[45],"stallion":t[46],"broodmaresire":t[47],"color":t[48],"span":t[49],"castration":t[50],"pci":t[51],"birthday":t[52]}
             retlist.append(single_dict)
         return retlist
  
@@ -260,7 +260,8 @@ class HorseRace():
         out_span = self.convert_blank_number(race_dt[37]).replace("不明","999")
         out_castration = race_dt[38]
         out_pci = self.convert_blank_number(race_dt[39])
-        msg = "('"+out_date+"','"+out_place+"',"+out_race+","+out_order+",'"+out_brinker+"',"+out_horsenum+",'"+out_horsename+"','"+out_sex+"',"+out_age+","+out_jockey_weight+",'"+out_jockey_name+"',"+out_time+","+out_time_diff+","+out_passorder1+","+out_passorder2+","+out_passorder3+","+out_passorder4+",'"+out_finish+"',"+out_last3f+","+out_diff3f+","+out_odds_order+","+out_odds+","+out_horseweight+","+out_weightdiff+",'"+out_trainer+"',"+out_carrier+",'"+out_owner+"','"+out_breeder+"','"+out_stallion+"','"+out_broodmaresire+"','"+out_color+"',"+out_span+",'"+out_castration+"',"+out_pci+")"
+        out_birthday = self.get_birthday(out_date, out_age, race_dt[36])
+        msg = "('"+out_date+"','"+out_place+"',"+out_race+","+out_order+",'"+out_brinker+"',"+out_horsenum+",'"+out_horsename+"','"+out_sex+"',"+out_age+","+out_jockey_weight+",'"+out_jockey_name+"',"+out_time+","+out_time_diff+","+out_passorder1+","+out_passorder2+","+out_passorder3+","+out_passorder4+",'"+out_finish+"',"+out_last3f+","+out_diff3f+","+out_odds_order+","+out_odds+","+out_horseweight+","+out_weightdiff+",'"+out_trainer+"',"+out_carrier+",'"+out_owner+"','"+out_breeder+"','"+out_stallion+"','"+out_broodmaresire+"','"+out_color+"',"+out_span+",'"+out_castration+"',"+out_pci+",'"+out_birthday+"')"
         return msg
 
     def adjust_jockey_weight_expression(self, weight_str):
@@ -289,5 +290,16 @@ class HorseRace():
         rap_list = [x for x in rap_list if x != '']
         target_rap = rap_num*(-1)
         return rap_list[target_rap]
+
+    # today: 0000-00-00の形式
+    # age: int型変数
+    # b_day: 0月0日の形式
+    # return: 0000-00-00の形式
+    def get_birthday(self, today, age, b_day):
+        regex = re.compile('\d+')
+        digit_today = regex.findall(today)
+        digit_b_day = regex.findall(b_day)
+        ret_year = int(digit_today[0])-int(age)
+        return str(ret_year)+"-"+str(digit_b_day[0]).zfill(2)+"-"+str(digit_b_day[1]).zfill(2)
     # ** utilities end **
     # ***** race_table and horse_table setting end *****
