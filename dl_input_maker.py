@@ -3,6 +3,7 @@ import os
 import re
 from db import horse_race
 from db import stallion
+from db import trainer
 from machine_learning import model_inout_data
 from output_tools import output
 import utility
@@ -17,6 +18,7 @@ def make_deeplearning_input_file():
     hr = horse_race.HorseRace(True)
     dl_model_inout = model_inout_data.ModelInOutData()
     dl_model_inout.set_stallion_table(stallion.Stallion().get_stallion_dict_list())
+    dl_model_inout.set_trainer_table(trainer.Trainer().get_trainer_dict_list())
     output_tools = output.Output()
 
     source_list = get_source_data_list(hr, settings)

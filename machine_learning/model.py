@@ -20,7 +20,7 @@ class model():
     def __init__(self, input_list=[], output_list=[], model_flg=False):
         self.x_np = np.array(input_list)
         self.y_np = np.array(output_list)
-        self.model_mode = 4 # 0:MLP, 1:勾配ブースティング木, 2:ランダムフォレスト 3:k近傍法 4:SVM
+        self.model_mode = 2 # 0:MLP, 1:勾配ブースティング木, 2:ランダムフォレスト 3:k近傍法 4:SVM
         if len(self.x_np) > 0 and len(self.y_np) > 0:
             self.set_parameters()
             if model_flg:
@@ -114,9 +114,9 @@ class model():
 
     def randomforest_train(self, import_list=[]):
         self.model_mode = 2
-        for n_estimators in [100]:
+        for n_estimators in [1000]:
             for criterion in ["gini"]:
-                for max_depth in [19]: # 15,17でもいいのかもしれない？(19が過学習気味ならば。)
+                for max_depth in [14]: # 15,17でもいいのかもしれない？(19が過学習気味ならば。)
                     for bootstrap in [True]:
                         for oob_score in [True]:
                             for warm_start in [False]:
@@ -184,6 +184,8 @@ class model():
             self.model.fit(self.x_np, self.y_np, epochs=30, batch_size=256, validation_split=0.1, class_weight=self.class_weight)
         elif self.model_mode >= 1:
             self.model.fit(self.x_np, self.y_np)
+            for i in range(len(self.model.feature_importances_)):
+                print(str(i+1).zfill(3)+" : "+str(round(self.model.feature_importances_[i],5)))
             print("Training score: {:.3f}".format(self.model.score(self.x_np, self.y_np)))
 
     def save(self, name):

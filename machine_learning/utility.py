@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from datetime import datetime as dt
+from datetime import date
 from dateutil.relativedelta import relativedelta
 from sklearn.metrics import confusion_matrix
 
@@ -24,6 +25,10 @@ class Utility():
             return 2
         return 3
     # クラスの序列
+    def compare_class_priority(self, cls1, cls2):
+        priority1 = self.get_class_priority(cls1)
+        priority2 = self.get_class_priority(cls2)
+        return priority1-priority2
     def get_class_priority(self, cls):
         if cls in ["未勝利","新馬"]:
             return 0
@@ -50,6 +55,9 @@ class Utility():
         if cond[0] == "良" or cond[0] == "稍":
             return 0
         return 1
+    # 2レースの馬場状態が同じであればtrueを返す
+    def check_same_condition(self, cond1, cond2):
+        return cond1[0] == cond2[0]
     # 距離インデックスを取得
     def get_distance_index(self, dist):
         dist_list = [1000,1150,1200,1300,1400,1500,1600,1700,1800,1900,2000,2200,2600]
@@ -173,6 +181,8 @@ class Utility():
                 args = args + ","
             args = args + arg_list[i]
         return "self."+funcname+"("+args+")"
+    def calc_days_after_birth(self,today,birth):
+        return (today-birth).days
     def convert_nondigit_to_strzero(self, target):
         if not target.isdecimal():
             try:
@@ -189,7 +199,10 @@ class Utility():
         if data == 1:
             data = 0.2
         return data
-
+    # str -> datetime -> dateへ変換
+    def str_to_date(self, s):
+        tmp_dt = dt.strptime(s, '%Y-%m-%d')
+        return date(tmp_dt.year, tmp_dt.month, tmp_dt.day)
     # matplotでaccuracyとlossをプロットして出力
     def compare_TV(self, history):
         # Setting Parameters

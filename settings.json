@@ -1,10 +1,10 @@
 {
     "settings":{
         "turf_dirt_divide_flg" : true,
-        "place_divide_flg" : false,
+        "place_divide_flg" : true,
         "distance_divide_flg" : true,
         "place" : "中山",
         "turf_dirt" : "ダート",
-        "distance" : 1800
+        "distance" : 1200
     }
 }
