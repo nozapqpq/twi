@@ -237,3 +237,14 @@ class Utility():
         plt.ylabel('Actual label')
         plt.xlabel('Predicted label')
         plt.show()
+    # [0,1,0]を[[0,1],[1,0],[0,1]]というように2次元リストに変換
+    def divide_to_2dim_list(self, lst):
+        retlist = []
+        for l in lst:
+            single = [0,0]
+            if l == 1:
+                single[0] = 1
+            else:
+                single[1] = 1
+            retlist.append(single)
+        return retlist

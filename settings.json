@@ -3,8 +3,9 @@
         "turf_dirt_divide_flg" : true,
         "place_divide_flg" : true,
         "distance_divide_flg" : true,
-        "place" : "中山",
+        "place" : "東京",
         "turf_dirt" : "ダート",
-        "distance" : 1200
+        "distance" : 1400,
+        "machinelearning_mode" : "mlp"
     }
 }

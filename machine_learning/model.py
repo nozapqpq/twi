@@ -3,6 +3,7 @@ import os
 import csv
 import keras
 import numpy as np
+from .utility import Utility
 from keras.metrics import Precision, Recall
 from keras.models import Sequential, model_from_json
 from keras.layers import Dense, Dropout
@@ -18,51 +19,59 @@ from sklearn.svm import SVC
 
 class model():
     def __init__(self, input_list=[], output_list=[], model_flg=False):
+        self.utility = Utility()
         self.x_np = np.array(input_list)
         self.y_np = np.array(output_list)
-        self.model_mode = 2 # 0:MLP, 1:勾配ブースティング木, 2:ランダムフォレスト 3:k近傍法 4:SVM
-        if len(self.x_np) > 0 and len(self.y_np) > 0:
-            self.set_parameters()
-            if model_flg:
-                self.set_model(model_dict)
+        self.y_np_2dim = np.array(self.utility.divide_to_2dim_list(output_list))
+        self.model_mode = 0 # 0:MLP, 1:勾配ブースティング木, 2:ランダムフォレスト 3:k近傍法 4:SVM
 
     def set_parameters(self):
         if self.model_mode == 0:
-            out_sum = self.y_np.sum(axis=0)
+            out_sum = self.y_np_2dim.sum(axis=0)
             pos = out_sum[0]
             neg = out_sum[1]
             self.output_bias = keras.initializers.Constant(np.log([pos/neg]))
             self.class_weight = {1: (1/neg)*(pos+neg)/2.0, 0: (1/pos)*(pos+neg)/2.0}
+            print(self.class_weight)
+
+    def set_model_mode(self, mode):
+        if mode == "mlp":
+            self.model_mode = 0
+        if mode == "gradientboost":
+            self.model_mode = 1
+        elif mode == "randomforest":
+            self.model_mode = 2
+        elif mode == "knn":
+            self.model_mode = 3
+        elif mode == "svm":
+            self.model_mode = 4
+        else:
+            self.model_mode = 0
 
     def set_model(self, model_dict):
         if self.model_mode == 0:
             input_dim = len(self.x_np[0])
-            output_dim = len(self.y_np[0])
+            output_dim = len(self.y_np_2dim[0])
             print([input_dim, output_dim])
             model = Sequential()
             optimizer = Adamax(lr=0.001)
 
-            model.add(Dense(input_dim, activation='relu', input_dim=input_dim))
-            model.add(Dropout(0.25))
+            model.add(Dense(input_dim*80, activation='relu', input_dim=input_dim))
+            model.add(Dropout(0.2))
             model.add(BatchNormalization())
-            model.add(Dense(input_dim*100, activation='relu'))
-            model.add(Dropout(0.25))
+            model.add(Dense(input_dim*80, activation='relu'))
+            model.add(Dropout(0.2))
             model.add(BatchNormalization())
-            model.add(Dense(input_dim*50, activation='relu'))
-            model.add(Dropout(0.25))
+            model.add(Dense(input_dim*5, activation='relu', input_dim=input_dim))
+            model.add(Dropout(0.2))
             model.add(BatchNormalization())
-            model.add(Dense(input_dim*25, activation='relu'))
-            model.add(Dropout(0.25))
+            model.add(Dense(input_dim*1, activation='relu', input_dim=input_dim))
+            model.add(Dropout(0.2))
             model.add(BatchNormalization())
-            model.add(Dense(input_dim*3, activation='relu'))
-            model.add(Dropout(0.25))
-            model.add(BatchNormalization())
-            model.add(Dense(input_dim*2, activation='relu'))
-            model.add(Dropout(0.25))
-            model.add(BatchNormalization())
+
  
             model.add(Dense(output_dim, activation='softmax', bias_initializer=self.output_bias))
-            # model.add(output_dim, activation='softmax')) # うまくいかないとき用
+            #model.add(Dense(output_dim, activation='sigmoid')) # うまくいかないとき用
             model.summary()
             model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=["accuracy"])
             self.model = model
@@ -99,94 +108,45 @@ class model():
             m_dict["class_weight"] = model_dict["class_weight"] if "class_weight" in model_dict else None
             self.model = SVC(kernel=m_dict["kernel"], shrinking=m_dict["shrinking"], class_weight=m_dict["class_weight"])
 
-    def gradientboost_train(self):
-        self.model_mode = 1
-        for max_features in ["sqrt"]: #["sqrt","log2"]:
-            for random_state in [1]:
-                for learning_rate in [0.1]:
-                    for min_samples_split in [3]:
-                        for max_depth in [12]: #[3,5,7,8,9,10]:
-                            for subsample in [0.7]: #[0.3, 0.5, 0.7, 0.9, 1.0]:
-                                model_dict = {"max_features":max_features, "random_state":random_state, "learning_rate":learning_rate, "min_samples_split":min_samples_split, "max_depth":max_depth, "subsample":subsample}
-                                print(model_dict)
-                                self.set_model(model_dict)
-                                self.train()
-
-    def randomforest_train(self, import_list=[]):
-        self.model_mode = 2
-        for n_estimators in [1000]:
-            for criterion in ["gini"]:
-                for max_depth in [14]: # 15,17でもいいのかもしれない？(19が過学習気味ならば。)
-                    for bootstrap in [True]:
-                        for oob_score in [True]:
-                            for warm_start in [False]:
-                                model_dict = {"n_estimators":n_estimators,"criterion":criterion,"max_depth":max_depth,"bootstrap":bootstrap or oob_score,"oob_score":oob_score,"warm_start":warm_start}
-                                print(model_dict)
-                                self.set_model(model_dict)
-                                self.train()
-                                # 内部データでの予測精度を一応確認
-                                if len(import_list) > 0:
-                                    predicted = self.model.predict(self.x_np).tolist()
-                                    count = [0, 0]
-                                    for i in range(len(predicted)):
-                                        if predicted[i] == 1:
-                                            if len(import_list["goal_order"]) > 0:
-                                                if import_list["goal_order"][i] <= 3:
-                                                    count[0] = count[0] + 1
-                                                else:
-                                                    count[1] = count[1] + 1
-                                    print(count)
-
-    def knn_train(self, import_list=[]):
-        self.model_mode = 3
-        for weights in ['distance']:
-            model_dict = {"weights":weights}
-            print(model_dict)
-            self.set_model(model_dict)
-            self.train()
-            # 内部データでの予測精度を一応確認
-            if len(import_list) > 0:
-                predicted = self.model.predict(self.x_np).tolist()
-                count = [0, 0]
-                for i in range(len(predicted)):
-                    if predicted[i] == 1:
-                        if len(import_list["goal_order"]) > 0:
-                            if import_list["goal_order"][i] <= 3:
-                                count[0] = count[0] + 1
-                            else:
-                                count[1] = count[1] + 1
-                print(count)
-
-    def svm_train(self, import_list=[]):
-        self.model_mode = 4
-        for kernel in ["poly"]:
-            for class_weight in [{0:1,1:3}]:
-                model_dict = {"kernel":kernel, "class_weight":class_weight}
-                print(model_dict)
-                self.set_model(model_dict)
-                self.train()
-                # 内部データでの予測精度を一応確認
-                if len(import_list) > 0:
-                    predicted = self.model.predict(self.x_np).tolist()
-                    count = [0, 0]
-                    for i in range(len(predicted)):
-                        if predicted[i] == 1:
-                            if len(import_list["goal_order"]) > 0:
-                                if import_list["goal_order"][i] <= 3:
-                                    count[0] = count[0] + 1
-                                else:
-                                    count[1] = count[1] + 1
-                    print(count)
-
-    def train(self):
-        # jvのcsvファイル読み込み元のディレクトリがマウントされていない場合にはここでエラー
+    def train(self, import_list=[], mode="gradientboost"):
+        self.set_model_mode(mode)
+        model_dict = {}
+        if mode == "mlp":
+            self.set_parameters()
+        if mode == "gradientboost":
+            model_dict = {"max_features":"sqrt", "random_state":1, "learning_rate":0.1, "min_samples_split":3, "max_depth":15, "subsample":0.7}
+        elif mode == "randomforest":
+            model_dict = {"n_estimators":1000,"criterion":"gini","max_depth":12,"bootstrap":True,"oob_score":True,"warm_start":False}
+        elif mode == "knn":
+            model_dict = {"weights":"distance"}
+        elif mode == "svm":
+            model_dict = {"kernel":"poly", "class_weight":{0:1,1:3}}
+        print(model_dict)
+        self.set_model(model_dict)
+        # 注:jvのcsvファイル読み込み元のディレクトリがマウントされていない場合にはここでエラー出るので確認する
         if self.model_mode == 0:
-            self.model.fit(self.x_np, self.y_np, epochs=30, batch_size=256, validation_split=0.1, class_weight=self.class_weight)
+            self.model.fit(self.x_np, self.y_np_2dim, epochs=20, batch_size=256, validation_split=0.1, class_weight=self.class_weight)
         elif self.model_mode >= 1:
             self.model.fit(self.x_np, self.y_np)
-            for i in range(len(self.model.feature_importances_)):
-                print(str(i+1).zfill(3)+" : "+str(round(self.model.feature_importances_[i],5)))
-            print("Training score: {:.3f}".format(self.model.score(self.x_np, self.y_np)))
+            if self.model_mode == 2 or self.model_mode == 3:
+                for i in range(len(self.model.feature_importances_)):
+                    print(str(i+1).zfill(3)+" : "+str(round(self.model.feature_importances_[i],5)))
+                print("Training score: {:.3f}".format(self.model.score(self.x_np, self.y_np)))
+        self.check_accuracy(import_list)
+
+    # 学習完了時の学習データ自体に対する予測精度を一応確認する用
+    def check_accuracy(self, import_list):
+        if len(import_list) > 0:
+            predicted = self.model.predict(self.x_np).tolist()
+            count = [0, 0]
+            for i in range(len(predicted)):
+                if predicted[i] == 1:
+                    if len(import_list["goal_order"]) > 0:
+                        if import_list["goal_order"][i] <= 3:
+                            count[0] = count[0] + 1
+                        else:
+                            count[1] = count[1] + 1
+            print(count)
 
     def save(self, name):
         json_name = "machine_learning/" + name + ".json"
